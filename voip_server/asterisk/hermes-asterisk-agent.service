@@ -1,0 +1,14 @@
+[Unit]
+Description=Segmentação Direta de Chamadas do Asterisk
+After=network.target asterisk.service
+
+[Service]
+Type=simple
+User=root
+Group=root
+ExecStart=/usr/bin/python3 /opt/hermes/hermes-asterisk-agent/direct_monitor.py /var/spool/asterisk/monitor --folga-db 10 --min-silence 800 --keep-silence 250
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
