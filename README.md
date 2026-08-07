@@ -34,13 +34,18 @@ Camada de backend/API do ecossistema Hermes, responsável por orquestrar a comun
 
 Diagramas, documentação de arquitetura e demais artefatos de apoio ao projeto.
 
-## Visão geral da arquitetura
+## Visão Geral da Arquitetura
 
-A comunicação entre as camadas utiliza protocolos distintos conforme a necessidade de cada fluxo:
+A arquitetura do Hermes foi concebida para operar de forma desacoplada, permitindo sua integração com diferentes plataformas de Contact Center por meio da **API Hermes**. O frontend disponibilizado neste projeto possui caráter **exclusivamente demonstrativo**, sendo utilizado apenas para testes funcionais, acompanhamento da transcrição em tempo real e verificação do comportamento dos serviços durante o desenvolvimento.
 
-- **REST/WebSocket**: entre o frontend e o usuário, para exibir a transcrição em tempo real.
-- **AMI (Asterisk Manager Interface)**: entre o `voip_server` e o Asterisk, para sinalização de início/fim de chamada.
-- **gRPC** (`hermes.proto`): para o streaming de áudio e texto entre CAD, backend e serviço de transcrição.
+Em um ambiente de produção, a interação dos operadores deve ocorrer diretamente por meio da plataforma de Contact Center adotada pelo órgão ou instituição, como Sinesp CAD (MJSP), Hefesto (SSP/DF) ou outra solução equivalente, que consumirá os serviços disponibilizados pela API Hermes para obtenção das transcrições, eventos e demais funcionalidades.
+
+A comunicação entre os componentes da arquitetura utiliza diferentes protocolos, de acordo com a finalidade de cada fluxo:
+
+* **REST**: utilizado pelo frontend de testes para consumir a API Hermes e exibir a transcrição e os eventos em tempo real. Em ambiente de produção, essa API deve ser consumida pela plataforma de Contact Center integrada.
+* **AMI (Asterisk Manager Interface)**: utilizado pelo `voip_server` para receber do Asterisk os eventos de sinalização referentes ao início, término e demais mudanças de estado das chamadas telefônicas.
+* **Webhook para envio das sinalizações sip**: utilizado pelo voip_server para encaminhar ao backend do Hermes os eventos de sinalização processados a partir do AMI, permitindo o acompanhamento do ciclo de vida das chamadas e a sincronização do estado da comunicação.
+* **Envio de chunks de aúdio do Asterisk ao backend do hermes**: realizado por meio de requisições HTTP, nas quais o voip_server transmite os chunks de áudio gerados durante a chamada para processamento assíncrono, transcrição, indexação e posterior disponibilização às aplicações consumidoras da API Hermes.
 
 ## Como começar
 
