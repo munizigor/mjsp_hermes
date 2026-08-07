@@ -60,5 +60,5 @@ Cada camada possui seu próprio guia de instalação e execução:
 >
 > Em particular, a plataforma de telefonia deverá ser capaz de fornecer ao backend do Hermes os **eventos de sinalização das chamadas** (início, término e demais mudanças de estado) e os **fragmentos de áudio (chunks)** produzidos durante a comunicação, observando os contratos e interfaces definidos pela API Hermes.
 >
-> Para integrações com plataformas diferentes do Asterisk, recomenda-se a leitura do ([[**Documento de Visão da Aplicação** ](https://www.gov.br/mj/pt-br)]), que descreve a arquitetura da solução, os requisitos funcionais e não funcionais, as premissas de integração entre o ambiente de telefonia e o backend do Hermes, bem como os mecanismos de comunicação esperados entre os componentes da solução.
+> Para integrações com plataformas diferentes do Asterisk, recomenda-se a leitura do [**Documento de Visão da Aplicação** ](https://www.gov.br/mj/pt-br), que descreve a arquitetura da solução, os requisitos funcionais e não funcionais, as premissas de integração entre o ambiente de telefonia e o backend do Hermes, bem como os mecanismos de comunicação esperados entre os componentes da solução.
 
