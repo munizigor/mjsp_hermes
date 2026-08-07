@@ -1,0 +1,259 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br" data-theme="light">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta property="og:title" content="MJSP">
+    <meta property="og:description" content="Ministério da Justiça e Segurança Pública">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://www.gov.br/mj/pt-br/copy_of_mjsp">
+    <meta property="og:image" content="https://www.gov.br/mj/logo.png">
+    <meta property="og:locale" content="pt_BR">
+    <meta property="og:site_name" content="Ministério da Justiça e Segurança Pública">
+    <meta name="description" content="Ministério da Justiça e Segurança Pública">
+    <meta property="creator.productor" content="https://www.gov.br">
+
+    <title>MJSP — Ministério da Justiça e Segurança Pública</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@govbr-ds/core/dist/core.min.css">
+
+    <!-- Favicons -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/mj/++theme++padrao_govbr/favicons/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/mj/++theme++padrao_govbr/favicons/favicon-32x32.png">
+    <link rel="shortcut icon" type="image/png" href="/mj/++theme++padrao_govbr/favicons/favicon-48x48.png">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@govbr-ds/core/dist/core.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://barra.sistema.gov.br/v1/fonts/rawline/css/rawline.css">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+
+    <style>
+      .info-label {
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #6b7280; /* gray-500 */
+        margin-bottom: 0.5rem;
+        display: block;
+      }
+      .dark .info-label { color: #9ca3af; }
+
+      /* --- Custom Scrollbar Styling --- */
+      .custom-scroll {
+        max-height: 250px; /* Limits height. Scrollbar appears if content exceeds this. */
+        overflow-y: auto;  /* Vertical scroll */
+        padding-right: 0.5rem; /* Space so content doesn't touch scrollbar */
+      }
+
+      /* Thin, elegant scrollbar for Webkit (Chrome, Edge, Safari) */
+      .custom-scroll::-webkit-scrollbar {
+        width: 6px;
+      }
+      .custom-scroll::-webkit-scrollbar-track {
+        background: rgba(0,0,0,0.05);
+        border-radius: 4px;
+      }
+      .custom-scroll::-webkit-scrollbar-thumb {
+        background-color: #cbd5e1; /* gray-300 */
+        border-radius: 4px;
+      }
+      .custom-scroll::-webkit-scrollbar-thumb:hover {
+        background-color: #94a3b8; /* gray-400 */
+      }
+      /* Dark mode scrollbar support */
+      .dark .custom-scroll::-webkit-scrollbar-track {
+        background: rgba(255,255,255,0.05);
+      }
+      .dark .custom-scroll::-webkit-scrollbar-thumb {
+        background-color: #4b5563;
+      }
+    </style>
+  </head>
+
+  <body class="rounded-xl border border-gray-200 dark:border-gray-700">
+    {% csrf_token %}
+    <header id="site-header" class="br-header has-navigation-dropdown">
+      <div class="header-top bg-secondary py-1 p-2">
+        <div class="container-fluid">
+          <div class="header-logo">
+            <a href="https://www.gov.br/pt-br" class="link-bi">
+              <img src="https://barra.sistema.gov.br/v1/assets/govbr.webp" alt="Logomarca GovBR">
+            </a>
+            <span class="br-divider vertical"></span>
+            <a href="https://www.gov.br" class="ml-2 nome-orgao">Governo Federal</a>
+          </div>
+
+          <div class="header-actions">
+            <div class="links-rapidos">
+              <!-- <button class="br-button small circle toggle-links-rapidos" aria-label="Menu de links">
+                <i class="fas fa-ellipsis-v"></i>
+              </button> -->
+
+              <ul class="links-governo">
+                <!-- <li class="titulo">Acesso Rápido</li> -->
+                <li><a href="https://www.gov.br/pt-br/orgaos-do-governo" target="_blank">Órgãos do Governo</a></li>
+                <li><a href="https://www.gov.br/acessoainformacao/pt-br" target="_blank">Acesso à Informação</a></li>
+                <li><a href="http://www4.planalto.gov.br/legislacao" target="_blank">Legislação</a></li>
+                <li><a href="https://www.gov.br/governodigital/pt-br/acessibilidade-digital" target="_blank">Acessibilidade</a></li>
+              </ul>
+            </div>
+
+            <span class="br-divider vertical mx-2"></span>
+            <div class="button-wrapper svelte-18ap8dw">
+              <span class="langue-select svelte-18ap8dw"><span class="sr-only">Idioma atual:</span> PT</span> 
+              <button class="br-button circle small false langue-button svelte-18ap8dw" type="button" aria-label="Alterar idioma">
+                <i class="fas fa-angle-down" aria-hidden="true"></i>
+              </button>
+            </div>
+            <button class="br-button circle small cookies" aria-label="Cookies">
+              <i class="fas fa-cookie-bite"></i>
+            </button>
+            <button class="br-button circle small contrast-button" aria-label="Alto contraste">
+              <i class="fas fa-adjust"></i>
+            </button>
+            <button class="br-button circle small" aria-label="Sistemas">
+              <i class="fas fa-th"></i>
+            </button>
+            <div class="wrapper-login">
+              <button class="br-sign-in primary ml-2" id="btnLoginGov" type="button">
+                <i class="fas fa-user"></i>
+                <span class="login-text">Entrar com gov.br</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="orgao px-6">
+        <div class="header-wrapper">
+          <div class="site-name-wrapper">
+              <h3 class="site-name">
+                  <a href="https://www.gov.br/mj/pt-br">Ministério da Justiça e Segurança Pública</a>
+              </h3>
+          </div>
+          <div class="flex justify-end items-center gap-2">
+            <a href="{% url 'dashboard' %}"
+                class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 px-4 rounded-lg shadow transition">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5"
+                  viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"
+                    aria-hidden="true">
+                  <path d="M3 10.5L12 3l9 7.5" />
+                  <path d="M5 10v10h14V10" />
+                  <path d="M9 20V14h6v6" />
+                </svg>
+            </a>
+            <a href="{% url 'emergencias' %}"
+                class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 px-4 rounded-lg shadow transition activated">
+                Recentes
+            </a>
+          </div>
+      </div>
+    </header>
+
+    <main class="container mx-auto py-8 px-4"> 
+      <div class="flex items-center justify-between mb-6">
+          <div>
+              <h2 class="text-3xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
+                  <i class="fas fa-shield-alt text-blue-800"></i>
+                  Ocorrências
+              </h2>
+          </div>
+      </div>
+      <div id="emergency-container">
+          {% include 'partials/emergency_call.html' %}
+      </div>
+      <div class="mt-8 flex justify-end gap-4">
+          <button class="br-button secondary" onclick="window.print()">
+              <i class="fas fa-print mr-2"></i> Imprimir
+          </button>
+      </div>
+  </main>
+    <footer class="br-footer">
+      <!-- <div id="govbr-logo">
+        <img src="./assets/img/logo-white.png" alt="">
+      </div> -->
+      <div class="container-lg">
+        <div class="br-list horizontal" data-toggle="data-toggle" data-sub="data-sub">
+          <div class="col-2">
+            <a class="br-item header" href="javascript:void(0)">
+              <div class="content text-down-01 text-bold text-uppercase">Categoria 1</div>
+              <div class="support"><i class="fas fa-angle-down" aria-hidden="true"></i></div>
+            </a>
+            <div class="br-list">
+              <span class="br-divider d-md-none"></span>
+              <a class="br-item" href="javascript:void(0)">
+                <div class="content">Nulla occaecat eiusmod</div>
+              </a>
+              <span class="br-divider d-md-none"></span>
+            </div>
+          </div>
+          <div class="col-2">
+            <a class="br-item header" href="javascript:void(0)">
+              <div class="content text-down-01 text-bold text-uppercase">Categoria 2</div>
+              <div class="support"><i class="fas fa-angle-down" aria-hidden="true"></i></div>
+            </a>
+              <div class="br-list">
+                <span class="br-divider d-md-none"></span>
+                <a class="br-item" href="javascript:void(0)">
+                  <div class="content">Adipisicing culpa et ad consequat</div>
+                </a>
+                <span class="br-divider d-md-none"></span>
+            </div>
+          </div>
+          <div class="col-2">
+            <a class="br-item header" href="javascript:void(0)">
+              <div class="content text-down-01 text-bold text-uppercase">Categoria 4</div>
+              <div class="support"><i class="fas fa-angle-down" aria-hidden="true"></i></div>
+            </a>
+            <div class="br-list">
+              <span class="br-divider d-md-none"></span>
+              <a class="br-item" href="javascript:void(0)">
+                <div class="content">Nulla occaecat eiusmod</div>
+              </a>
+              <span class="br-divider d-md-none"></span>
+            </div>
+          </div>
+          <div class="col-2">
+            <a class="br-item header" href="javascript:void(0)">
+              <div class="content text-down-01 text-bold text-uppercase">Categoria 5</div>
+              <div class="support"><i class="fas fa-angle-down" aria-hidden="true"></i></div>
+            </a>
+            <div class="br-list">
+              <span class="br-divider d-md-none"></span>
+              <a class="br-item" href="javascript:void(0)">
+                <div class="content">Est ex deserunt</div>
+              </a>
+              <span class="br-divider d-md-none"></span>
+            </div>
+          </div>
+          <div class="col-2">
+            <a class="br-item header" href="javascript:void(0)">
+              <div class="content text-down-01 text-bold text-uppercase">Categoria 6</div>
+              <div class="support"><i class="fas fa-angle-down" aria-hidden="true"></i></div>
+            </a>
+            <div class="br-list">
+              <span class="br-divider d-md-none"></span>
+              <a class="br-item" href="javascript:void(0)">
+                <div class="content">Est ex deserunt</div>
+              </a>
+              <span class="br-divider d-md-none"></span>
+            </div>
+          </div>
+          </div>
+        </div>
+      </div><span class="br-divider my-3"></span>
+      <div class="container-lg">
+        <div class="info">
+          <div class="text-down-01 text-medium pb-3">Texto destinado a exibição de informações relacionadas à&nbsp;<strong>licença de uso.</strong></div>
+        </div>
+      </div>
+    </footer>
+      <!-- Scripts do Design System GOV.BR -->
+    <script src="https://cdn.jsdelivr.net/npm/@govbr-ds/core/dist/core-init.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@govbr-ds/core/dist/core.min.js"></script>
+    <script src="{% static 'js/main.js' %}" defer></script>
+
+  </body>
+</html>

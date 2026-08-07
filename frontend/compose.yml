@@ -1,0 +1,6 @@
+services:
+  hermes-django:
+    build:
+      dockerfile: docker/Dockerfile.hermes_django
+    network_mode: "host"
+    env_file: ".env"

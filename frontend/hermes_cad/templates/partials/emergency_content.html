@@ -1,0 +1,166 @@
+<div
+    class="bg-white dark:bg-blue-cool-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+
+    <div class="border-t border-gray-200 dark:border-gray-700 bg-blue-cool-20 dark:bg-blue-cool-900 p-6">
+        <span class="info-label mb-2"><i class="fas fa-file-alt mr-1"></i> Transcrição Completa</span>
+        <div
+            class="bg-white dark:bg-black p-4 rounded-lg shadow-inner border border-gray-300 dark:border-gray-600 font-mono text-sm text-gray-700 dark:text-gray-300 max-h-96 overflow-y-auto leading-relaxed custom-scroll">
+            {{ emergency_data.transcricao|default:"N/A"|linebreaksbr }}
+        </div>
+    </div>
+    <div class="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div class="col-span-1 md:col-span-2 lg:col-span-3">
+            <span class="info-label">Descrição Breve</span>
+            <div class="bg-blue-cool-20 dark:bg-blue-cool-900 p-3 rounded border border-gray-200 dark:border-gray-700 mb-4 custom-scroll"
+                style="max-height: 150px;">
+                {% for item in emergency_data.descricao_breve %}
+                <p class="text-gray-800 dark:text-gray-300 mb-1">{{ item.value }}</p>
+                {% empty %}
+                <span class="text-gray-400 italic">Sem descrição.</span>
+                {% endfor %}
+            </div>
+
+            <span class="info-label">Outras Observações</span>
+            <ul class="list-disc list-inside text-gray-800 dark:text-gray-300 text-sm custom-scroll">
+                {% for item in emergency_data.outras_observacoes %}
+                <li>{{ item.value }} <span class="text-xs text-gray-800 dark:text-gray-300">({{
+                        item.points|floatformat:0 }}%)</span></li>
+                {% empty %}
+                <li class="text-gray-400 italic list-none">Nenhuma observação.</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="col-span-1">
+            <span class="info-label"><i class="fas fa-user mr-1"></i> Nome do Solicitante</span>
+            <div class="flex flex-col gap-2 custom-scroll">
+                {% for item in emergency_data.nome_do_solicitante %}
+                <div class="flex items-center justify-between p-3 rounded-lg border border-l-4 
+                {% if item.points >= 70 %} bg-green-50 border-green-200 border-l-green-500 text-green-900
+                {% elif item.points >= 40 %} bg-yellow-50 border-yellow-200 border-l-yellow-500 text-yellow-900
+                {% else %} bg-red-vivid-20 border-red-200 border-l-red-500 text-red-900 {% endif %}">
+                    <span class="font-medium truncate mr-2">{{ item.value }}</span>
+                    <span class="text-xs font-bold px-2 py-1 rounded bg-white bg-opacity-60 backdrop-blur-sm">
+                        {{ item.points|floatformat:1 }}%
+                    </span>
+                </div>
+                {% empty %}
+                <span class="text-gray-400 italic">Não identificado</span>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="col-span-1">
+            <span class="info-label"><i class="fas fa-phone mr-1"></i> Telefone</span>
+            <div class="flex flex-col gap-2 custom-scroll">
+                {% for item in emergency_data.numero %}
+                <div class="flex items-center justify-between p-3 rounded-lg border border-l-4 
+                  {% if item.points >= 70 %} bg-green-50 border-green-200 border-l-green-500 text-green-900
+                  {% elif item.points >= 40 %} bg-yellow-50 border-yellow-200 border-l-yellow-500 text-yellow-900
+                  {% else %} bg-red-vivid-20 border-red-200 border-l-red-500 text-red-900 {% endif %}">
+                    <span class="font-medium truncate mr-2">{{ item.value }}</span>
+                    <span class="text-xs font-bold px-2 py-1 rounded bg-white bg-opacity-60 backdrop-blur-sm">
+                        {{ item.points|floatformat:1 }}%
+                    </span>
+                </div>
+                {% empty %}
+                <span class="text-gray-400 italic">Não identificado</span>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="col-span-1">
+            <span class="info-label"><i class="fas fa-exclamation-triangle mr-1"></i> Natureza Inicial</span>
+            <div class="flex flex-wrap gap-2 custom-scroll">
+                {% for item in emergency_data.natureza_inicial %}
+                <div class="flex items-center justify-between p-3 rounded-lg w-full border border-l-4 
+                  {% if item.points >= 70 %} bg-green-50 border-green-200 border-l-green-500 text-green-900
+                  {% elif item.points >= 40 %} bg-yellow-50 border-yellow-200 border-l-yellow-500 text-yellow-900
+                  {% else %} bg-red-vivid-20 border-red-200 border-l-red-500 text-red-900 {% endif %}">
+                    <span class="font-medium truncate mr-2">{{ item.value }}</span>
+                    <span class="text-xs font-bold px-2 py-1 rounded bg-white bg-opacity-60 backdrop-blur-sm">
+                        {{ item.points|floatformat:1 }}%
+                    </span>
+                </div>
+                {% empty %}
+                <span class="text-gray-400 italic">N/A</span>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div
+            class="col-span-1 md:col-span-2 lg:col-span-3 bg-blue-cool-20 dark:bg-blue-cool-700/30 p-4 rounded-lg border border-gray-100 dark:border-gray-600">
+            <h4 class="text-sm font-bold text-gray-700 dark:text-gray-300 mb-4 uppercase border-b pb-2">Localização
+                Estimada</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                <div>
+                    <span class="info-label">Logradouro</span>
+                    <div class="flex flex-col gap-2 custom-scroll">
+                        {% for item in emergency_data.rua_ou_logradouro %}
+                        <div class="flex items-center justify-between p-2 rounded border border-l-4 text-sm
+                            {% if item.points >= 70 %} bg-white border-green-200 border-l-green-500 text-gray-800
+                            {% elif item.points >= 40 %} bg-white border-yellow-200 border-l-yellow-500 text-gray-800
+                            {% else %} bg-white border-red-200 border-l-red-500 text-gray-800 {% endif %}">
+                            <span class="truncate mr-2">{{ item.value }}</span>
+                            <span
+                                class="text-xs font-bold {{ item.points|yesno:'text-green-600,text-yellow-600,text-red-600' }}">
+                                {{ item.points|floatformat:0 }}%
+                            </span>
+                        </div>
+                        {% empty %} <span class="text-gray-400 text-sm">N/A</span> {% endfor %}
+                    </div>
+                </div>
+
+                <div>
+                    <span class="info-label">Bairro</span>
+                    <div class="flex flex-col gap-2 custom-scroll">
+                        {% for item in emergency_data.bairro %}
+                        <div class="flex items-center justify-between p-2 rounded border border-l-4 text-sm
+                            {% if item.points >= 70 %} bg-white border-green-200 border-l-green-500 text-gray-800
+                            {% elif item.points >= 40 %} bg-white border-yellow-200 border-l-yellow-500 text-gray-800
+                            {% else %} bg-white border-red-200 border-l-red-500 text-gray-800 {% endif %}">
+                            <span class="truncate mr-2">{{ item.value }}</span>
+                            <span class="text-xs font-bold">{{ item.points|floatformat:0 }}%</span>
+                        </div>
+                        {% empty %} <span class="text-gray-400 text-sm">N/A</span> {% endfor %}
+                    </div>
+                </div>
+
+                <div>
+                    <span class="info-label">Município</span>
+                    <div class="flex flex-col gap-2 custom-scroll">
+                        {% for item in emergency_data.municipio %}
+                        <div class="flex items-center justify-between p-2 rounded border border-l-4 text-sm
+                            {% if item.points >= 70 %} bg-white border-green-200 border-l-green-500 text-gray-800
+                            {% elif item.points >= 40 %} bg-white border-yellow-200 border-l-yellow-500 text-gray-800
+                            {% else %} bg-white border-red-200 border-l-red-500 text-gray-800 {% endif %}">
+                            <span class="truncate mr-2">{{ item.value }}</span>
+                            <span class="text-xs font-bold">{{ item.points|floatformat:0 }}%</span>
+                        </div>
+                        {% empty %} <span class="text-gray-400 text-sm">N/A</span> {% endfor %}
+                    </div>
+                </div>
+
+                <div>
+                    <span class="info-label">Ponto de Referência</span>
+                    <div class="flex flex-col gap-2 custom-scroll">
+                        {% for item in emergency_data.ponto_de_referencia %}
+                        <div class="flex items-center justify-between p-2 rounded border border-l-4 text-sm
+                            {% if item.points >= 70 %} bg-white border-green-200 border-l-green-500 text-gray-800
+                            {% elif item.points >= 40 %} bg-white border-yellow-200 border-l-yellow-500 text-gray-800
+                            {% else %} bg-white border-red-200 border-l-red-500 text-gray-800 {% endif %}">
+                            <span class="truncate mr-2">{{ item.value }}</span>
+                            <span class="text-xs font-bold">{{ item.points|floatformat:0 }}%</span>
+                        </div>
+                        {% empty %} <span class="text-gray-400 text-sm">N/A</span> {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+
+
+</div>

@@ -1,0 +1,318 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br" data-theme="light">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta property="og:title" content="MJSP">
+    <meta property="og:description" content="Ministério da Justiça e Segurança Pública">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://www.gov.br/mj/pt-br/copy_of_mjsp">
+    <meta property="og:image" content="https://www.gov.br/mj/logo.png">
+    <meta property="og:locale" content="pt_BR">
+    <meta property="og:site_name" content="Ministério da Justiça e Segurança Pública">
+    <meta name="description" content="Ministério da Justiça e Segurança Pública">
+    <meta property="creator.productor" content="https://www.gov.br">
+
+    <title>MJSP — Ministério da Justiça e Segurança Pública</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@govbr-ds/core/dist/core.min.css">
+
+    <!-- Favicons -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/mj/++theme++padrao_govbr/favicons/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/mj/++theme++padrao_govbr/favicons/favicon-32x32.png">
+    <link rel="shortcut icon" type="image/png" href="/mj/++theme++padrao_govbr/favicons/favicon-48x48.png">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@govbr-ds/core/dist/core.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://barra.sistema.gov.br/v1/fonts/rawline/css/rawline.css">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  </head>
+
+  <body class="rounded-xl border border-gray-200 dark:border-gray-700">
+    <header id="site-header" class="br-header has-navigation-dropdown">
+      <div class="header-top bg-secondary py-1 p-2">
+        <div class="container-fluid">
+          <div class="header-logo">
+            <a href="https://www.gov.br/pt-br" class="link-bi">
+              <img src="https://barra.sistema.gov.br/v1/assets/govbr.webp" alt="Logomarca GovBR">
+            </a>
+            <span class="br-divider vertical"></span>
+            <a href="https://www.gov.br" class="ml-2 nome-orgao">Governo Federal</a>
+          </div>
+
+          <div class="header-actions">
+            <div class="links-rapidos">
+              <ul class="links-governo">
+                <li><a href="https://www.gov.br/pt-br/orgaos-do-governo" target="_blank">Órgãos do Governo</a></li>
+                <li><a href="https://www.gov.br/acessoainformacao/pt-br" target="_blank">Acesso à Informação</a></li>
+                <li><a href="http://www4.planalto.gov.br/legislacao" target="_blank">Legislação</a></li>
+                <li><a href="https://www.gov.br/governodigital/pt-br/acessibilidade-digital" target="_blank">Acessibilidade</a></li>
+              </ul>
+
+            </div>
+
+            <span class="br-divider vertical mx-2"></span>
+            <div class="button-wrapper svelte-18ap8dw">
+              <span class="langue-select svelte-18ap8dw"><span class="sr-only">Idioma atual:</span> PT</span> 
+              <button class="br-button circle small false langue-button svelte-18ap8dw" type="button" aria-label="Alterar idioma">
+                <i class="fas fa-angle-down" aria-hidden="true"></i>
+              </button>
+            </div>
+            <button class="br-button circle small cookies" aria-label="Cookies">
+              <i class="fas fa-cookie-bite"></i>
+            </button>
+            <button class="br-button circle small contrast-button" aria-label="Alto contraste">
+              <i class="fas fa-adjust"></i>
+            </button>
+            <button class="br-button circle small" aria-label="Sistemas">
+              <i class="fas fa-th"></i>
+            </button>
+            <div class="wrapper-login">
+              <button class="br-sign-in primary ml-2" id="btnLoginGov" type="button">
+                <i class="fas fa-user"></i>
+                <span class="login-text">Entrar com gov.br</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="orgao px-6">
+        <div class="header-wrapper">
+          <div class="site-name-wrapper">
+              <h3 class="site-name">
+                  <a href="https://www.gov.br/mj/pt-br">Ministério da Justiça e Segurança Pública</a>
+              </h3>
+          </div>
+          <div class="flex justify-end items-center gap-2">
+            <a href="{% url 'dashboard' %}"
+                class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 px-4 rounded-lg shadow transition">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5"
+                  viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"
+                    aria-hidden="true">
+                  <path d="M3 10.5L12 3l9 7.5" />
+                  <path d="M5 10v10h14V10" />
+                  <path d="M9 20V14h6v6" />
+                </svg>
+            </a>
+            <a href="{% url 'emergencias' %}"
+                class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 px-4 rounded-lg shadow transition">
+                Recentes
+            </a>
+            <!-- <a href="{% url 'emergency_info' %}"
+                class="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg shadow transition">
+                Inferências
+            </a> -->
+       
+          </div>
+      </div>
+    </header>
+  <main class="page-main p-4"> 
+    <div class="bg-white dark:bg-gray-900 rounded-xl px-4 border border-gray-200 dark:border-gray-700">
+        <div class="header_button flex  justify-content-center ">
+          <h4 class="text-2xl font-semibold text-gray-800 dark:text-white py-4 gap-2 uppercase">Registro de Ocorrência</h4>
+          <div class="px-8"></div>
+          <img id="logo-hermes" class="py-2 gap-2" src="../../static/assets/images/Logo Hermes-SINESP.png">
+        </div>
+
+        <div class="dashboard-container hermes-grid">
+          <section class="form-area">
+              <form id="occurrence-form" class="space-y-6">
+                {% csrf_token %}
+                <div>
+                  <h4>Dados do Solicitante</h4>
+                  <div class="grid grid-cols-4 gap-4" >
+                    <div class="col-span-2 br-input">
+                      <div class="br-input">
+                        <label for="solicitante_nome">Nome</label>
+                        <input id="name" type="text" name="solicitante_nome" placeholder="Nome"/>
+                      </div>
+                    </div>
+                    <div class="col-span-1 br-input">
+                      <div class="br-input">
+                        <label for="telefone">Número do Telefone</label>
+                        <input type="tel" id="phone" name="telefone" placeholder="(XX) 9XXXX-XXXX"/>
+                      </div>
+                    </div>
+                    <div class="col-span-1 br-input">
+                      <div class="br-input">
+                        <label for="meio_aviso">Meio de Aviso</label>
+                        <select id="meio_aviso" name="meio_aviso">
+                              <option value="telefone">Telefone</option>
+                              <option value="email">E-mail</option>
+                              <option value="pessoalmente">Pessoalmente</option>
+                          </select>
+                      </div>
+                    </div>
+                    <div class="mb-2">
+
+                  </div>
+                </div>
+                <div >
+                  <h4>Localização</h4>
+                  <div  class="grid grid-cols-4 gap-4">
+                    <div class="col-span-2 br-input">
+                      <div class="br-input">
+                        <label for="logradouro">Logradouro</label>
+                        <input type="text" id="address" name="logradouro" placeholder="Rua José Santos"/>
+                      </div>
+                    </div>
+                    <div class="col-span-1 br-input">
+                      <div class="br-input">
+                        <label for="bairro">Bairro</label>
+                        <input type="text" id="district" name="bairro"/>
+                      </div>
+                    </div>
+                    <div class="col-span-1 br-input">
+                      <div class="br-input">
+                        <label for="cidade">Cidade</label>
+                        <input type="text" id="city" name="cidade"/>
+                      </div>
+                    </div>
+                    <div class="col-span-1 br-input">
+                      <div class="br-input">
+                        <label for="uf">UF</label>
+                        <input type="text" id="uf" name="uf"/>
+                      </div>
+                    </div>
+                    <div class="col-span-1 br-input">
+                      <div class="br-input">
+                        <label for="cep">CEP</label>
+                        <input type="text" id="cep" name="cep"/>
+                      </div>
+                    </div>                
+                    <div class="col-span-2 br-input">
+                      <div class="br-input">
+                        <label for="ref">Ponto de referência</label>
+                        <input type="text" id="ref" name="ref"/>
+                      </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                  </div>
+                </div>
+                <div>
+                  <h4>Dados da Ocorrência</h4>
+                  <div>
+                    <div class="br-textarea" id="resumen-input">
+                      <label for="resumen">Descrição resumida</label>
+                      <textarea  id="resumen" name="resumen" rows="4" placeholder="Breve Descrição" ></textarea>
+                      <div class="text-base mt-1"></div>
+                    </div>
+                    <div class="grid grid-cols-3 md:grid-cols-3 gap-2 mb-2 mt-2">
+                      <div class="flex items-center p-2 border rounded bg-gray-50 border-gray-200" id="fact-active-container">
+                        <div class="w-3 h-3 rounded-full bg-gray-300 mr-2" id="fact-active-status"></div>
+                        <span class="text-xs font-bold text-gray-600">Fato em andamento</span>
+                        <input type="hidden" id="fact-active" value="">
+                      </div>
+                      <div class="flex items-center p-2 border rounded bg-gray-50 border-gray-200" id="actor-present-container">
+                        <div class="w-3 h-3 rounded-full bg-gray-300 mr-2" id="actor-present-status"></div>
+                        <span class="text-xs font-bold text-gray-600">Autor no local</span>
+                        <input type="hidden" id="actor-present" value="">
+                      </div>
+
+                      <div class="flex items-center p-2 border rounded bg-gray-50 border-gray-200" id="actor-armed-container">
+                        <div class="w-3 h-3 rounded-full bg-gray-300 mr-2" id="actor-armed-status"></div>
+                        <span class="text-xs font-bold text-gray-600">Autor Armado</span>
+                        <input type="hidden" id="actor-armed" value="">
+                      </div>
+                      <div class="flex items-center p-2 border rounded bg-gray-50 border-gray-200" id="lei-maria-penha-container">
+                        <div class="w-3 h-3 rounded-full bg-gray-300 mr-2" id="lei-maria-penha-status"></div>
+                        <span class="text-xs font-bold text-gray-600">Maria da Penha</span>
+                        <input type="hidden" id="lei-maria-penha" value="">
+                      </div>
+
+                      <div class="flex items-center p-2 border rounded bg-gray-50 border-gray-200" id="risk-of-riot-container">
+                        <div class="w-3 h-3 rounded-full bg-gray-300 mr-2" id="risk-of-riot-status"></div>
+                        <span class="text-xs font-bold text-gray-600">Risco de Tumulto</span>
+                        <input type="hidden" id="risk-of-riot" value="">
+                      </div>
+
+                      <div class="flex items-center p-2 border rounded bg-gray-50 border-gray-200" id="risk-of-death-container">
+                        <div class="w-3 h-3 rounded-full bg-gray-300 mr-2" id="risk-of-death-status"></div>
+                        <span class="text-xs font-bold text-gray-600">Risco de Morte</span>
+                        <input type="hidden" id="risk-of-death" value="">
+                      </div>
+                      
+                    </div>
+                    <div class="mb-2">
+                    </div>
+
+                    <div class="br-textarea">
+                      <label for="narracao">Narracao do Fato</label>
+                      <textarea id="narracao" name="narracao" rows="10" placeholder="Exemplo de textarea com contador e sem limite de caracteres"></textarea>
+                    </div>
+                    <div class="mb-2">
+                    </div>
+                    <div class="br-textarea" id="obs-input">
+                      <label for="obs">Observações</label>
+                      <textarea id="obs" name="obs" rows="2" placeholder="Informações adicionais"></textarea>
+                      <div class="text-base mt-1"></div>
+                    </div>
+                    <div class="mb-3"></div>
+                    <div class="col-sm-8 col-lg-6 mb-3">
+                      <div class="br-input ">
+                        <label for="natureza-inicial">Natureza
+                              Inicial</label>
+                        <input type="text" id="initial-nature" name="natureza-inicial"/>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+              </form>
+          </section>
+
+          <aside class="side-area">
+            {% include "partials/map_location.html" %}
+
+            <div id="chat-wrapper">
+              <div class="text-center">
+                <p class="font-bold text-gray-600 mb-2 mt-2">Transcrição em andamento</p>
+              </div>
+              <div id="transcription-content">
+                    <textarea id="transcription-text" rows="30" 
+                        class="block w-full rounded-lg border border-gray-300 bg-white text-gray-800 shadow-inner p-4 focus:outline-none resize-none">
+                    </textarea>
+              </div>
+              <p class="text-gray-600 mb-2" id="description-modal"></p>
+              <div class="br-modal-footer justify-content-center">
+                <button type="button" id="end-call-button" class="br-button secondary">
+                  Encerrar Chamada
+                </button>
+              </div>
+            </div>
+          </aside>
+        </div>
+        <div class="mt-8 mb-8 flex justify-center">
+          <button type="button" id="cancel" class="br-button secondary">
+              Cancelar
+          </button>
+          <button type="button" id="register_occurrence_button" class="br-button primary ml-2">
+              Registrar Ocorrência
+          </button>
+        </div>
+
+    </main>
+    <button id="go-top-button" class="go-top-button" type="button" aria-label="Voltar ao topo" title="Voltar ao topo">Voltar ao topo</button>
+
+    <footer class="br-footer">
+      <span class="br-divider my-1"></span>
+      <div class="container-fluid">
+        <div class="info">
+          <div class="text-down-01 text-medium pb-3">Texto destinado a exibição de informações relacionadas à&nbsp;<strong>licença de uso.</strong></div>
+        </div>
+      </div>
+    </footer>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@govbr-ds/core/dist/core-init.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@govbr-ds/core/dist/core.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="{% static 'js/go-top.js' %}"></script>
+    <script src="{% static 'js/geocoding.js' %}"></script>
+    <script src="{% static 'js/main.js' %}"></script>
+
+  </body>
+</html>
+<!-- Adicionar opção de Protocolo Silencioso e Violencia Domestica como checkbox -->

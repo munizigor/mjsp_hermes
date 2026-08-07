@@ -1,0 +1,29 @@
+<div class="bg-white dark:bg-blue-cool-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+    <div class="p-6">
+        <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-4">Chamadas de Emergência Recentes</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 custom-scroll" style="max-height: 500px;">
+            {% for emergency in emergency_list %}
+                <a href="{% url 'emergency_info' %}?id_emergencia={{ emergency.id }}" class="block p-4 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-blue-cool-700 transition-colors duration-200">
+                    <div class="flex items-center mb-2">
+                        <i class="fas fa-bell text-blue-500 mr-2"></i>
+                        <h4 class="font-semibold text-gray-900 dark:text-white">ID da Chamada: {{ emergency.id }}</h4>
+                    </div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">
+                        <span class="font-medium">Início:</span> {{ emergency.start_time }}
+                    </p>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">
+                        <span class="font-medium">Fim:</span> {% if emergency.end_time %}{{ emergency.end_time }}{% else %}Em andamento{% endif %}
+                    </p>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">
+                        <span class="font-medium">Asterisk ID:</span> {{ emergency.asterisk_id }}
+                    </p>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">
+                        <span class="font-medium">Operador:</span> {{ emergency.operator_unique_code }}
+                    </p>
+                </a>
+            {% empty %}
+                <p class="text-gray-500 dark:text-gray-400 col-span-full">Nenhuma chamada de emergência recente encontrada.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>

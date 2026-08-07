@@ -1,0 +1,14 @@
+repos:
+  - repo: local
+    hooks:
+      - id: no-direct-commit-main-develop
+        name: Block commit to main/develop
+        entry: python scripts/pre_commit.py
+        language: system
+        stages: [commit] 
+
+      - id: no-direct-push-main-develop
+        name: Block push to main/develop
+        entry: python scripts/pre_push.py
+        language: system
+        stages: [push] 

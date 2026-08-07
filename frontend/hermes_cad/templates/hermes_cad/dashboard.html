@@ -1,0 +1,227 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br" data-theme="light">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta property="og:title" content="MJSP">
+    <meta property="og:description" content="Ministério da Justiça e Segurança Pública">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://www.gov.br/mj/pt-br/copy_of_mjsp">
+    <meta property="og:image" content="https://www.gov.br/mj/logo.png">
+    <meta property="og:locale" content="pt_BR">
+    <meta property="og:site_name" content="Ministério da Justiça e Segurança Pública">
+    <meta name="description" content="Ministério da Justiça e Segurança Pública">
+    <meta property="creator.productor" content="https://www.gov.br">
+
+    <title>Hermes - Dashboard de Chamadas</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@govbr-ds/core/dist/core.min.css">
+
+    <!-- Favicons -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/mj/++theme++padrao_govbr/favicons/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/mj/++theme++padrao_govbr/favicons/favicon-32x32.png">
+    <link rel="shortcut icon" type="image/png" href="/mj/++theme++padrao_govbr/favicons/favicon-48x48.png">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@govbr-ds/core/dist/core.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://barra.sistema.gov.br/v1/fonts/rawline/css/rawline.css">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  </head>
+
+  <body class="rounded-xl border border-gray-200 dark:border-gray-700">
+    <header id="site-header" class="br-header has-navigation-dropdown">
+      <div class="header-top bg-secondary py-1 p-2">
+        <div class="container-fluid">
+          <div class="header-logo">
+            <a href="https://www.gov.br/pt-br" class="link-bi">
+              <img src="https://barra.sistema.gov.br/v1/assets/govbr.webp" alt="Logomarca GovBR">
+            </a>
+            <span class="br-divider vertical"></span>
+            <a href="https://www.gov.br" class="ml-2 nome-orgao">Governo Federal</a>
+          </div>
+
+          <div class="header-actions">
+            <div class="links-rapidos">
+              <ul class="links-governo">
+                <li><a href="https://www.gov.br/pt-br/orgaos-do-governo" target="_blank">Órgãos do Governo</a></li>
+                <li><a href="https://www.gov.br/acessoainformacao/pt-br" target="_blank">Acesso à Informação</a></li>
+                <li><a href="http://www4.planalto.gov.br/legislacao" target="_blank">Legislação</a></li>
+                <li><a href="https://www.gov.br/governodigital/pt-br/acessibilidade-digital" target="_blank">Acessibilidade</a></li>
+              </ul>
+
+            </div>
+
+            <span class="br-divider vertical mx-2"></span>
+            <div class="button-wrapper svelte-18ap8dw">
+              <span class="langue-select svelte-18ap8dw"><span class="sr-only">Idioma atual:</span> PT</span> 
+              <button class="br-button circle small false langue-button svelte-18ap8dw" type="button" aria-label="Alterar idioma">
+                <i class="fas fa-angle-down" aria-hidden="true"></i>
+              </button>
+            </div>
+            <button class="br-button circle small cookies" aria-label="Cookies">
+              <i class="fas fa-cookie-bite"></i>
+            </button>
+            <button class="br-button circle small contrast-button" aria-label="Alto contraste">
+              <i class="fas fa-adjust"></i>
+            </button>
+            <button class="br-button circle small" aria-label="Sistemas">
+              <i class="fas fa-th"></i>
+            </button>
+            <div class="wrapper-login">
+              <button class="br-sign-in primary ml-2" id="btnLoginGov" type="button">
+                <i class="fas fa-user"></i>
+                <span class="login-text">Entrar com gov.br</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="orgao px-6">
+        <div class="header-wrapper">
+          <div class="site-name-wrapper">
+              <h3 class="site-name">
+                  <a href="https://www.gov.br/mj/pt-br">Ministério da Justiça e Segurança Pública</a>
+              </h3>
+          </div>
+          <div class="flex justify-end items-center gap-2">
+            <a href="{% url 'dashboard' %}"
+                class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 px-4 rounded-lg shadow transition activated">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5"
+                  viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"
+                    aria-hidden="true">
+                  <path d="M3 10.5L12 3l9 7.5" />
+                  <path d="M5 10v10h14V10" />
+                  <path d="M9 20V14h6v6" />
+                </svg>
+            </a>
+            <a href="{% url 'emergencias' %}"
+                class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 px-4 rounded-lg shadow transition">
+                Recentes
+            </a>
+            <button  id="open-config-modal"
+              class="inline-flex items-center justify-center rounded">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M12 15.5A3.5 3.5 0 1 0 12 8.5a3.5 3.5 0 0 0 0 7z"></path>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09c.7 0 1.27-.45 1.51-1a1.65 1.65 0 0 0-.33-1.82L4.3 4.7A2 2 0 0 1 7.13 1.87l.06.06c.48.48 1.2.63 1.82.33.5-.25 1.08-.4 1.82-.4H12a2 2 0 0 1 4 0h.09c.74 0 1.32.15 1.82.4.62.3 1.34.15 1.82-.33l.06-.06A2 2 0 0 1 19.7 4.3l-.06.06a1.65 1.65 0 0 0-.33 1.82c.26.55.81 1 1.51 1H21a2 2 0 0 1 0 4h-.09c-.7 0-1.27.45-1.51 1z"></path>
+              </svg>
+            </button>
+          </div>
+      </div>
+    </header>
+    <main class="page-main p-4 ">
+        <div class="header_button flex items-center justify-center mb-6">
+            <img id="logo-hermes" src="../../static/assets/images/Logo Hermes-SINESP.png">
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-4 mb-4">
+          <div class="md:col-span-3 flex flex-col gap-3">
+              <div class="bg-white p-4 rounded-xl border-l-4 border-yellow-500 shadow-lg">
+                  <p class="text-gray-400 text-xs uppercase font-semibold">Aguardando</p>
+                  <h2 id="count-waiting" class="text-3xl font-bold text-gray-800">0</h2>
+              </div>
+              <div class="bg-white p-4 rounded-xl border-l-4 border-blue-500 shadow-lg">
+                  <p class="text-gray-400 text-xs uppercase font-semibold">Em Atendimento</p>
+                  <h2 id="count-active" class="text-3xl font-bold text-gray-800">0</h2>
+              </div>
+              <div class="bg-white p-4 rounded-xl border-l-4 border-green-500 shadow-lg">
+                  <p class="text-gray-400 text-xs uppercase font-semibold">Finalizadas</p>
+                  <h2 id="count-finished" class="text-3xl font-bold text-gray-800">0</h2>
+              </div>
+          </div>
+          <section class="md:col-span-6 bg-white rounded-xl overflow-hidden shadow-2xl border border-gray-300">
+              <div class="p-3 bg-blue-750 border-b border-gray-200 flex justify-between items-center">
+                  <h3 class="font-bold text-medium text-blue-400">Chamadas em Espera</h3>
+              </div>
+              <div class="overflow-x-auto">
+                  <table class="w-full text-left">
+                      <thead class="bg-gray-100 text-gray-600 text-xs uppercase">
+                          <tr>
+                              <th class="px-4 py-3">ID</th>
+                              <th class="px-4 py-3">Origem</th>
+                              <th class="px-4 py-3">Horário</th>
+                              <th class="px-4 py-3 text-center">Ação</th>
+                          </tr>
+                      </thead>
+                      <tbody id="calls-table-body" class="divide-y divide-gray-100">
+                      </tbody>
+                  </table>
+              </div>
+          </section>
+          <div class="md:col-span-3 bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+              <div class="p-3 bg-blue-750 border-b border-gray-200 flex justify-between items-center">
+                  <h3 class="font-bold text-gray-700 text-xs tracking-wider">Últimas Atendidas</h3>
+              </div>
+              <div class="overflow-x-auto">
+                  <table class="w-full text-left">
+                      <thead class="bg-gray-50 text-gray-500 text-[10px] uppercase">
+                          <tr>
+                              <th class="px-3 py-2">ID</th>
+                              <th class="px-3 py-2">Fato</th>
+                              <th class="px-3 py-2 text-right">Status</th>
+                          </tr>
+                      </thead>
+                      <tbody id="finished-calls-table-body" class="divide-y divide-gray-50 text-sm">
+                      </tbody>
+                    </table>
+                  </div>
+              </div>
+         </div>
+         <!-- MODAL CONFIGURAÇÕES -->
+        <div id="config-modal" class="fixed inset-0 flex justify-center items-center hidden z-50">
+          <div class="bg-white p-6 rounded-2xl shadow-xl w-96 relative ">
+            <!-- Fechar -->
+            <button id="close-config-modal"
+              class="absolute top-3 right-3 text-gray-500 hover:text-gray-700">
+              ✕
+            </button>
+            <h4 class="font-semibold text-center mb-4 text-gray-800">
+              Configuração:
+            </h4>
+            <label class="block mb-2 text-gray-700 font-medium"> Escolha o modo de operação:</label>
+            <select id="modo-operacao" class="w-full border border-gray-300 rounded-xl p-2 focus:ring-2 focus:ring-blue-400 focus:outline-none">
+              <option value="1">1 - Fluxo Automático com IA</option>
+              <option value="2">2 - Transcrição no Navegador e Regex</option>
+              <option value="3">3 - Transcrição manual e Inferência com IA</option>
+              <option value="4">4 - Transcrição manual e Regex</option>
+            </select>
+            
+            <div class="location mt-6 flex flex-row items-center gap-4">
+              <div class="flex items-center gap-2">
+                <label for="lat">Latitude</label>
+                <input type="text" name="latitude" id="lat" placeholder="-15.7982">
+              </div>  
+              <div class="flex items-center gap-2">
+                <label for="lon">Longitude</label>
+                <input type="text" name="longitude" id="lon" placeholder="-47.8755">
+              </div>
+            </div>
+            <button id="save-config"  class="mt-6 w-full bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-xl transition">
+              Salvar Configuração
+            </button>
+          </div>
+        </div>
+    </main>
+    <button id="go-top-button" class="go-top-button" type="button" aria-label="Voltar ao topo" title="Voltar ao topo">Voltar ao topo</button>
+
+    <footer class="br-footer">
+        <div class="container-lg">
+            <div class="br-list horizontal" data-toggle="data-toggle" data-sub="data-sub">
+            </div>
+        </div>
+        <span class="br-divider my-3"></span>
+        <div class="container-lg">
+            <div class="info">
+            <div class="text-down-01 text-medium pb-3">Texto destinado a exibição de informações relacionadas à&nbsp;<strong>licença de uso.</strong></div>
+            </div>
+        </div>
+    </footer>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@govbr-ds/core/dist/core-init.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@govbr-ds/core/dist/core.min.js"></script>
+    <script src="{% static 'js/go-top.js' %}"></script>
+    <script src="{% static 'js/dashboard.js' %}"></script>
+
+  </body>
+</html>
