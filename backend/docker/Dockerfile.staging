@@ -1,0 +1,7 @@
+#FROM alpine:3.14
+
+#RUN apk add --no-cache sqlite
+#COPY ./src/init.sql /init.sql
+#RUN sqlite3 /sqlite.db/database.sqlite < echo /init.sql
+
+#CMD ['ls']

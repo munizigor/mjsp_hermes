@@ -1,0 +1,25 @@
+FROM nvcr.io/nvidia/pytorch:25.06-py3
+#FROM nvidia/cuda:12.8.1-cudnn-runtime-ubuntu24.04
+
+RUN apt update && apt install -y \
+    cmake build-essential make gcc sqlite3 \
+    build-essential libboost-system-dev libboost-thread-dev \
+    libboost-program-options-dev libboost-test-dev libboost-filesystem-dev \
+    && rm -rf /var/lib/apt/lists/*
+#RUN pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128 --break-system-packages
+RUN pip install --break-system-packages pydantic langdetect python-mecab-ko janome indic-nlp-library jieba
+RUN pip install --break-system-packages gliner[gpu]
+RUN pip install --break-system-packages camel-tools spacy
+RUN pip install --break-system-packages gliner[gpu,tokenizers,stanza]==0.2.22
+RUN pip cache purge
+
+RUN pip freeze > /requirements2.txt
+#RUN pip install -r /requirements.txt --break-system-packages
+
+COPY ./src/ner /src
+#COPY ../../config.json /app/config.json
+
+#set open port 8001
+#EXPOSE 8001
+
+CMD ["python3", "-u", "/src/start.py"]

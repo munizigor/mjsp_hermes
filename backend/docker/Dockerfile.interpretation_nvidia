@@ -1,0 +1,35 @@
+FROM nvcr.io/nvidia/pytorch:25.06-py3
+#FROM nvidia/cuda:12.8.1-cudnn-runtime-ubuntu24.04
+
+RUN apt update && apt install -y \
+    cmake build-essential make gcc sqlite3 \
+    build-essential libboost-system-dev libboost-thread-dev \
+    libboost-program-options-dev libboost-test-dev libboost-filesystem-dev \
+    && rm -rf /var/lib/apt/lists/*
+#RUN pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128 --break-system-packages
+RUN pip install --break-system-packages pydantic uv
+RUN uv pip install --break-system-packages vllm --torch-backend=auto --system
+RUN uv pip install --break-system-packages pandas scikit-learn --system
+RUN apt update && apt install -y \
+    libopenblas-dev libblas-dev \
+    && rm -rf /var/lib/apt/lists/*
+#RUN CMAKE_ARGS="-DGGML_CUDA=on -DGGML_BLAS=ON -DGGML_BLAS_VENDOR=OpenBLAS" pip install --break-system-packages llama-cpp-python --upgrade --force-reinstall --no-cache-dir
+RUN CUDACXX=/usr/local/cuda-12/bin/nvcc CMAKE_ARGS="-DGGML_CUDA=on -DCMAKE_CUDA_ARCHITECTURES=all-major" FORCE_CMAKE=1 \
+    pip install llama-cpp-python --upgrade --force-reinstall --no-cache-dir
+#RUN pip uninstall -y llama-cpp-python
+#RUN CMAKE_ARGS="-DGGML_CUDA=on" pip install llama-cpp-python --extra-index-url https://abetlen.github.io/llama-cpp-python/cu128 --index-url https://pypi.org/simple
+#RUN pip install --break-system-packages -U sentence-transformers
+RUN pip cache purge
+
+RUN pip freeze > /requirements2.txt
+#RUN pip install -r /requirements.txt --break-system-packages
+
+COPY ./datasets/ /datasets
+COPY ./src/init.sql /init.sql
+COPY ./src/interpretation /src
+#COPY ../../config.json /app/config.json
+
+#set open port 8001
+#EXPOSE 8001
+
+CMD ["python3", "/src/start.py"]

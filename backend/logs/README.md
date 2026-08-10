@@ -1,0 +1,1 @@
+Pasta pra armazenar os logs do servidor

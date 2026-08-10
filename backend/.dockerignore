@@ -1,0 +1,37 @@
+envs/*
+logs/*
+results/*
+
+# Ignorar caches e arquivos temporários
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.py[cod]
+*$py.class
+
+# Ignorar banco de dados local e arquivos de resultado
+sqlite.db
+*.parquet
+results/
+logs/
+.env
+*.log
+
+# Ignorar diretórios e arquivos de IDE/editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Ignorar arquivos de build
+*.egg-info/
+dist/
+build/
+
+# Ignorar arquivos ocultos do sistema
+.fuse_hidden*
+.DS_Store
+Thumbs.db
+
+# Não ignore src/ (precisa ser copiado para o container)

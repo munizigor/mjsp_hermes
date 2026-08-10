@@ -1,0 +1,22 @@
+FROM nvcr.io/nvidia/pytorch:25.06-py3
+#FROM nvidia/cuda:12.8.1-cudnn-runtime-ubuntu24.04
+
+RUN apt update && apt install -y \
+    cmake build-essential make gcc sqlite3 \
+    build-essential libboost-system-dev libboost-thread-dev \
+    libboost-program-options-dev libboost-test-dev libboost-filesystem-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN pip install --break-system-packages transformers
+RUN pip install --break-system-packages -U datasets
+RUN pip cache purge
+RUN pip freeze > /requirements.txt
+
+RUN apt update && apt install -y ffmpeg && rm -rf /var/lib/apt/lists/*
+
+COPY ./src/interpretation /src
+
+#set open port 8001
+#EXPOSE 8001
+
+CMD ["python3", "/src/start.py"]

@@ -1,0 +1,592 @@
+﻿NO_NATUREZA_INICIAL;PRIORIDADE
+Abandono de Incapaz;Alta
+Abandono de Recém-nascido;Alta
+Abastecimento de Água;Baixa
+Abertura de Portas / Janelas / Outros;Média
+Abordagem a Morador de Rua;Média
+Abordagem a Pessoa Em Atitude Suspeita;Alta
+Abordagem a Transeunte;Média
+Abordagem a Veículo Suspeito de Crime;Alerta Vermelho
+Abordagem À Veículos Em Vistoria de Trânsito;Média
+Aborto;Alta
+Abuso de Autoridade;Alta
+Abuso/abstinência Alcoólica;Alerta Vermelho
+Abuso/abstinência de Drogas;Alerta Vermelho
+Ação / Projetos Sociais;Baixa
+Ação Conjunta;Média
+Ação Integrada;Baixa
+Ação Própria;Baixa
+Achado de Feto;Alta
+Acidente Aéreo Com Vítimas;Alerta Vermelho
+Acidente Aquático Com Vítimas;Alta
+Acidente Com Material Radioativo;Alerta Vermelho
+Acidente Com Produto Perigoso;Alerta Vermelho
+Acidente de Transito Com Lesões;Alerta Vermelho
+Acidente de Trânsito Com Resultado Morte;Alta
+Acidente de Trânsito Com Vítima;Alerta Vermelho
+Acidente de Trânsito Sem Vítima;Alta
+Acidente Diversos - Trauma;Alta
+Acidente Em Prática Esportiva / Desportiva;Alta
+Acidente Envolvendo Veículo Oficial;Alta
+Acidente Vascular Cerebral;Alta
+Acidentes Com Máquinas e Equipamentos Diversos;Alta
+Acidentes Naturais;Alerta Vermelho
+Acidentes Naturais Provocados Por Intempéries, Tempestades, Calamidades, Terremoto, Furacão Etc.;Alerta Vermelho
+Acionamento a Outros Orgãos;Baixa
+Ações de Prevenção Contra Incêndio;Média
+Afogamento;Alerta Vermelho
+Agressão Física;Alta
+Agressão Verbal;Média
+Alagamentos;Média
+Alarme de Emergência;Alerta Vermelho
+Alerta Monitoramento;Alta
+Alteração da Ordem Pública Por Pessoa Embreagada Ou Drogada;Alta
+Alteração Glicêmica;Alerta Vermelho
+Alteração Na Pressão Arterial;Alerta Vermelho
+Ameaça;Alta
+Ameaça Com Artefatos Explosivos;Alerta Vermelho
+Ameaça de Bombas;Alta
+Ameaça de Suicídio;Alerta Vermelho
+Amputamento;Alta
+Análise de Projetos;Média
+Animal Em Situação de Risco;Média
+Animal Em Via Pública;Alta
+Animal Morto;Média
+Animal Solto;Alta
+Apoio;Média
+Apoio À Equipe de Manutenção de Semáforos;Baixa
+Apoio À Equipe de Sinalização;Baixa
+Apoio a Instituições Eleitorais;Alta
+Apoio a Instituições Privadas;Alta
+Apoio a Instituições Públicas;Alta
+Apoio a Outros Órgãos;Média
+Apoio Ao Embarque/desembarque de Alunos;Baixa
+Apoio Ao Samu;Média
+Apoio Ao Tráfego;Alta
+Apoio Em Trilha Ecológica;Média
+Apologia de Crime Ou Criminoso;Alta
+Apreensão de Bicicleta;Baixa
+Apreensão de Carne Ou Pescado;Alta
+Apreensão de Objeto;Baixa
+Apresentação de Objeto;Alta
+Apropriação Indébita;Média
+Arrastão;Alta
+Asfixia;Alerta Vermelho
+Assédio Sexual;Alta
+Assistência de Pessoa Indigente;Média
+Assistência Humanitária;Média
+Astenia (fraqueza Orgânica/fadiga);Baixa
+Ataque de Animal;Alta
+Ataque Epilético/convulsão;Alta
+Atendimento Ao Banhista;Média
+Atendimento Pré Hospitalar - Desmaio/tontura/mal Súbito;Média
+Atendimento Pré-hospitalar;Média
+Atendimento Preventivo de Medida Protetiva;Baixa
+Atividade Preventiva - Esportivo;Média
+Atividade Preventiva - Feira/exposição;Média
+Atividade Preventiva - Governamental;Média
+Atividade Preventiva - Maria da Penha;Baixa
+Atividade Preventiva - Operação Presença;Média
+Atividade Preventiva - Passeio Escolar;Média
+Atividade Preventiva - Reivindicatório;Média
+Atividade Preventiva - Religioso;Média
+Atividade Preventiva - Show/festa/comício;Média
+Atividade Preventiva - Social/beneficente;Média
+Atividade Preventiva - Solenidade/cerimônia/formatura;Média
+Ato Infracional;Baixa
+Ato Obsceno;Média
+Atropelamento;Alta
+Atropelamento de Animal;Alerta Vermelho
+Auto Lesão;Alerta Vermelho
+Averiguação;Baixa
+Averiguação de Disparo de Alarme;Média
+Averiguação de Infrações de Transito;Média
+Averiguação Para Captura de Insetos;Média
+Baixa Umidade do Ar;Alta
+Briga Clandestina de Animais;Alta
+Buracos/obstáculos Em Via Pública;Média
+Busca de Pessoa Desaparecida;Alta
+Busca e Resgate de Cadáver;Alta
+Busca e Salvamento de Animais;Média
+Busca e Salvamento de Bens / Objetos;Média
+Busca e Salvamento de Pessoas;Alerta Vermelho
+Busca e Salvamento Diversos;Média
+Capotamento Ou Tombamento;Alerta Vermelho
+Captura/resgate de Animal;Média
+Cascalho Na Pista;Alta
+Causar Poluição Atmosférica;Média
+Causar Poluição Hídrica;Baixa
+Causar Poluição Sonora;Baixa
+Choque Elétrico;Alta
+Chuvas Intensas;Média
+Ciclones;Alerta Vermelho
+Coleta de Leite Humano;Baixa
+Colisão de Veículo;Alerta Vermelho
+Colocação de Adriça;Média
+Comercialização e Tráfico de Animais;Alta
+Comércio Ilegal de Arma de Fogo E/ou Munição;Alta
+Comércio Ilegal Ou Irregular;Média
+Comprovado/ Clínico/ Digestivo/ Gastroenterite;Baixa
+Comprovado/clínico/neuro/cefaléia;Média
+Comprovado/obstétrico/pré-eclâmpsia/eclâmpsia;Alta
+Comprovado/obstétrico/sangramento Primeiro Trim/aborto Em Curso;Alta
+Comprovado/obstétrico/trabalho de Parto Com Sangramento;Alta
+Comunicação Falsa de Crime Ou Contravenção;Alta
+Condução de Preso;Alta
+Conduzir Veículo Não Licenciado;Média
+Conduzir Veículo Sob Efeito de Álcool Ou de Drogas;Média
+Constrangimento Ilegal;Média
+Consumo de Drogas;Média
+Contrabando Ou Descaminho;Alta
+Corrida de Veículos (racha);Alta
+Corridas de Massa;Alerta Vermelho
+Corte de Algema / Anel / Outros;Baixa
+Corte de Árvore;Baixa
+Cortejo - Diversos;Baixa
+Cortejo Fúnebre;Média
+Crime Ambiental;Alta
+Crime Eleitoral;Média
+Crime Em Andamento;Média
+Crime Sexual;Alta
+Crise Convulsiva;Alerta Vermelho
+Cumprimento de Mandado de Busca e Apreensão de Adolescente;Alta
+Cumprimento de Mandado de Prisão;Alta
+Cumprimento de Mandando de Busca e Apreensão;Alta
+Curto Circuito;Alta
+Custódia de Preso;Alta
+Dano a Patrimônio Público;Alta
+Dano a Propriedade;Alta
+Denúncia;Alta
+Derramamento de Produtos Químicos Em Ambiente Lacustre, Fluvial, Marinho e Aquífero;Alta
+Desabamento Ou Desmoronamento;Alerta Vermelho
+Desacato;Alta
+Desacordo Comercial;Média
+Desaparecimento de Pessoa;Alta
+Desastre de Outro Meio de Transporte;Alerta Vermelho
+Desastre Ferroviário;Alerta Vermelho
+Desastre Humano;Média
+Desastre Natural;Alta
+Desastre Outros;Alta
+Desastres Com Substâncias e Equipamentos Radioativos de Uso Em Pesquisas, Indústrias e Usinas Nuclea;Alerta Vermelho
+Desastres Siderais Com Riscos Radioativos;Alerta Vermelho
+Descarrilamento Ou Saída de Pista;Alerta Vermelho
+Descarte Irregular de Lixo;Média
+Descumprimento de Medida Protetiva;Alta
+Desinteligencia;Média
+Deslizamentos;Alerta Vermelho
+Desmaio/tontura/mal Súbito;Alerta Vermelho
+Desmatar Floresta, Plantada Ou Nativa, Em Terras de Domínio Público Ou Devolutas;Média
+Desmatar Vegetação Nativa Em Área de Reserva Legal Ou Servidão Florestal;Média
+Desobediência;Alta
+Desobstrução de Via Pública;Alta
+Destelhamento;Média
+Difamação, Injuria Ou Calûnia;Média
+Dirigir Veículo Sem Cnh;Média
+Disparo de Arma de Fogo;Alerta Vermelho
+Documentos/objetos Perdidos;Média
+Doenças Infecciosas Bacterianas;Alta
+Doenças Infecciosas Fúngicas;Alta
+Doenças Infecciosas Parasíticas;Alta
+Doenças Infecciosas Virais;Alta
+Embarcação À Deriva;Média
+Emergência - Traumas Diversos;Alerta Vermelho
+Emergência Aeronáutica;Alerta Vermelho
+Emergência Cardiológica;Alerta Vermelho
+Emergência Cardiológica / Respiratória;Alerta Vermelho
+Emergência Clínica;Alerta Vermelho
+Emergência Obstétrica;Alerta Vermelho
+Emergência Psiquiátrica;Alta
+Emergência Respiratória;Alerta Vermelho
+Encontro de Cadáver;Alta
+Encontro/recuperação de Objetos;Média
+Encontro/recuperação de Objetos Furtados;Média
+Enfrentamento de Grupos Armados (tiroteio);Alerta Vermelho
+Entorses;Média
+Entrega Ou Fornecimento de Bebida Alcoólica Ou Substância Causadora de Dependência a Menor de Idade;Alta
+Entregar Direção de Veículo a Pessoa Não Habilitada;Baixa
+Envenenamento / Intoxicação Exógena;Alerta Vermelho
+Erosão Continenta;Média
+Erosão Costeira/marinha;Média
+Erosão de Margem Fluvial;Média
+Escolta;Alta
+Estacionamento Irregular;Baixa
+Estacionar Em Local Proibido;Baixa
+Estacionar Em Local Proibido - Afastado da Guia da Calçada (meio-fio) a Mais de Um Metro;Baixa
+Estacionar Em Local Proibido - Afastado da Guia da Calçada (meio-fio) de 50 Centímetros a 1 Metro;Baixa
+Estacionar Em Local Proibido - Ao Lado Ou Sobre Canteiro Central / Jardim / Praça;Baixa
+Estacionar Em Local Proibido - Carga e Descarga;Baixa
+Estacionar Em Local Proibido - Contramão de Direção;Baixa
+Estacionar Em Local Proibido - Embarque e Desembarque;Média
+Estacionar Em Local Proibido - Faixa de Pedestres;Baixa
+Estacionar Em Local Proibido - Fila Dupla;Baixa
+Estacionar Em Local Proibido - Guia de Calçada Rebaixada Destinada À Entrada Ou Saída de Veículos;Alta
+Estacionar Em Local Proibido - Impedindo Movimentação de Outro Veículo;Alta
+Estacionar Em Local Proibido - Marca de Canalização;Baixa
+Estacionar Em Local Proibido - Nas Esquinas e a Menos de 5 Metros do Bordo do Alinhamento da Via;Média
+Estacionar Em Local Proibido - Placa de Proibido Estacionar;Baixa
+Estacionar Em Local Proibido - Placa de Proibido Parar e Estacionar;Baixa
+Estacionar Em Local Proibido - Ponto de Ônibus Coletivo Urbano;Média
+Estacionar Em Local Proibido - Ponto de Taxi;Baixa
+Estacionar Em Local Proibido - Rotatória;Baixa
+Estacionar Em Local Proibido - Sobre Ciclofaixa / Ciclovia;Baixa
+Estacionar Em Local Proibido - Sobre o Passeio;Baixa
+Estacionar Em Local Proibido - Vaga de Ambulância;Baixa
+Estacionar Em Local Proibido - Vaga de Curta Duração;Baixa
+Estacionar Em Local Proibido - Vaga Escolar;Baixa
+Estacionar Em Local Proibido - Vaga Regulam. de Idoso;Baixa
+Estacionar Em Local Proibido - Vaga Regulam. de Pne;Baixa
+Estacionar Em Local Proibido - Vaga Regulam. Veículos 2 Rodas;Baixa
+Estacionar Em Local Proibido - Vaga Regulam. Veículos 4 Rodas;Baixa
+Estacionar Em Local Proibido - Zona Azul;Baixa
+Estelionato;Alta
+Estiagem;Alta
+Estupro;Alta
+Estupro de Vulneráveis;Alta
+Evacuação de Área;Média
+Exercício Ilegal de Profissão Ou Atividade;Média
+Explosão;Alerta Vermelho
+Explosão de Bombas;Alerta Vermelho
+Extorsão;Alta
+Extorsão Com Restrição da Liberdade (sequestro Relampago);Alerta Vermelho
+Extorsão Mediante Sequestro;Alerta Vermelho
+Falsidade Ideológica;Média
+Feminicídio;Alta
+Ferimento Com Empalamento;Alta
+Ferimento Com Evisceração;Alerta Vermelho
+Ferimento Diverso;Alerta Vermelho
+Ferimento Em Tecido Mole;Alta
+Ferimento Por Arma Branca;Alerta Vermelho
+Ferimento Por Arma de Fogo;Alerta Vermelho
+Fios da Rede Elétrica Ou Telefonia Danificados Caídos Em Via Pública;Alta
+Fiscalização Ambiental Em Vias Terrestres;Alta
+Fiscalização de Ambulantes;Média
+Fiscalização de Apenado Em Regime Aberto;Alta
+Fiscalização de Ordem Pública Em Estabelecimentos Comerciais e Eventos;Alta
+Fiscalização de Posturas;Baixa
+Fiscalização de Transporte Remunerado de Pessoas;Média
+Fiscalização e Policiamento - Eventos;Média
+Fiscalização e Policiamento - Operações Policiais;Média
+Fiscalização e Policiamento - Outras;Alta
+Fiscalização e Policiamento - Policiamento Em Escolas;Média
+Fiscalização Maritima;Média
+Fratura/luxação/entorse;Alerta Vermelho
+Fraturas;Alta
+Fraude;Média
+Fuga de Instituição;Alta
+Fuga de Menor;Alta
+Fuga de Preso;Alerta Vermelho
+Furto;Média
+Furto À Comércio;Média
+Furto À Residência;Média
+Furto de Celular;Média
+Furto de Fios Elétricos;Baixa
+Furto de Gado;Média
+Furto de Veículo;Alta
+Furto Em Veículo;Média
+Furto Patrimônio Público;Alta
+Hemorragias;Alerta Vermelho
+Homicídio;Alerta Vermelho
+Homicídio Contra Agente de Segurança Pública e Familiares;Média
+Identificação Criminal Direta;Média
+Identificação Criminal Indireta;Média
+Identificação de Veículo;Média
+Imóvel Fechado;Média
+Importunação Sexual;Alta
+Incêndio Depósito de Combustível, Distribuidora de Combustível, Posto de Combustível;Alerta Vermelho
+Incêndio Em  Estabelecimento de Ensino;Alerta Vermelho
+Incêndio Em Aeronave;Alerta Vermelho
+Incêndio Em Amontoado de Lixo/entulho;Baixa
+Incêndio Em Edificação;Alerta Vermelho
+Incêndio Em Embarcação;Alerta Vermelho
+Incêndio Em Estabelecimento Comercial Ou Serviço;Alerta Vermelho
+Incêndio Em Estabelecimento de Saúde;Alerta Vermelho
+Incêndio Em Estabelecimento Prisional;Alerta Vermelho
+Incêndio Em Fábrica / Indústria;Alerta Vermelho
+Incêndio Em Lixo;Alta
+Incêndio Em Meio de Transporte;Alerta Vermelho
+Incêndio Em Outros;Alta
+Incêndio Em Rede Elétrica;Média
+Incêndio Em Residência;Alerta Vermelho
+Incêndio Em Vegetação;Alta
+Incêndio Florestal;Alta
+Incêndios Em Aglomerados Residenciais;Alerta Vermelho
+Induzir Ou Instigar o Suicídio;Alta
+Infanticídio;Alta
+Infarto;Alta
+Infestações de Animais;Média
+Interdição;Alta
+Interdição Acidentes;Alerta Vermelho
+Intervenção Em Manifestação Pública;Alta
+Intervenção Em Rebelião - Sistema Prisional;Alta
+Intervenção Em Rebelião - Sistema Socioeducativo;Alta
+Intoxicação Por Inalação;Alerta Vermelho
+Intoxicação Por Ingestão;Alerta Vermelho
+Intoxicação/álcool/drogas/envenenamento;Alta
+Invasão de Domicílio;Alta
+Invasão de Propriedade;Alta
+Invasão de Terreno/lote/fazenda Ou Área Aberta Sem Morador;Alta
+Jogo de Azar;Média
+Laudo de Vistoria;Baixa
+Lesão Corporal;Média
+Lesão Corporal Praticada Contra Agente de Segurança Pública Ou Seus Familiares;Média
+Levantamento Papiloscópico;Média
+Liberação de Produtos Químicos Nos Sistemas de Água Potável;Alerta Vermelho
+Liberação de Produtos Químicos Para a Atmosfera Causada Por Explosão Ou Incêndio;Alerta Vermelho
+Limpeza / Lavagem de Via;Baixa
+Localização de Drogas;Baixa
+Localização de Veículo Furtado Ou Roubado;Média
+Maltrato de Animais;Média
+Manifestação;Alta
+Mapeamento de Área de Risco;Baixa
+Matar, Perseguir, Caçar, Apanhar, Utilizar Espécimes da Fauna Silvestre, Nativos Ou Em Rota Migratór;Média
+Maus Tratos;Alta
+Menor Desaparecido;Alta
+Metrorragia;Alta
+Moeda Falsa;Média
+Montagem de Tendas / Barracas / Abrigos;Média
+Mordida de Animal;Alta
+Morte Acidental;Alerta Vermelho
+Morte Acidental Ocorrida No Trabalho;Alerta Vermelho
+Morte Acidental Provocada Por Afogamento;Alerta Vermelho
+Morte Acidental Provocada Por Eletroplessão (choque Elétrico);Alerta Vermelho
+Morte Acidental Provocada Por Queimaduras;Alerta Vermelho
+Morte Natural;Média
+Morte Por Intervenção de Agente de Segurança;Alta
+Motim de Preso;Alerta Vermelho
+Naufrágio;Média
+Negligencia/omissão;Baixa
+Objeto Preso À Pessoa;Alta
+Objeto Suspeito Abandonado Em Via Pública;Alerta Vermelho
+Objetos Oferecendo Perigo;Alta
+Obstrução de Esgoto;Média
+Obstrução de Via Aérea Por Corpo Estranho - Ovace;Alta
+Ocorrência No Interior de Estabelecimento Prisional;Alerta Vermelho
+Ocupação de Espaço Público - Uso Indevido;Média
+Ofensa;Média
+Óleo Na Pista;Alta
+Omissão de Socorro;Alta
+Onda de Calor;Alta
+Operação Com Produto Perigoso - Biológico;Alta
+Operação Com Produto Perigoso - Explosivo;Alta
+Operação Com Produto Perigoso - Nuclear;Alta
+Operação Com Produto Perigoso - Químico;Alta
+Operação Com Produto Perigoso - Radiológico;Alta
+Operação de Guincho;Alta
+Ordem de Serviço;Baixa
+Outras Fraudes;Alta
+Outras Infrações de Trânsito;Média
+Outras Perícias;Média
+Outro Tipo de Acidente Com Veículo;Alerta Vermelho
+Outro Tipo de Atividade Preventiva Contra Incêndio;Média
+Outro Tipo de Atividade Preventiva Educacional;Média
+Outro Tipo de Atividade Preventiva Em Evento;Média
+Outro Tipo de Emergência Médica Por Causa Clínica;Alerta Vermelho
+Outro Tipo de Emergência Médica Por Causa Externa;Alerta Vermelho
+Outro Tipo de Operação de Busca e Salvamento;Média
+Outros Atentados Contra Dignidade Sexual;Alta
+Outros Atos Infracionais;Baixa
+Outros Crimes Contra Menores;Baixa
+Outros Ilícitos Penais;Baixa
+Outros Serviços Públicos;Média
+Paciente Alterado;Alta
+Parada Cardíaca;Alerta Vermelho
+Parada Cardiorrespiratória;Alerta Vermelho
+Parada Respiratória;Alerta Vermelho
+Participar de Disputa Em Veículo Automotor;Média
+Parto Emergencial;Alerta Vermelho
+Patrulhamento Preventivo;Média
+Perda Ou Extravio;Baixa
+Perícia Ambiental;Média
+Perícia de Avaliação Direta;Média
+Perícia de Avaliação Indireta;Média
+Perícia de Danos;Média
+Perícia de Incêndio;Média
+Perícia de Lesão Corporal;Média
+Perícia Em Local de Acidente de Trânsito (vítima Fatal);Alta
+Perícia Em Local de Acidente de Trânsito (vítima Parcial);Média
+Perícia Em Local de Acidente de Trânsito Com Veículo Oficial (dano);Média
+Perícia Em Local de Acidente de Trânsito Com Veículo Oficial (vítima Fatal / Parcial);Média
+Perícia Em Local de Apreensão de Entorpecente;Média
+Perícia Em Local de Arrombamento;Média
+Perícia Em Local de Crime Contra o Patrimônio Privado;Média
+Perícia Em Local de Crime Contra o Patrimônio Público;Média
+Perícia Em Local de Crime Sexual;Média
+Perícia Em Local de Disparo de Arma de Fogo;Média
+Perícia Em Local de Incêndio;Média
+Perícia Em Local de Morte Violenta;Alta
+Perícia Em Local de Outros Delitos;Baixa
+Perícia Em Veículo;Baixa
+Perícia Em Vítima de Crime Sexual;Alta
+Perícia Necroscópica (em Cadáver);Alta
+Perturbação de Cerimônia Funerária;Alta
+Perturbação do Trabalho Ou Sossego Alheio;Média
+Pescar Em Período No Qual a Pesca Seja Proibida Ou Em Lugares Interditados Por Órgão Competente;Média
+Pessoa Arrastada Por Enxurrada;Alerta Vermelho
+Pessoa Desaparecida;Alta
+Pessoa Em Risco de Queda;Alerta Vermelho
+Pessoa Em Situação de Rua;Média
+Pessoa Prensada Em Elevador;Alerta Vermelho
+Pessoa Prensada Por Máquina Ou Equipamento (exceto Elevador);Alerta Vermelho
+Pessoa Presa Em Imóvel;Alerta Vermelho
+Pessoa Presa Em Máquina/equipamento;Alerta Vermelho
+Pessoa Presa Em Outros Ambientes Confinados;Alerta Vermelho
+Pessoa Presa Na Edificação;Alta
+Pessoa Presa Ou Confinada (exceto Elevador);Alerta Vermelho
+Pessoa Presa Ou Confinada Em Elevador;Alerta Vermelho
+Pessoa Procurada Por Homicídio;Média
+Pessoa Procurada Por Outros Crimes;Média
+Pessoas Presas Em Elevador;Alerta Vermelho
+Pichação;Média
+Policiamento Ostensivo;Média
+Ponto Base;Baixa
+Porte Ou Posse de Arma Branca;Alta
+Porte Ou Posse de Artefato Explosivo;Média
+Porte Ou Posse de Simulacro;Média
+Porte Ou Posse Ilegal de Arma de Fogo E/ou Munição;Alta
+Posse de Drogas;Média
+Posse Irregular de Arma de Fogo;Alta
+Prestação de Socorro;Alerta Vermelho
+Prevenção;Média
+Prevenção - Carnaval;Baixa
+Prevenção - Outros;Baixa
+Prevenção Aquática;Baixa
+Prevenção Em Manifestação Pública;Média
+Queda da Própria Altura;Média
+Queda de Altura Ou Nível;Alerta Vermelho
+Queda de Arvore;Média
+Queda de Granizo;Alta
+Queda de Motocicleta;Alta
+Queda de Plano Elevado;Alta
+Queda de Poste;Média
+Queda de Própria Altura;Média
+Queda Ou Ameaça de Queda de Árvore;Baixa
+Quedas, Tombamentos e Rolamentos;Alerta Vermelho
+Queimadura Elétrica;Alta
+Queimadura Química;Alta
+Queimadura Térmica;Alta
+Racismo, Discriminação Ou Preconceito;Alta
+Recaptura de Foragido;Alta
+Receptação;Alta
+Recolhimento de Animais;Média
+Redução À Condição Análoga de Escravo;Alta
+Reintegração de Posse;Alta
+Remoção de Cadáver Por Aborto;Alta
+Remoção de Cadáver Por Acidente de Trânsito;Alta
+Remoção de Cadáver Por Afogamento;Alta
+Remoção de Cadáver Por Arma Branca;Alta
+Remoção de Cadáver Por Arma de Fogo;Alta
+Remoção de Cadáver Por Causa Desconhecida;Alta
+Remoção de Cadáver Por Degolamento;Alta
+Remoção de Cadáver Por Descarga Elétrica;Alta
+Remoção de Cadáver Por Enforcamento;Alta
+Remoção de Cadáver Por Espancamento;Alta
+Remoção de Cadáver Por Outras Causas;Alta
+Remoção de Cadáver Por Sufocamento Ou Esganadura;Alta
+Remoção de Cadáver Por Suicídio;Alta
+Remoção de Cadáver Vítima de Incêndio;Alta
+Remoção de Cadáver Vítima de Queda;Alta
+Remoção de Veículo Em Infração;Baixa
+Reserva de Vagas de Estacionamento;Baixa
+Reserva de Vagas Não Autorizadas;Baixa
+Resgate de Objetos / Bens;Média
+Resistência;Alta
+Ressaca Marítima;Alta
+Retirada de Pertences;Baixa
+Revista Em Estabelecimento Prisional;Média
+Risco de Desabamento;Baixa
+Rixa Ou Briga;Alta
+Rompimento/ Colapso de Barragens;Alerta Vermelho
+Roubo;Alerta Vermelho
+Roubo À Banco;Alerta Vermelho
+Roubo À Comercio;Alta
+Roubo À Residência;Alta
+Roubo a Táxi, a Transporte Alternativo Ou Por Aplicativo;Média
+Roubo À Transeunte;Alta
+Roubo a Veiculo;Média
+Roubo Com Tomada de Refém;Alta
+Roubo de Celular;Média
+Roubo de Veículo;Alta
+Roubo Em Escola;Alta
+Roubo Em Transporte de Valores;Alta
+Roubo Em Transporte Público;Alta
+Roubo Seguido de Morte - Latrocínio;Alta
+Salvamento Aquático;Alerta Vermelho
+Salvamento Em Altura;Alerta Vermelho
+Salvamento Terrestre;Alerta Vermelho
+Saque de Carga de Veículo de Transporte;Média
+Seca;Alta
+Segurança de Dignitário;Média
+Sequestro Ou Carcere Privado;Alerta Vermelho
+Sinalização de Vias;Média
+Sinalização Ou Colocação/retirada de Cones;Média
+Sinistro Em Transporte Marítimo, Fluvial Ou Aéreo;Alerta Vermelho
+Som Alto;Média
+Soterramento;Alta
+Subsidências e Colapsos;Alta
+Subtração de Incapaz;Baixa
+Suicídio;Alerta Vermelho
+Suicídio de Agente do Estado;Média
+Suspeita de Acidente Vascular Encefálico (ave);Alerta Vermelho
+Suspeita de Traumatismo Cranioencefálico (tce);Alerta Vermelho
+Suspeita de Traumatismo Raquimedualar (trm);Alerta Vermelho
+Tempestade de Raios;Alta
+Tentativa de Estupro;Alta
+Tentativa de Extorsão;Alta
+Tentativa de Feminicídio;Alta
+Tentativa de Fuga de Adolescente Submetido a Medida Socioeducativa;Alerta Vermelho
+Tentativa de Fuga de Preso;Alerta Vermelho
+Tentativa de Furto;Alta
+Tentativa de Homicídio;Alerta Vermelho
+Tentativa de Roubo;Alerta Vermelho
+Tentativa de Suicídio;Alerta Vermelho
+Tentativa de Suicídio Por Iminência de Queda de Altura;Alerta Vermelho
+Tentativa de Violação de Domicílio;Alta
+Teste de Sistema;Baixa
+Tornados;Alta
+Tortura;Alta
+Trabalho Infantil;Média
+Tráfico de Drogas;Alta
+Tráfico de Pessoas;Alta
+Transitar Em Local/horário Não Permitido Pela Regulamentação ¿ Caminhão;Média
+Transporte Ilegal de Animal da Fauna Silvestre;Alta
+Transporte Ilegal de Madeira;Média
+Transporte Intra-hospitalar;Alta
+Transporte Pré-hospitalar;Alta
+Transtorno Psicológico;Alta
+Traumático/acidente Com Animal Peçonhento;Alta
+Traumatismo Crânio Encefálico;Alerta Vermelho
+Traumatismo Raquimedular;Alta
+Travessia Escolar;Baixa
+Treinamento / Instrução;Baixa
+Treinamento/instrução;Baixa
+Tremor de Terra;Alta
+Tsunami;Alerta Vermelho
+Tumulto;Alta
+Uso de Documento Falso;Média
+Usurpação de Função Pública;Média
+Vazamento de Água;Alta
+Vazamento de Gás;Alta
+Vazamento de Óleo;Alta
+Vazamento de Produto Biológico;Alerta Vermelho
+Vazamento de Produto Nuclear;Alerta Vermelho
+Vazamento de Produto Químico;Alerta Vermelho
+Vazamento de Produto Radiológico;Alerta Vermelho
+Veículo Abandonado Em Via Pública;Alta
+Veículo Com Avaria Na Via;Média
+Veículo Com Direção Perigosa;Alta
+Veículo Com Excesso de Velocidade;Média
+Veículo Enguiçado Em Via Pública;Média
+Veículo Na Contramão;Alta
+Vendaval/tornado/ciclone/furacão;Alerta Vermelho
+Via Interditada;Média
+Vias de Fato;Alta
+Violação de Alarme;Média
+Violação de Domicílio;Alta
+Violação de Sepultura;Alta
+Violência Contra Mulher - Maria da Penha;Alerta Vermelho
+Violência Doméstica;Alta
+Vistoria / Inspeção Técnica;Média
+Vistoria de Fiscalização;Média
+Vistoria de Regularização;Média
+Vistoria Em Árvore - Situação de Risco;Média
+Vítima Ejetada de Veículo;Alerta Vermelho

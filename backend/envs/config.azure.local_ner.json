@@ -1,0 +1,30 @@
+{
+    "test_output_dir": "results",
+    "hermes-api": {
+        "api_processes": 1
+    },
+    "asr": {
+        "model": "azure-fast",
+        "language": "pt",
+        "hardware_config": "azure-api",
+        "n_asr_workers": 1,
+        "n_cpus": 1
+    },
+    "ner":{
+        "n_gliner_workers": 2,
+        "hardware_config": "cuda",
+        "n_cpus": 3,
+        "gliner_mname": "knowledgator/gliner-x-large",
+        "batch_size": 1,
+        "max_tokens": 150
+    },
+    "interpretation": {
+        "hardware_config": "azure-api",
+        "embedding_hardware": "cpu",
+        "model": "gpt-5-nano",
+        "n_cpus": 6,
+        "min_transcricao": 150,
+        "n_in_batch": 10,
+        "max_similar_natures": 20
+    }
+}

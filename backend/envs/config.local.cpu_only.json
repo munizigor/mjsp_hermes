@@ -1,0 +1,27 @@
+{
+    "test_output_dir": "results",
+    "hermes-api": {
+        "api_processes": 1
+    },
+    "asr": {
+        "model": "turbo",
+        "language": "pt",
+        "hardware_config": "cpu",
+        "n_asr_workers": 1
+    },
+    "ner":{
+        "n_gliner_workers": 1,
+        "hardware_config": "cpu",
+        "n_cpus": 12,
+        "gliner_mname": "knowledgator/gliner-x-large",
+        "batch_size": 2,
+        "max_tokens": 150
+    },
+    "interpretation": {
+        "hardware_config": "cpu",
+        "n_cpus": 16,
+        "delay": 2,
+        "n_in_batch": 1,
+        "max_similar_natures": 16
+    }
+}

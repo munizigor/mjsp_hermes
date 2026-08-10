@@ -1,0 +1,87 @@
+services:
+  staging:
+    image: alpine:3.14
+    volumes:
+      - ${LOCAL_SQL_DB_PATH}:/app/sqlite_data
+      - ./src/init.sql:/init.sql
+    command: >
+      sh -c "
+        apk add --no-cache sqlite &&
+        sqlite3 $LOCAL_SQL_DB_PATH < /init.sql &&
+        echo 'SQLite inicializado. '
+      "
+    env_file: docker/common.env
+  hermes-api:
+    depends_on:
+      staging:
+        condition: service_completed_successfully
+    build:
+      dockerfile: docker/Dockerfile.hermes
+    ports:
+      - "${HERMES_PORT}:${HERMES_PORT}"
+    volumes:
+      - ${ASTERISK_RECORDINGS_PATH}:/asterisk_recordings
+      - ${LOCAL_SQL_DB_PATH}:/app/sqlite_data
+      - ./logs/:/logs
+      - hf_cache_vol:/tmp/hf_cache_dir
+      - ./src/hermes:/src
+      - ./.env:/.env
+    env_file: docker/common.env
+  hermes-ner:
+    depends_on:
+      staging:
+        condition: service_completed_successfully
+    build:
+      dockerfile: docker/Dockerfile.ner_cpu
+
+    #ports:
+    #  - "XXXX:XXXX"
+    volumes:
+      - ${LOCAL_SQL_DB_PATH}:/app/sqlite_data
+      - ./logs/:/logs
+      - hf_cache_vol:/tmp/hf_cache_dir
+      - ./src/ner:/src
+      - /tmp:/tmp
+      - ./config.json:/config.json
+      - ./.env:/.env
+    env_file: docker/common.env
+
+  hermes-asr:
+    depends_on:
+      staging:
+        condition: service_completed_successfully
+    build:
+      dockerfile: docker/Dockerfile.asr_cpu
+
+    #ports:
+    #  - "XXXX:XXXX"
+    volumes:
+      - ${LOCAL_SQL_DB_PATH}:/app/sqlite_data
+      - ./logs/:/logs
+      - hf_cache_vol:/tmp/hf_cache_dir
+      - ./src/asr:/src
+      - /tmp:/tmp
+      - ./config.json:/config.json
+      - ./.env:/.env
+    env_file: docker/common.env
+  hermes-interpretation:
+    depends_on:
+      staging:
+        condition: service_completed_successfully
+    build:
+      dockerfile: docker/Dockerfile.interpretation
+    #ports:
+    #  - "XXXX:XXXX"
+    volumes:
+      - ${LOCAL_SQL_DB_PATH}:/app/sqlite_data
+      - ./logs/:/logs
+      - hf_cache_vol:/tmp/hf_cache_dir
+      - ./src/interpretation:/src
+      - /tmp:/tmp
+      - ./datasets:/datasets
+      - ./config.json:/config.json
+      - ./.env:/.env
+    env_file: docker/common.env
+
+volumes:
+  hf_cache_vol:

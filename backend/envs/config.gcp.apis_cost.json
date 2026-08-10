@@ -1,0 +1,30 @@
+{
+    "test_output_dir": "results",
+    "hermes-api": {
+        "api_processes": 1
+    },
+    "asr": {
+        "model": "hermes-chirp3-us",
+        "language": "pt",
+        "hardware_config": "gcp-api",
+        "n_asr_workers": 2,
+        "n_cpus": 1
+    },
+    "ner": {
+        "n_gliner_workers": 2,
+        "hardware_config": "gcp-endpoint",
+        "n_cpus": 1,
+        "gliner_mname": "gemini-2.5-flash-lite",
+        "batch_size": 1,
+        "max_tokens": 512
+    },
+    "interpretation": {
+        "hardware_config": "gcp-api",
+        "embedding_hardware": "cpu",
+        "model": "gemini-2.5-flash-lite",
+        "n_cpus": 6,
+        "min_transcricao": 50,
+        "n_in_batch": 1,
+        "max_similar_natures": 20
+    }
+}

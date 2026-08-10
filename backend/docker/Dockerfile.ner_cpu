@@ -1,0 +1,27 @@
+FROM ubuntu:24.04
+
+RUN apt update && apt install -y \
+    python3 python3-pip \
+    cmake build-essential make gcc sqlite3 \
+    build-essential libboost-system-dev libboost-thread-dev \
+    libboost-program-options-dev libboost-test-dev libboost-filesystem-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN pip install --break-system-packages pydantic langdetect python-mecab-ko janome indic-nlp-library jieba
+RUN pip install --break-system-packages gliner[cpu]
+RUN pip install --break-system-packages camel-tools spacy
+RUN pip install --break-system-packages gliner[cpu,tokenizers,stanza]==0.2.22
+RUN pip install --break-system-packages numpy tritonclient[http]
+RUN pip install --break-system-packages --upgrade openai google-genai
+RUN pip cache purge
+
+RUN pip freeze > /requirements2.txt
+#RUN pip install -r /requirements.txt --break-system-packages
+
+COPY ./src/ner /src
+#COPY ../../config.json /app/config.json
+
+#set open port 8001
+#EXPOSE 8001
+
+CMD ["python3", "-u", "/src/start.py"]

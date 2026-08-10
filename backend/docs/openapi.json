@@ -1,0 +1,758 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "FastAPI",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/get_transcriptions/": {
+      "get": {
+        "summary": "Get Transcriptions",
+        "description": "Get the full transcription for a specific emergency.\n\nArgs:\n    id_emergencia (int): The ID of the emergency session.\n\nReturns:\n    dict: A dictionary containing the full transcription data.\n\nExample response:\n{\n    \"transcripts\": [\n        {\n            \"actor\": str,\n            \"text\": str,\n            \"transcription_time\": float,\n            \"audio_time\": float,\n        },\n        ...\n    ]\n}",
+        "operationId": "get_transcriptions_get_transcriptions__get",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id_emergencia",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Id Emergencia"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Get Transcriptions Get Transcriptions  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/get_all_inference_results/": {
+      "get": {
+        "summary": "Get All Inference Results",
+        "description": "Get all inference results for a specific emergency.\n\nArgs:\n    id_emergencia (int): The ID of the emergency session.\n\nReturns:\n    dict: A dictionary containing all inference results.\n\nExample response (formatted JSON):\nIf no valid suggestion has been found, the keys may contain an empty list\n{\n  \"rua_ou_logradouro\": [\n    { \"value\": \"BR-100\", \"points\": 34.0105 }\n  ],\n  \"bairro\": [\n    { \"value\": \"Jardim Maravilha\", \"points\": 44.9395 }\n  ],\n  \"municipio\": [\n    { \"value\": \"Rio de Janeiro\", \"points\": 44.9395 }\n  ],\n  \"ponto_de_referencia\":\n    [{\"value\":\"Igreja S\u00e3o Miguel\",\"points\":30.4605},\n    {\"value\":\"Igreja Cat\u00f3lica\",\"points\":27.034}],\n  \"nome_do_solicitante\": [\n    { \"value\": \"Pedro Paulo\", \"points\": 34.2685 }\n  ],\n  \"pessoa\": [\n    { \"value\": \"Vicente\", \"points\": 31.8185 },\n    { \"value\": \"motoqueiro\", \"points\": 31.3235 },\n    { \"value\": \"Bombeiro, soldado Vicente\", \"points\": 25.9265 }\n  ],\n  \"numero\": [\n    { \"value\": \"677\", \"points\": 33.3295 }\n  ],\n  \"complemento\": [\n    { \"value\": \"Apartamento 27\", \"points\": 29.937 }\n  ],\n  \"descricao_breve\": [\n    {\n        \"value\": \"Motoqueiro sofreu queda sozinha na BR-100, est\u00e1 consciente, respira e responde, por\u00e9m com dor intensa; capacete foi removido na queda.\",\n        \"points\": 12.5\n    }\n  ],\n  \"outras_observacoes\": [\n    {\n        \"value\": \"Solicitante registra informa\u00e7\u00f5es inconsistentes sobre quem chegou ao local (Bombeiro/PRF). Pessoa chamada [...]\",\n        \"points\": 12.5\n    }\n  ],\n  \"natureza_inicial\": [\n    { \"value\": \"Acidente de Tr\u00e2nsito Com V\u00edtima\", \"points\": 37.5 },\n    { \"value\": \"Queda de Motocicleta\", \"points\": 25.233131735414357 },\n    { \"value\": \"Morte Acidental Provocada Por Eletropless\u00e3o (choque El\u00e9trico)\", \"points\": 25.192473850780626 },\n    { \"value\": \"Acidente de Tr\u00e2nsito Com V\u00edtima\", \"points\": 25.176785965549797 }\n  ],\n  \"transcricao\": \"Bombeiro, soldado Vicente \u00c9, boa noite Um motoqueiro caiu aqui no\n    Jardim Maravilha, do lado do posto \u00c9, em Jardim Maravilha? Isso Ele t\u00e1 registrando\n    aqui, t\u00e1 bom? T\u00e1, j\u00f3ia Ele t\u00e1 respirando? T\u00e1, at\u00e9 respirando Mas t\u00e1 bem, complicada\n    a situa\u00e7\u00e3o dele aqui Viu, mo\u00e7o? [...]\"\n}",
+        "operationId": "get_all_inference_results_get_all_inference_results__get",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id_emergencia",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Id Emergencia"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Get All Inference Results Get All Inference Results  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/get_cluster_metrics/": {
+      "get": {
+        "summary": "Get Cluster Metrics",
+        "operationId": "get_cluster_metrics_get_cluster_metrics__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Get Cluster Metrics Get Cluster Metrics  Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ]
+      }
+    },
+    "/send_transcript/": {
+      "post": {
+        "summary": "Store Transcript",
+        "description": "Extract entities from the given transcript.\n\nArgs:\n    id_emergencia (str): ID of an existing emergency.\n    transcript (str): The call transcript from which to extract entities.\n\nReturns:\n    dict: The ID for the stored transcript",
+        "operationId": "store_transcript_send_transcript__post",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id_emergencia",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Id Emergencia"
+            }
+          },
+          {
+            "name": "transcript",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Transcript"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "title": "Response Store Transcript Send Transcript  Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/send_audio/": {
+      "post": {
+        "summary": "Receive Audio",
+        "description": "Extract entities from the given transcript.\nArgs:\n    id_emergencia (str): ID of an existing emergency.\n    sp_rate (int): Desired sampling rate for the audio.\n    audio_data (UploadFile): The audio file to be processed.\nReturns:\n    The ID for the stored audio",
+        "operationId": "receive_audio_send_audio__post",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id_emergencia",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Id Emergencia"
+            }
+          },
+          {
+            "name": "sp_rate",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Sp Rate"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_receive_audio_send_audio__post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "title": "Response Receive Audio Send Audio  Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/start_call/": {
+      "post": {
+        "summary": "Start Call",
+        "description": "Start a new call.\n\nArgs:\n    source_number (str): The source phone number.\n    destination_number (str): The destination phone number.\n    call_timestamp (str): The timestamp of the call.\n\nReturns:\n    int: The ID of the newly created emergency session.\n\nEXAMPLE: curl -i -X POST \"http://127.0.0.1:8001/start_call/?source_number=107&destination_number=108&call_timestamp=1768416225.58\"",
+        "operationId": "start_call_start_call__post",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "source_number",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Source Number"
+            }
+          },
+          {
+            "name": "destination_number",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Destination Number"
+            }
+          },
+          {
+            "name": "call_timestamp",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Call Timestamp"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Start Call Start Call  Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/end_call/": {
+      "post": {
+        "summary": "End Call",
+        "description": "End the call interpretation session.\n\nArgs:\n    id_emergencia (int): The ID of the emergency session to end.\n\nReturns:\n    str: A message indicating the session has ended.",
+        "operationId": "end_call_end_call__post",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id_emergencia",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Id Emergencia"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "title": "Response End Call End Call  Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/set_as_answered_by_number/": {
+      "post": {
+        "summary": "Set As Answered By Number",
+        "description": "Set call as answered, based on phone numbers.\n\nArgs:\n    source_number (str): The source phone number.\n    destination_number (str): The destination phone number.\n\nReturns:\n    str: A message indicating the session has been answered.",
+        "operationId": "set_as_answered_by_number_set_as_answered_by_number__post",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "source_number",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Source Number"
+            }
+          },
+          {
+            "name": "destination_number",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Destination Number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "title": "Response Set As Answered By Number Set As Answered By Number  Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/end_call_by_number/": {
+      "post": {
+        "summary": "End Call By Number",
+        "description": "End the last open call interpretation session, based on phone numbers.\n\nArgs:\n    source_number (str): The source phone number.\n    destination_number (str): The destination phone number.\n\nReturns:\n    str: A message indicating the session has ended.",
+        "operationId": "end_call_by_number_end_call_by_number__post",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "source_number",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Source Number"
+            }
+          },
+          {
+            "name": "destination_number",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Destination Number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "title": "Response End Call By Number End Call By Number  Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/list_emergencies": {
+      "get": {
+        "summary": "List Emergencies",
+        "description": "List all emergency sessions.\n\nReturns:\n    dict: A dictionary containing a list of emergencies.\n        {\n            \"open_emergencies\": [\n                {\n                    \"id\": int, \"start_time\": float, \"end_time\": None,\n                    \"current_status\": int,\n                    \"asterisk_id\": str, \"operator_unique_code\": str,\n                    \"source_phone_number\": str, \"destination_phone_number\": str,\n                },\n                ...\n            ]\n        }",
+        "operationId": "list_emergencies_list_emergencies_get",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "is_open",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "title": "Is Open"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response List Emergencies List Emergencies Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/get_emergency/": {
+      "get": {
+        "summary": "Get Emergency",
+        "description": "List a emergency session.\n\nReturns:\n    dict: A dictionary containing a emergency session.\n        {\n            \"emergency\":\n                {\n                    \"id\": int, \"start_time\": float, \"end_time\": None,\n                    \"asterisk_id\": str, \"operator_unique_code\": str,\n                    \"current_status\": int,\n                    \"source_phone_number\": 998310000,\n                    \"destination_phone_number\": 849983158\n                },\n        }",
+        "operationId": "get_emergency_get_emergency__get",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id_emergencia",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Id Emergencia"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Get Emergency Get Emergency  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/start_call_interpretation/": {
+      "get": {
+        "summary": "Start Call Interpretation",
+        "description": "Start a new call interpretation session.\n\nArgs:\n    operator_unique_code (str): Unique code for the operator handling the call.\n\nReturns:\n    int: The ID of the newly created emergency session.",
+        "operationId": "start_call_interpretation_start_call_interpretation__get",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "operator_unique_code",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Operator Unique Code"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Start Call Interpretation Start Call Interpretation  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/processing_finished/": {
+      "get": {
+        "summary": "Processing Finished",
+        "description": "Check if the processing of the emergency has finished.\n\nArgs:\n    id_emergencia (int): The ID of the emergency session.\nReturns:\n    dict: A dictionary indicating whether processing is finished and additional details.\n        {\n            'terminado': bool,\n            'descricao': str,\n            'delay': int (optional),\n            'ultima_transcricao': int (optional),\n            'ultima_natureza_decisiva': int (optional)\n        }",
+        "operationId": "processing_finished_processing_finished__get",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id_emergencia",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Id Emergencia"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Processing Finished Processing Finished  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/": {
+      "get": {
+        "summary": "Read Root",
+        "operationId": "read_root__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Body_receive_audio_send_audio__post": {
+        "properties": {
+          "audio_data": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "Audio Data"
+          }
+        },
+        "type": "object",
+        "required": [
+          "audio_data"
+        ],
+        "title": "Body_receive_audio_send_audio__post"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    },
+    "securitySchemes": {
+      "APIKeyHeader": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Hermes-API-Key"
+      }
+    }
+  }
+}
