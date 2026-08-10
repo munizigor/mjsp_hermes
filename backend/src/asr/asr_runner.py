@@ -358,6 +358,10 @@ class AsrRunner:
             from runners.vllm_server import vllm_caller_process
 
             worker_func = vllm_caller_process
+        elif hardware_config == "whisper-cpp-api":
+            from runners.whisper_cpp import whisper_cpp_caller_process
+
+            worker_func = whisper_cpp_caller_process
         else:
             raise Exception("Invalid hardware-config for ASR")
 
