@@ -1,0 +1,36 @@
+name: "text_llm"
+backend: "python"
+max_batch_size: 4
+
+# Define a entrada: um prompt de texto
+input [
+  {
+    name: "PROMPT"
+    data_type: TYPE_STRING
+    dims: [ 1 ]
+  }
+]
+
+# Define a saída: o texto gerado
+output [
+  {
+    name: "GENERATED_TEXT"
+    data_type: TYPE_STRING
+    dims: [ 1 ]
+  }
+]
+
+# --- ADICIONE ISSO ---
+# Habilita o batching dinâmico
+dynamic_batching {
+  preferred_batch_size: [ 2, 4 ]
+  max_queue_delay_microseconds: 5000 # Espera 5ms por mais requests
+}
+
+# Informa ao Triton para rodar uma instância do modelo na GPU
+instance_group [
+  {
+    kind: KIND_GPU
+    count: 1
+  }
+]

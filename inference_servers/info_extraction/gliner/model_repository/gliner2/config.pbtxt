@@ -1,0 +1,54 @@
+name: "gliner2"
+backend: "python"
+max_batch_size: 8
+
+# Informa ao Triton qual arquivo de script Python usar.
+default_model_filename: "model.py"
+
+# Define a entrada: um prompt de texto
+input [
+  {
+    name: "PROMPT"
+    data_type: TYPE_STRING
+    dims: [ 1 ]
+  },
+  {
+    name: "LABEL_LIST"
+    data_type: TYPE_STRING
+    dims: [ 1 ]
+  },
+  {
+    name: "CLASSIFICATION_SCHEMA"
+    data_type: TYPE_STRING
+    dims: [ 1 ]
+  }
+]
+
+# Define a saída: o texto gerado
+output [
+  {
+    name: "ENTITIES_JSON"
+    data_type: TYPE_STRING
+    dims: [ 1 ]
+  },
+  {
+    name: "META_INFO"
+    data_type: TYPE_STRING
+    dims: [ 1 ]
+  }
+]
+
+# --- ADICIONE ISSO ---
+# Habilita o batching dinâmico
+dynamic_batching {
+  preferred_batch_size: [ 2, 4, 8 ]
+  max_queue_delay_microseconds: 5000 # Espera 5ms por mais requests
+}
+
+# Informa ao Triton para rodar umaS instâncias do modelo na GPU
+instance_group [
+  {
+    kind: KIND_GPU
+    count: 2
+  }
+]

@@ -1,0 +1,30 @@
+name: "gaia"
+backend: "vllm"
+max_batch_size: 0
+
+parameters: {
+  key: "model"
+  value: { string_value: "CEIA-UFG/Gemma-3-Gaia-PT-BR-4b-it" }
+}
+
+parameters: {
+  key: "tokenizer"
+  value: { string_value: "CEIA-UFG/Gemma-3-Gaia-PT-BR-4b-it" }
+}
+
+instance_group [
+  {
+    count: 1
+    kind: KIND_GPU
+  }
+]
+
+parameters: {
+  key: "tokenizer_kwargs"
+  value: { string_value: "{\"use_fast\": true}" }
+}
+
+parameters: {
+  key: "image_processor_kwargs"
+  value: { string_value: "{\"use_fast\": true}" }
+}

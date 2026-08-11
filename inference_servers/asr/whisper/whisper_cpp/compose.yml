@@ -1,0 +1,77 @@
+services:
+  model-downloader:
+    image: ghcr.io/ggml-org/whisper.cpp:main
+    env_file:
+      - whisper_cpp.env
+    volumes:
+      - ./whisper-models:/models
+    networks:
+      - hermes-network
+    # Passamos um array rígido: [shell, flag, script inteiro]
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        if [ ! -f "/models/ggml-$$MODEL_NAME.bin" ]; then
+          echo "Modelo ggml-$$MODEL_NAME.bin não encontrado. Baixando $$MODEL_NAME..."
+          ./models/download-ggml-model.sh "$$MODEL_NAME" /models
+        else
+          echo "O arquivo ggml-$$MODEL_NAME.bin já existe. Pulando download."
+        fi
+
+  model-benchmarker:
+    image: ghcr.io/ggml-org/whisper.cpp:main
+    env_file:
+      - whisper_cpp.env
+    volumes:
+      - ./whisper-models:/models
+    depends_on:
+      model-downloader:
+        condition: service_completed_successfully
+    networks:
+      - hermes-network
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        LOG_FILE="/models/ggml-$$MODEL_NAME.bin.bench.txt"
+        if [ ! -f "$$LOG_FILE" ]; then
+          echo "Executando benchmark para $$MODEL_NAME com $$N_THREADS threads. Isso pode levar alguns segundos..."
+          # Executa o bench nativo e redireciona todo o output para o arquivo de log
+          whisper-bench -m "/models/ggml-$$MODEL_NAME.bin" -t "$$N_THREADS" > "$$LOG_FILE" 2>&1
+          echo "Benchmark finalizado. Resultados salvos em $$LOG_FILE"
+        else
+          echo "Arquivo de benchmark $$LOG_FILE já existe. Pulando execução."
+        fi
+
+  whisper:
+    image: ghcr.io/ggml-org/whisper.cpp:main
+    env_file:
+      - whisper_cpp.env
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./whisper-models:/models
+    networks:
+      hermes-network:
+        ipv4_address: 172.20.0.15
+    depends_on:
+      model-benchmarker:
+        condition: service_completed_successfully
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        echo "Iniciando servidor: Modelo=$$MODEL_NAME | Threads=$$N_THREADS | Idioma=$$LANG"
+        whisper-server \
+          --host 0.0.0.0 \
+          --port 8080 \
+          -m "/models/ggml-$$MODEL_NAME.bin" \
+          -t "$$N_THREADS" \
+          -l "$$LANG"
+    restart: unless-stopped
+
+networks:
+  hermes-network:
+    name: hermes-network
+    external: true
