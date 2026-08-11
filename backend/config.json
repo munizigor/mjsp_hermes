@@ -4,10 +4,10 @@
         "api_processes": 1
     },
     "asr": {
-        "model": "turbo_cuda",
+        "model": "whisper-medium-q8_0",
         "language": "pt",
-        "hardware_config": "triton-server",
-        "n_asr_workers": 1,
+        "hardware_config": "whisper-cpp-api",
+        "n_asr_workers": 2,
         "n_cpus": 1
     },
     "ner": {
@@ -23,8 +23,8 @@
         "embedding_hardware": "cpu",
         "model": "mistralai/Ministral-3-3B-Instruct-2512",
         "n_cpus": 6,
-        "min_transcricao": 120,
+        "min_transcricao": 80,
         "n_in_batch": 10,
-        "max_similar_natures": 20
+        "max_similar_natures": 16
     }
 }
