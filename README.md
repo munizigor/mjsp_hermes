@@ -6,6 +6,25 @@ O Hermes é um sistema de assitente para auxílio ao fluxo de atendimento de eme
 
 Este repositório funciona como um monorepo que reúne as diferentes camadas do projeto, cada uma responsável por uma parte do fluxo de captura, transcrição e atendimento da chamada.
 
+## Execução Simplificada em Desktop (para testes)
+
+### Requisitos
+- Docker com NVIDIA Container Toolkit instalado;
+- GPU com 6GB ou mais de VRAM;
+- Pelo menos 16GB de RAM;
+- Conexão com a internet (para baixar modelos);
+
+Iniciar servidores de inferência:
+```sh
+# Start inference servers
+./inference_servers/desktop_inference.sh
+```
+
+Iniciar backend:
+```sh
+cd backend && source backend/build_and_deploy.sh
+```
+
 ## Estrutura do repositório
 
 ```
