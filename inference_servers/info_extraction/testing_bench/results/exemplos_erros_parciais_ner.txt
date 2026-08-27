@@ -1,0 +1,5 @@
+ponto_de_referencia | casa das redes | Casa das Redes (em frente) -> casa das redes (em frente) | 0.7230769230769231 | True
+ponto_de_referencia | igreja assembleia de deus ministerio de itajai sc | igreja assembleia de deus (proximo) | 0.7361904761904762 | True
+pessoa | gustavo moraes | gustavo (7 anos, escondido no guarda-roupa) | 0.7272727272727273 | True
+pessoa | emanuelly sampaio | emanuelly, 10 anos 0.7142857142857143
+pessoa | motorista da olivia | motorista (condutor) | 0.7096774193548387 | True

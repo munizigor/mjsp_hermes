@@ -1,0 +1,14 @@
+*.zip
+*.pyc
+hf_models/
+.env
+testing_bench/results/*.csv
+testing_bench/results/*.xlsx
+testing_bench/result*/*.csv
+testing_bench/result*/*.xlsx
+testing_bench/.asr_cache/*
+testing_bench/inputs/*
+testing_bench/results/*
+*.parquet
+*.arrow
+*.bin

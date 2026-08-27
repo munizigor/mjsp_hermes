@@ -1,0 +1,37 @@
+name: "whisper_cpu"
+backend: "python"
+max_batch_size: 0
+
+input [
+  {
+    name: "INPUT_0"
+    data_type: TYPE_FP32
+    dims: [ -1 ]
+  }
+]
+
+output [
+  {
+    name: "OUTPUT_0"
+    data_type: TYPE_STRING
+    dims: [ 1 ]
+  }
+]
+
+instance_group [
+  {
+    count: 1
+    kind: KIND_CPU
+  }
+]
+
+parameters [
+  {
+    key: "PYTHON_BACKEND_ARGS"
+    value: { string_value: "--model_name openai/whisper-tiny" }
+  },
+  {
+    key: "stub_timeout_seconds"
+    value: { string_value: "6000" }
+  }
+]

@@ -4,6 +4,8 @@ services:
     volumes:
       - ${LOCAL_SQL_DB_PATH}:/app/sqlite_data
       - ./src/init.sql:/init.sql
+    networks:
+      - hermes-network
     command: >
       sh -c "
         apk add --no-cache sqlite &&
@@ -11,14 +13,36 @@ services:
         echo 'SQLite inicializado. '
       "
     env_file: docker/common.env
+  test_asr:
+    build:
+      dockerfile: docker/Dockerfile.asr_cpu
+    networks:
+      - hermes-network
+    volumes:
+      - ./logs/:/logs
+      - ./src/asr:/src
+      - /tmp:/tmp
+      - ./config.json:/config.json
+      - ./.env:/.env
+      - ./test_audios:/test_audios
+    env_file: docker/common.env
+    command: >
+      sh -c "
+        python3 -u /src/test_quick.py > /test_audios/asr_test.latest.log 2>&1 && 
+        cat /test_audios/asr_test.latest.log
+      "
   hermes-api:
     depends_on:
+      test_asr:
+        condition: service_completed_successfully
       staging:
         condition: service_completed_successfully
     build:
       dockerfile: docker/Dockerfile.hermes
     ports:
       - "${HERMES_PORT}:${HERMES_PORT}"
+    networks:
+      - hermes-network
     volumes:
       - ${ASTERISK_RECORDINGS_PATH}:/asterisk_recordings
       - ${LOCAL_SQL_DB_PATH}:/app/sqlite_data
@@ -29,10 +53,14 @@ services:
     env_file: docker/common.env
   hermes-ner:
     depends_on:
+      test_asr:
+        condition: service_completed_successfully
       staging:
         condition: service_completed_successfully
     build:
       dockerfile: docker/Dockerfile.ner_cpu
+    networks:
+      - hermes-network
 
     #ports:
     #  - "XXXX:XXXX"
@@ -50,11 +78,13 @@ services:
     depends_on:
       staging:
         condition: service_completed_successfully
+      test_asr:
+        condition: service_completed_successfully
     build:
       dockerfile: docker/Dockerfile.asr_cpu
+    networks:
+      - hermes-network
 
-    #ports:
-    #  - "XXXX:XXXX"
     volumes:
       - ${LOCAL_SQL_DB_PATH}:/app/sqlite_data
       - ./logs/:/logs
@@ -66,12 +96,16 @@ services:
     env_file: docker/common.env
   hermes-interpretation:
     depends_on:
+      test_asr:
+        condition: service_completed_successfully
       staging:
         condition: service_completed_successfully
     build:
       dockerfile: docker/Dockerfile.interpretation
     #ports:
     #  - "XXXX:XXXX"
+    networks:
+      - hermes-network
     volumes:
       - ${LOCAL_SQL_DB_PATH}:/app/sqlite_data
       - ./logs/:/logs
@@ -85,3 +119,11 @@ services:
 
 volumes:
   hf_cache_vol:
+
+networks:
+  hermes-network:
+    name: hermes-network
+    external: true
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16 # Defines the IP range for the network

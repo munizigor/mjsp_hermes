@@ -2,6 +2,25 @@
 
 Repositório responsável pela API REST para o sistema Hermes (Ministério da Justiça - Governo Federal do Brasil) para transcrição e extração de informações de áudios de ligações de emergência em tempo real.
 
+## Execução Simplificada em Desktop (para testes)
+
+### Requisitos
+- Docker com NVIDIA Container Toolkit instalado;
+- GPU com 6GB ou mais de VRAM;
+- Pelo menos 16GB de RAM;
+- Conexão com a internet (para baixar modelos);
+
+Iniciar servidores de inferência:
+```sh
+# Start inference servers
+source inference_servers/desktop_inference.sh
+```
+
+Iniciar backend:
+```sh
+cd backend && source backend/build_and_deploy.sh
+```
+
 ## Visão geral
 
 O projeto sobe um conjunto de containers e serviços que compõem a pipeline principal:

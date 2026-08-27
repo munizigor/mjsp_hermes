@@ -1,0 +1,5 @@
+{
+  "model": "CEIA-UFG/Gemma-3-Gaia-PT-BR-4b-it",
+  "served_model_name": "CEIA-UFG/Gemma-3-Gaia-PT-BR-4b-it",
+  "gpu_memory_utilization": 0.90
+}

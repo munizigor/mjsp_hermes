@@ -4,27 +4,27 @@
         "api_processes": 1
     },
     "asr": {
-        "model": "turbo_cuda",
+        "model": "whisper-medium-q8_0",
         "language": "pt",
-        "hardware_config": "triton-server",
-        "n_asr_workers": 1,
+        "hardware_config": "whisper-cpp-api",
+        "n_asr_workers": 2,
         "n_cpus": 1
     },
     "ner": {
         "n_gliner_workers": 3,
         "hardware_config": "vllm-api",
         "n_cpus": 1,
-        "gliner_mname": "mistralai/Ministral-3-3B-Instruct-2512",
+        "gliner_mname": "cyankiwi/Ministral-3-3B-Instruct-2512-AWQ-4bit",
         "batch_size": 1,
         "max_tokens": 256
     },
     "interpretation": {
         "hardware_config": "vllm-api",
         "embedding_hardware": "cpu",
-        "model": "mistralai/Ministral-3-3B-Instruct-2512",
+        "model": "cyankiwi/Ministral-3-3B-Instruct-2512-AWQ-4bit",
         "n_cpus": 6,
-        "min_transcricao": 120,
+        "min_transcricao": 80,
         "n_in_batch": 10,
-        "max_similar_natures": 20
+        "max_similar_natures": 16
     }
 }

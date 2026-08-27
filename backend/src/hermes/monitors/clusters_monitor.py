@@ -223,6 +223,7 @@ class ClusterMetricsMonitor:
         for info in vllm_hosts:
             host = info["hostname"]
             tp = info["servertype"]
+            #port = info["port"]
             host_full_name = f"{host}_{tp}_{metrics_port}"
             self.monitors[host_full_name] = VLLMMonitor(host, tp, metrics_port)
             print("New host:", host_full_name, file=sys.stderr)

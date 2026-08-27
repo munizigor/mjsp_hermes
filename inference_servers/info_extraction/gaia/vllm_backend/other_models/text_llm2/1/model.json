@@ -1,0 +1,7 @@
+{
+  "model": "unsloth/Qwen3-8B-bnb-4bit",
+  "served_model_name": "unsloth/Qwen3-8B-bnb-4bit",
+  "gpu_memory_utilization": 0.90,
+  "tokenizer": "unsloth/Qwen3-8B-bnb-4bit",
+  "dtype": "half"
+}

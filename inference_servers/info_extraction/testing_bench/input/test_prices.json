@@ -1,0 +1,114 @@
+{
+    "gcp_n1_t4": {
+        "dollars_hour_standard": 0.6,
+        "dollars_hour_spot": 0.31
+    },
+    "gcp_g2_l4": {
+        "dollars_hour_standard": 0.74,
+        "dollars_hour_spot": 0.32
+    },
+    "gcp_g2_2x-l4": {
+        "dollars_hour_standard": 2.001,
+        "dollars_hour_spot": 0.88
+    },
+    "gcp_g2_4x-l4": {
+        "dollars_hour_standard": 4,
+        "dollars_hour_spot": 1.76
+    },
+    "gcp_a2_a100": {
+        "dollars_hour_standard": 3.674,
+        "dollars_hour_spot": 1.8
+    },
+    "gemini-2.0-flash-lite": {
+        "dollars_1m_tokens_in": 0.075,
+        "dollars_1m_tokens_out": 0.3
+    },
+    "gpt-5-nano": {
+        "dollars_1m_tokens_in": 0.05,
+        "dollars_1m_tokens_out": 0.40
+    },
+    "gemini-2.5-flash-lite": {
+        "dollars_1m_tokens_in": 0.1,
+        "dollars_1m_tokens_out": 0.4
+    },
+    "gemini-2.0-flash": {
+        "dollars_1m_tokens_in": 0.1,
+        "dollars_1m_tokens_out": 0.4
+    },
+    "gpt-4.1-nano": {
+        "dollars_1m_tokens_in": 0.10,
+        "dollars_1m_tokens_out": 0.40
+    },
+    "gpt-5-mini": {
+        "dollars_1m_tokens_in": 0.25,
+        "dollars_1m_tokens_out": 2
+    },
+    "gemini-2.5-flash": {
+        "dollars_1m_tokens_in": 0.3,
+        "dollars_1m_tokens_out": 2.50
+    },
+    "gemini-3-flash-preview": {
+        "dollars_1m_tokens_in": 0.50,
+        "dollars_1m_tokens_out": 3.0
+    },
+    "o3-mini": {
+        "dollars_1m_tokens_in": 1.10,
+        "dollars_1m_tokens_out": 4.40
+    },
+    "gemini-2.5-pro": {
+        "dollars_1m_tokens_in": 1.25,
+        "dollars_1m_tokens_out": 10.0
+    },
+    "gpt-5.2-chat": {
+        "dollars_1m_tokens_in": 1.75,
+        "dollars_1m_tokens_out": 14
+    },
+    "gpt-5-chat": {
+        "dollars_1m_tokens_in": 1.25,
+        "dollars_1m_tokens_out": 10
+    },
+    "gpt-4.1": {
+        "dollars_1m_tokens_in": 2,
+        "dollars_1m_tokens_out": 8
+    },
+    "gpt-4o-mini": {
+        "dollars_1m_tokens_in": 0.15,
+        "dollars_1m_tokens_out": 0.6
+    },
+    "o4-mini": {
+        "dollars_1m_tokens_in": 1.1,
+        "dollars_1m_tokens_out": 4.4
+    },
+    "deepseek-r1-distill-qwen-14b": {
+        "dollars_1m_tokens_in": 0.3543,
+        "dollars_1m_tokens_out": 0.354331
+    },
+    "gemma-3n-e4b-it": {
+        "dollars_1m_tokens_in": 0.1181,
+        "dollars_1m_tokens_out": 0.23622
+    },
+    "llama-3.1-8B-instruct": {
+        "dollars_1m_tokens_in": 0.688976,
+        "dollars_1m_tokens_out": 0.905512
+    },
+    "mistral-small-3.2-24b-instruct": {
+        "dollars_1m_tokens_in": 0.2165,
+        "dollars_1m_tokens_out": 0.629921
+    },
+    "gpt-oss-120b": {
+        "dollars_1m_tokens_in": 0.3149,
+        "dollars_1m_tokens_out": 1.2401
+    },
+    "gemma-3-4b-it": {
+        "dollars_1m_tokens_in": 0.1181,
+        "dollars_1m_tokens_out": 0.23622
+    },
+    "qwen3.5-35b": {
+        "dollars_1m_tokens_in": 0.2807,
+        "dollars_1m_tokens_out": 0.6555
+    },
+    "magistral-small": {
+        "dollars_1m_tokens_in": 0.3167,
+        "dollars_1m_tokens_out": 0.6844
+    }
+}
