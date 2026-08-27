@@ -1,0 +1,165 @@
+/home/pita/fs/repos/mjsp_hermes/inference_servers
+asr
+desktop_inference.sh
+info_extraction
+vllm_server.log
+whisper_docker.log
+ Container whisper_cpp-model-downloader-1  Created
+ Container whisper_cpp-model-benchmarker-1  Created
+ Container whisper_cpp-whisper-1  Created
+Attaching to model-benchmarker-1, model-downloader-1, whisper-1
+model-downloader-1   | O arquivo ggml-medium-q8_0.bin já existe. Pulando download.
+[Kmodel-downloader-1 exited with code 0
+model-benchmarker-1  | Arquivo de benchmark /models/ggml-medium-q8_0.bin.bench.txt já existe. Pulando execução.
+[Kmodel-benchmarker-1 exited with code 0
+whisper-1            | Iniciando servidor: Modelo=medium-q8_0 | Threads=8 | Idioma=auto
+whisper-1            | whisper_init_from_file_with_params_no_state: loading model from '/models/ggml-medium-q8_0.bin'
+whisper-1            | whisper_init_with_params_no_state: use gpu    = 1
+whisper-1            | whisper_init_with_params_no_state: flash attn = 1
+whisper-1            | whisper_init_with_params_no_state: gpu_device = 0
+whisper-1            | whisper_init_with_params_no_state: dtw        = 0
+whisper-1            | whisper_init_with_params_no_state: devices    = 1
+whisper-1            | whisper_init_with_params_no_state: backends   = 1
+whisper-1            | whisper_model_load: loading model
+whisper-1            | whisper_model_load: n_vocab       = 51865
+whisper-1            | whisper_model_load: n_audio_ctx   = 1500
+whisper-1            | whisper_model_load: n_audio_state = 1024
+whisper-1            | whisper_model_load: n_audio_head  = 16
+whisper-1            | whisper_model_load: n_audio_layer = 24
+whisper-1            | whisper_model_load: n_text_ctx    = 448
+whisper-1            | whisper_model_load: n_text_state  = 1024
+whisper-1            | whisper_model_load: n_text_head   = 16
+whisper-1            | whisper_model_load: n_text_layer  = 24
+whisper-1            | whisper_model_load: n_mels        = 80
+whisper-1            | whisper_model_load: ftype         = 7
+whisper-1            | whisper_model_load: qntvr         = 2
+whisper-1            | whisper_model_load: type          = 4 (medium)
+whisper-1            | whisper_model_load: adding 1608 extra tokens
+whisper-1            | whisper_model_load: n_langs       = 99
+whisper-1            | whisper_model_load:          CPU total size =   822.75 MB
+whisper-1            | whisper_model_load: model size    =  822.75 MB
+whisper-1            | whisper_backend_init_gpu: device 0: CPU (type: 0)
+whisper-1            | whisper_backend_init_gpu: no GPU found
+whisper-1            | whisper_init_state: kv self size  =   50.33 MB
+whisper-1            | whisper_init_state: kv cross size =  150.99 MB
+whisper-1            | whisper_init_state: kv pad  size  =    6.29 MB
+whisper-1            | whisper_init_state: compute buffer (conv)   =   28.57 MB
+whisper-1            | whisper_init_state: compute buffer (encode) =   44.60 MB
+whisper-1            | whisper_init_state: compute buffer (cross)  =    7.73 MB
+whisper-1            | whisper_init_state: compute buffer (decode) =   98.20 MB
+whisper-1            | 
+whisper-1            | system_info: n_threads = 8 / 12 | WHISPER : COREML = 0 | OPENVINO = 0 | CPU : SSE3 = 1 | SSSE3 = 1 | AVX = 1 | AVX2 = 1 | F16C = 1 | FMA = 1 | BMI2 = 1 | OPENMP = 1 | REPACK = 1 | 
+whisper-1            | 
+whisper-1            | operator(): processing 'filho_assaltado.wav' (748203 samples, 46.8 sec), 8 threads, 1 processors, lang = auto, task = transcribe, timestamps = 1 ...
+whisper-1            | 
+whisper-1            | whisper_full_with_state: auto-detected language: pt (p = 0.961783)
+whisper-1            | 
+whisper-1            | system_info: n_threads = 8 / 12 | WHISPER : COREML = 0 | OPENVINO = 0 | CPU : SSE3 = 1 | SSSE3 = 1 | AVX = 1 | AVX2 = 1 | F16C = 1 | FMA = 1 | BMI2 = 1 | OPENMP = 1 | REPACK = 1 | 
+whisper-1            | 
+whisper-1            | operator(): processing 'incendio_no_lixo.wav' (1215101 samples, 75.9 sec), 8 threads, 1 processors, lang = auto, task = transcribe, timestamps = 1 ...
+whisper-1            | 
+whisper-1            | whisper_full_with_state: auto-detected language: pt (p = 0.979666)
+whisper-1            | 
+whisper-1            | system_info: n_threads = 8 / 12 | WHISPER : COREML = 0 | OPENVINO = 0 | CPU : SSE3 = 1 | SSSE3 = 1 | AVX = 1 | AVX2 = 1 | F16C = 1 | FMA = 1 | BMI2 = 1 | OPENMP = 1 | REPACK = 1 | 
+whisper-1            | 
+whisper-1            | operator(): processing 'senhora_ataque_cachorro.wav' (1007617 samples, 63.0 sec), 8 threads, 1 processors, lang = auto, task = transcribe, timestamps = 1 ...
+whisper-1            | 
+whisper-1            | whisper_full_with_state: auto-detected language: pt (p = 0.993418)
+whisper-1            | 
+whisper-1            | system_info: n_threads = 8 / 12 | WHISPER : COREML = 0 | OPENVINO = 0 | CPU : SSE3 = 1 | SSSE3 = 1 | AVX = 1 | AVX2 = 1 | F16C = 1 | FMA = 1 | BMI2 = 1 | OPENMP = 1 | REPACK = 1 | 
+whisper-1            | 
+whisper-1            | operator(): processing 'simulacao_incendio_1.wav' (1004588 samples, 62.8 sec), 8 threads, 1 processors, lang = auto, task = transcribe, timestamps = 1 ...
+whisper-1            | 
+whisper-1            | whisper_full_with_state: auto-detected language: pt (p = 0.972652)
+whisper-1            | 
+whisper-1            | system_info: n_threads = 8 / 12 | WHISPER : COREML = 0 | OPENVINO = 0 | CPU : SSE3 = 1 | SSSE3 = 1 | AVX = 1 | AVX2 = 1 | F16C = 1 | FMA = 1 | BMI2 = 1 | OPENMP = 1 | REPACK = 1 | 
+whisper-1            | 
+whisper-1            | operator(): processing 'filho_assaltado.wav' (748203 samples, 46.8 sec), 8 threads, 1 processors, lang = auto, task = transcribe, timestamps = 1 ...
+whisper-1            | 
+whisper-1            | whisper_full_with_state: auto-detected language: pt (p = 0.961783)
+whisper-1            | 
+whisper-1            | system_info: n_threads = 8 / 12 | WHISPER : COREML = 0 | OPENVINO = 0 | CPU : SSE3 = 1 | SSSE3 = 1 | AVX = 1 | AVX2 = 1 | F16C = 1 | FMA = 1 | BMI2 = 1 | OPENMP = 1 | REPACK = 1 | 
+whisper-1            | 
+whisper-1            | operator(): processing 'incendio_no_lixo.wav' (1215101 samples, 75.9 sec), 8 threads, 1 processors, lang = auto, task = transcribe, timestamps = 1 ...
+whisper-1            | 
+whisper-1            | whisper_full_with_state: auto-detected language: pt (p = 0.979666)
+whisper-1            | 
+whisper-1            | system_info: n_threads = 8 / 12 | WHISPER : COREML = 0 | OPENVINO = 0 | CPU : SSE3 = 1 | SSSE3 = 1 | AVX = 1 | AVX2 = 1 | F16C = 1 | FMA = 1 | BMI2 = 1 | OPENMP = 1 | REPACK = 1 | 
+whisper-1            | 
+whisper-1            | operator(): processing 'senhora_ataque_cachorro.wav' (1007617 samples, 63.0 sec), 8 threads, 1 processors, lang = auto, task = transcribe, timestamps = 1 ...
+whisper-1            | 
+whisper-1            | whisper_full_with_state: auto-detected language: pt (p = 0.993418)
+whisper-1            | 
+whisper-1            | system_info: n_threads = 8 / 12 | WHISPER : COREML = 0 | OPENVINO = 0 | CPU : SSE3 = 1 | SSSE3 = 1 | AVX = 1 | AVX2 = 1 | F16C = 1 | FMA = 1 | BMI2 = 1 | OPENMP = 1 | REPACK = 1 | 
+whisper-1            | 
+whisper-1            | operator(): processing 'simulacao_incendio_1.wav' (1004588 samples, 62.8 sec), 8 threads, 1 processors, lang = auto, task = transcribe, timestamps = 1 ...
+whisper-1            | 
+whisper-1            | whisper_full_with_state: auto-detected language: pt (p = 0.972652)
+whisper-1            | 
+whisper-1            | system_info: n_threads = 8 / 12 | WHISPER : COREML = 0 | OPENVINO = 0 | CPU : SSE3 = 1 | SSSE3 = 1 | AVX = 1 | AVX2 = 1 | F16C = 1 | FMA = 1 | BMI2 = 1 | OPENMP = 1 | REPACK = 1 | 
+whisper-1            | 
+whisper-1            | operator(): processing 'filho_assaltado.wav' (748203 samples, 46.8 sec), 8 threads, 1 processors, lang = auto, task = transcribe, timestamps = 1 ...
+whisper-1            | 
+whisper-1            | whisper_full_with_state: auto-detected language: pt (p = 0.961783)
+whisper-1            | 
+whisper-1            | system_info: n_threads = 8 / 12 | WHISPER : COREML = 0 | OPENVINO = 0 | CPU : SSE3 = 1 | SSSE3 = 1 | AVX = 1 | AVX2 = 1 | F16C = 1 | FMA = 1 | BMI2 = 1 | OPENMP = 1 | REPACK = 1 | 
+whisper-1            | 
+whisper-1            | operator(): processing 'incendio_no_lixo.wav' (1215101 samples, 75.9 sec), 8 threads, 1 processors, lang = auto, task = transcribe, timestamps = 1 ...
+whisper-1            | 
+whisper-1            | whisper_full_with_state: auto-detected language: pt (p = 0.979666)
+whisper-1            | 
+whisper-1            | system_info: n_threads = 8 / 12 | WHISPER : COREML = 0 | OPENVINO = 0 | CPU : SSE3 = 1 | SSSE3 = 1 | AVX = 1 | AVX2 = 1 | F16C = 1 | FMA = 1 | BMI2 = 1 | OPENMP = 1 | REPACK = 1 | 
+whisper-1            | 
+whisper-1            | operator(): processing 'senhora_ataque_cachorro.wav' (1007617 samples, 63.0 sec), 8 threads, 1 processors, lang = auto, task = transcribe, timestamps = 1 ...
+whisper-1            | 
+whisper-1            | whisper_full_with_state: auto-detected language: pt (p = 0.993418)
+whisper-1            | 
+whisper-1            | system_info: n_threads = 8 / 12 | WHISPER : COREML = 0 | OPENVINO = 0 | CPU : SSE3 = 1 | SSSE3 = 1 | AVX = 1 | AVX2 = 1 | F16C = 1 | FMA = 1 | BMI2 = 1 | OPENMP = 1 | REPACK = 1 | 
+whisper-1            | 
+whisper-1            | operator(): processing 'simulacao_incendio_1.wav' (1004588 samples, 62.8 sec), 8 threads, 1 processors, lang = auto, task = transcribe, timestamps = 1 ...
+whisper-1            | 
+whisper-1            | whisper_full_with_state: auto-detected language: pt (p = 0.972652)
+whisper-1            | 
+whisper-1            | system_info: n_threads = 8 / 12 | WHISPER : COREML = 0 | OPENVINO = 0 | CPU : SSE3 = 1 | SSSE3 = 1 | AVX = 1 | AVX2 = 1 | F16C = 1 | FMA = 1 | BMI2 = 1 | OPENMP = 1 | REPACK = 1 | 
+whisper-1            | 
+whisper-1            | operator(): processing 'bad729cb-a23b-11f1-ab11-371a614eda83.wav' (748203 samples, 46.8 sec), 8 threads, 1 processors, lang = auto, task = transcribe, timestamps = 1 ...
+whisper-1            | 
+whisper-1            | whisper_full_with_state: auto-detected language: pt (p = 0.936366)
+whisper-1            | 
+whisper-1            | system_info: n_threads = 8 / 12 | WHISPER : COREML = 0 | OPENVINO = 0 | CPU : SSE3 = 1 | SSSE3 = 1 | AVX = 1 | AVX2 = 1 | F16C = 1 | FMA = 1 | BMI2 = 1 | OPENMP = 1 | REPACK = 1 | 
+whisper-1            | 
+whisper-1            | operator(): processing 'filho_assaltado.wav' (748203 samples, 46.8 sec), 8 threads, 1 processors, lang = auto, task = transcribe, timestamps = 1 ...
+whisper-1            | 
+whisper-1            | whisper_full_with_state: auto-detected language: pt (p = 0.961783)
+whisper-1            | 
+whisper-1            | system_info: n_threads = 8 / 12 | WHISPER : COREML = 0 | OPENVINO = 0 | CPU : SSE3 = 1 | SSSE3 = 1 | AVX = 1 | AVX2 = 1 | F16C = 1 | FMA = 1 | BMI2 = 1 | OPENMP = 1 | REPACK = 1 | 
+whisper-1            | 
+whisper-1            | operator(): processing 'incendio_no_lixo.wav' (1215101 samples, 75.9 sec), 8 threads, 1 processors, lang = auto, task = transcribe, timestamps = 1 ...
+whisper-1            | 
+whisper-1            | whisper_full_with_state: auto-detected language: pt (p = 0.979666)
+whisper-1            | 
+whisper-1            | system_info: n_threads = 8 / 12 | WHISPER : COREML = 0 | OPENVINO = 0 | CPU : SSE3 = 1 | SSSE3 = 1 | AVX = 1 | AVX2 = 1 | F16C = 1 | FMA = 1 | BMI2 = 1 | OPENMP = 1 | REPACK = 1 | 
+whisper-1            | 
+whisper-1            | operator(): processing 'senhora_ataque_cachorro.wav' (1007617 samples, 63.0 sec), 8 threads, 1 processors, lang = auto, task = transcribe, timestamps = 1 ...
+whisper-1            | 
+whisper-1            | whisper_full_with_state: auto-detected language: pt (p = 0.993418)
+whisper-1            | 
+whisper-1            | system_info: n_threads = 8 / 12 | WHISPER : COREML = 0 | OPENVINO = 0 | CPU : SSE3 = 1 | SSSE3 = 1 | AVX = 1 | AVX2 = 1 | F16C = 1 | FMA = 1 | BMI2 = 1 | OPENMP = 1 | REPACK = 1 | 
+whisper-1            | 
+whisper-1            | operator(): processing 'simulacao_incendio_1.wav' (1004588 samples, 62.8 sec), 8 threads, 1 processors, lang = auto, task = transcribe, timestamps = 1 ...
+whisper-1            | 
+whisper-1            | whisper_full_with_state: auto-detected language: pt (p = 0.972652)
+whisper-1            | 
+whisper-1            | system_info: n_threads = 8 / 12 | WHISPER : COREML = 0 | OPENVINO = 0 | CPU : SSE3 = 1 | SSSE3 = 1 | AVX = 1 | AVX2 = 1 | F16C = 1 | FMA = 1 | BMI2 = 1 | OPENMP = 1 | REPACK = 1 | 
+whisper-1            | 
+whisper-1            | operator(): processing '482de1bb-a23c-11f1-ad05-bb18e6a41732.wav' (748203 samples, 46.8 sec), 8 threads, 1 processors, lang = auto, task = transcribe, timestamps = 1 ...
+whisper-1            | 
+whisper-1            | whisper_full_with_state: auto-detected language: pt (p = 0.936366)
+Gracefully stopping... (press Ctrl+C again to force)
+ Container whisper_cpp-whisper-1  Stopping
+ Container whisper_cpp-whisper-1  Stopped
+ Container whisper_cpp-model-benchmarker-1  Stopping
+ Container whisper_cpp-model-benchmarker-1  Stopped
+ Container whisper_cpp-model-downloader-1  Stopping
+ Container whisper_cpp-model-downloader-1  Stopped
+

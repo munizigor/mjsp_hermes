@@ -75,3 +75,6 @@ networks:
   hermes-network:
     name: hermes-network
     external: true
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

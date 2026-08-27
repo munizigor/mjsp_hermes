@@ -74,6 +74,10 @@ def parse_triton_hosts():
             inf_type_name = key_parts[0]
             info_name = key_parts[1]
             if info_name == "HOST":
+                port_key = key.replace("HOST", "PORT")
+                '''if port_key in os.environ:
+                    port = os.environ[port_key]
+                else:'''
                 hostname = value
                 vllm_hosts.append(
                     {
