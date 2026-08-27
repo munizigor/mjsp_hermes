@@ -8,6 +8,7 @@ from fastapi import APIRouter
 
 import sqlite3 as sqlite
 import soundfile as sf
+import librosa
 
 router = APIRouter()
 

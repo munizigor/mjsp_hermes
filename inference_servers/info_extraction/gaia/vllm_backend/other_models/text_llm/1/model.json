@@ -1,0 +1,7 @@
+{
+  "model": "Qwen/Qwen2.5-3B-Instruct",
+  "served_model_name": "Qwen/Qwen2.5-3B-Instruct",
+  "gpu_memory_utilization": 0.90,
+  "tokenizer": "Qwen/Qwen2.5-3B-Instruct",
+  "dtype": "half"
+}

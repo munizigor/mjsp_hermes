@@ -9,6 +9,7 @@ import tempfile
 from pydub import AudioSegment
 
 from runners.asr_utils import env_vals
+from runners.worker_selector import select_worker
 
 
 def worker_sequence_workload(audio_queue):
@@ -329,37 +330,13 @@ class AsrRunner:
         result_queue = mp.Queue()
         # calls_being_processed_lockset = mp.Array('i', range(n_asr_workers))
         workers = []
+        worker_func = select_worker(hardware_config)
 
         # stop_flag = mp.Value('H', 0)
 
         # mp.set_start_method('spawn')
 
-        if hardware_config in ["cpu", "cuda"]:
-            from runners.local_whisper import whisper_worker_process
 
-            worker_func = whisper_worker_process
-        elif hardware_config == "azure-api":
-            from runners.azure import azure_caller_process
-
-            worker_func = azure_caller_process
-        elif hardware_config == "triton-server":
-            from runners.triton import triton_caller_process
-
-            worker_func = triton_caller_process
-        elif hardware_config == "gcp-api":
-            from runners.chirp import google_caller_process
-
-            worker_func = google_caller_process
-        elif hardware_config == "flask-server":
-            from runners.flask_server import flask_caller_process
-
-            worker_func = flask_caller_process
-        elif hardware_config == "vllm-api":
-            from runners.vllm_server import vllm_caller_process
-
-            worker_func = vllm_caller_process
-        else:
-            raise Exception("Invalid hardware-config for ASR")
 
         for worker_index in range(n_asr_workers):
             print("AsrRunner: creating processes")

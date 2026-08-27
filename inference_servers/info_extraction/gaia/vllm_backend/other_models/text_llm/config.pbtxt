@@ -1,0 +1,5 @@
+backend: "vllm"
+parameters: {
+  key: "model_config_path"
+  value: { string_value: "/models/text_llm/1/model.json" }
+}

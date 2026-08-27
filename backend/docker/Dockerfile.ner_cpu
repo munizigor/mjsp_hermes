@@ -7,10 +7,11 @@ RUN apt update && apt install -y \
     libboost-program-options-dev libboost-test-dev libboost-filesystem-dev \
     && rm -rf /var/lib/apt/lists/*
 
-RUN pip install --break-system-packages pydantic langdetect python-mecab-ko janome indic-nlp-library jieba
-RUN pip install --break-system-packages gliner[cpu]
-RUN pip install --break-system-packages camel-tools spacy
-RUN pip install --break-system-packages gliner[cpu,tokenizers,stanza]==0.2.22
+RUN pip install --break-system-packages pydantic langdetect
+#python-mecab-ko janome indic-nlp-library jieba
+#RUN pip install --break-system-packages gliner[cpu] camel-tools 
+RUN pip install --break-system-packages spacy
+#RUN pip install --break-system-packages gliner[cpu,tokenizers,stanza]==0.2.22
 RUN pip install --break-system-packages numpy tritonclient[http]
 RUN pip install --break-system-packages --upgrade openai google-genai
 RUN pip cache purge

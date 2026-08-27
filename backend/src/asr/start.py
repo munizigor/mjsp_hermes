@@ -4,19 +4,11 @@ import json
 from time import sleep
 
 from asr_runner import AsrRunner
-
+from names import asr_models
 #for key, val in os.environ.items():
 #    print(key, val)
 
-asr_models = {
-    'base': 'openai/whisper-base',
-    'small': 'openai/whisper-small',
-    'medium': 'my-north-ai/whisper-medium-pt',
-    'large': 'nilc-nlp/distil-whisper-coraa-mupe-asr',
-    'turbo': 'openai/whisper-large-v3-turbo',
-    'turbo_cuda': 'turbo_cuda',
-    'azure-fast': 'azure-fast-transcribe'
-}
+
 
 if __name__ == "__main__":
     config_json = json.load(open('/config.json', 'r'))

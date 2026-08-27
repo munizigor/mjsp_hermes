@@ -27,6 +27,7 @@ if [ -z "${LOCAL_SQL_DB_PATH:-}" ]; then
   exit 1
 fi
 
+sudo docker network create hermes-network 2>/dev/null || true
 
 #cd ${HERMES_BACKEND_DIR} \
 #    #&& sudo rm -rf ${LOCAL_SQL_DB_PATH}/* \

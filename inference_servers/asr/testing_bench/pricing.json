@@ -1,0 +1,24 @@
+{
+    "cpu8_gput4_mem30gb": {
+        "aws": {
+            "on_demand": 0.752,
+            "spot": 0.256
+        },
+        "gcp": {
+            "on_demand": 0.71,
+            "spot": 0.27
+        },
+        "azure": {
+            "on_demand": 0.71,
+            "spot": 0.26
+        }
+    },
+    "commercial_apis": {
+        "hermes-chirp3-us-less_than_500000": 0.96,
+        "hermes-chirp3-us": 0.24,
+        "hermes-chirp2-us-central1": 0.24,
+        "hermes-telephony-us": 0.24,
+        "azure-fast-transcribe": 0.36,
+        "azure-llm-speech": 0.36
+    }
+}
