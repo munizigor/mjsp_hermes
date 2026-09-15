@@ -2,7 +2,7 @@
 
 📞 Sistema de Transcrição e Interpretação de Áudio para Atendimento de Emergência
 
-O Hermes é um sistema de assitente para auxílio ao fluxo de atendimento de emergência, transcrevendo o áudio em tempo real e ajudando no preenchimento de dados do formulário de atendimento.
+Desenvolvido no âmbito do programa [**Startup.gov**](https://www.gov.br/governodigital/pt-br/estrategias-e-governanca-digital/startupgovbr), fruto de uma parceria estratégica entre o Ministério da Justiça e Segurança Pública (**MJSP**) e o Ministério da Gestão e da Inovação em Serviços Públicos (**MGI**), o **Hermes** é um sistema de assitente para auxílio ao fluxo de atendimento de emergência, transcrevendo o áudio em tempo real e ajudando no preenchimento de dados do formulário de atendimento.
 
 Este repositório funciona como um monorepo que reúne as diferentes camadas do projeto, cada uma responsável por uma parte do fluxo de captura, transcrição e atendimento da chamada.
 
