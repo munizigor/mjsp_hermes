@@ -1,0 +1,29 @@
+h_per_capita=[0.000793   0.00032623 0.00049183]
+urb=[0.97289157 0.75066892 0.96475486]
+h_avg_weighted=0.0005545811156535108
+h_per_capita_estimado_br=0.0005042773320888361
+horas_br_m1=117894.91660737355, horas_br_m2=107201.15116712014
+h_per_capita=[0.00951598 0.00391472 0.00590201]
+urb=[0.97289157 0.75066892 0.96475486]
+h_avg_weighted=0.0066549733878421315
+h_per_capita_estimado_br=0.006051327985066033
+horas_br_m1=1414738.999288483, horas_br_m2=1286413.8140054417
+Recife, Araçoiaba, Ilha de Itamaracá, Itapissuma, Moreno, Abreu e Lima, Ipojuca, São Lourenço da Mata, Igarassu, Camaragibe, Cabo de Santo Agostinho, Paulista, Olinda, Jaboatão dos Guararapes, Petrolina, Caruaru (mensal) ['Recife', 'Araçoiaba', 'Ilha de Itamaracá', 'Itapissuma', 'Moreno', 'Abreu e Lima', 'Ipojuca', 'São Lourenço da Mata', 'Igarassu', 'Camaragibe', 'Cabo de Santo Agostinho', 'Paulista', 'Olinda', 'Jaboatão dos Guararapes', 'Petrolina', 'Caruaru']
+Pará (mensal (março)) ['Pará']
+Distrito Federal (mensal) ['Distrito Federal']
+Brasil (M1: Média Ponderada) (Mensal) ['Brasil']
+Brasil (M1: Média Ponderada) (Anual) ['Brasil']
+                                   Cenário de Agência  ... Milhões de Tokens por segundo (Output)
+59               Brasil (M1: Média Ponderada) (Anual)  ...                      0.0108 +/- 0.0036
+63               Brasil (M1: Média Ponderada) (Anual)  ...                      0.0108 +/- 0.0036
+60               Brasil (M1: Média Ponderada) (Anual)  ...                      0.0108 +/- 0.0036
+61               Brasil (M1: Média Ponderada) (Anual)  ...                      0.0108 +/- 0.0036
+64               Brasil (M1: Média Ponderada) (Anual)  ...                      0.0108 +/- 0.0036
+..                                                ...  ...                                    ...
+2   Recife, Araçoiaba, Ilha de Itamaracá, Itapissu...  ...                                 0.0003
+10  Recife, Araçoiaba, Ilha de Itamaracá, Itapissu...  ...                                 0.0003
+12  Recife, Araçoiaba, Ilha de Itamaracá, Itapissu...  ...                                 0.0003
+11  Recife, Araçoiaba, Ilha de Itamaracá, Itapissu...  ...                                 0.0003
+13  Recife, Araçoiaba, Ilha de Itamaracá, Itapissu...  ...                                 0.0003
+
+[70 rows x 13 columns]

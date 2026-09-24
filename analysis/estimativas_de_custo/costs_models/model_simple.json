@@ -1,0 +1,8 @@
+{
+    "in_tokens_per_hour": 883772.1839872964,
+    "in_tokens_per_hour_std": 182163.10545722547,
+    "out_tokens_per_hour": 240071.18467896548,
+    "out_tokens_per_hour_std": 79755.9961990716,
+    "db_size_mb_per_hour": 1.3512112620338215,
+    "db_size_mb_per_hour_std": 0.35042260668473374
+}

@@ -12,7 +12,7 @@ sudo docker build -t $IMAGE_NAME . \
         -p8000:8000 -p8001:8001 -p8012:8002 \
         --network hermes-network \
         --ip 172.20.0.15 \
-        -v $(pwd)/hf_models:/root/.cache/huggingface  \
+        -v ~/.cache/huggingface:/root/.cache/huggingface  \
         -v /tmp/vllm_cache:/root/.cache/vllm \
         --name $CONTAINER_NAME \
         $IMAGE_NAME
