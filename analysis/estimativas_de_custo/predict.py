@@ -252,6 +252,20 @@ for _, agencia_row in agencias.iterrows():
 
         custo_total_avg_mi = round(custo_total_avg / 1_000_000, 2)
         custo_total_std_mi = round(custo_total_std / 1_000_000, 2)
+
+        input_volume = round(million_input_tokens_avg, 2)
+        input_volume_std = round(million_input_tokens_std, 2)
+        output_volume = round(million_output_tokens_avg, 2)
+        output_volume_std = round(million_output_tokens_std, 2)
+
+        if input_volume_std > 0.01:
+            input_volume_value = f"{input_volume} +/- {input_volume_std}"
+        else:
+            input_volume_value = str(input_volume)
+        if output_volume_std > 0.01:
+            output_volume_value = f"{output_volume} +/- {output_volume_std}"
+        else:
+            output_volume_value = str(output_volume)
         
 
         result_lines.append({
@@ -268,6 +282,8 @@ for _, agencia_row in agencias.iterrows():
             'Custo Output Tokens (R$)': f"{custo_tokens_output_avg_reais} +/- {custo_tokens_output_std_real}",
             'Milhões de Tokens por segundo (Input)': input_tokens_per_sec_value,
             'Milhões de Tokens por segundo (Output)': output_tokens_per_sec_value,
+            'Volume Total de Input Tokens (Milhões)': input_volume_value,
+            'Volume Total de Output Tokens (Milhões)': output_volume_value,
         })
 
 result_df = pd.DataFrame(result_lines)

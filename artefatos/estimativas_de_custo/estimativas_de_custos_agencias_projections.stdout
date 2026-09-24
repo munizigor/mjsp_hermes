@@ -13,17 +13,17 @@ Pará (mensal (março)) ['Pará']
 Distrito Federal (mensal) ['Distrito Federal']
 Brasil (M1: Média Ponderada) (Mensal) ['Brasil']
 Brasil (M1: Média Ponderada) (Anual) ['Brasil']
-                                   Cenário de Agência  ... Milhões de Tokens por segundo (Output)
-59               Brasil (M1: Média Ponderada) (Anual)  ...                      0.0108 +/- 0.0036
-63               Brasil (M1: Média Ponderada) (Anual)  ...                      0.0108 +/- 0.0036
-60               Brasil (M1: Média Ponderada) (Anual)  ...                      0.0108 +/- 0.0036
-61               Brasil (M1: Média Ponderada) (Anual)  ...                      0.0108 +/- 0.0036
-64               Brasil (M1: Média Ponderada) (Anual)  ...                      0.0108 +/- 0.0036
-..                                                ...  ...                                    ...
-2   Recife, Araçoiaba, Ilha de Itamaracá, Itapissu...  ...                                 0.0003
-10  Recife, Araçoiaba, Ilha de Itamaracá, Itapissu...  ...                                 0.0003
-12  Recife, Araçoiaba, Ilha de Itamaracá, Itapissu...  ...                                 0.0003
-11  Recife, Araçoiaba, Ilha de Itamaracá, Itapissu...  ...                                 0.0003
-13  Recife, Araçoiaba, Ilha de Itamaracá, Itapissu...  ...                                 0.0003
+                                   Cenário de Agência  ... Volume Total de Output Tokens (Milhões)
+59               Brasil (M1: Média Ponderada) (Anual)  ...                 339638.07 +/- 112833.92
+63               Brasil (M1: Média Ponderada) (Anual)  ...                 339638.07 +/- 112833.92
+60               Brasil (M1: Média Ponderada) (Anual)  ...                 339638.07 +/- 112833.92
+61               Brasil (M1: Média Ponderada) (Anual)  ...                 339638.07 +/- 112833.92
+64               Brasil (M1: Média Ponderada) (Anual)  ...                 339638.07 +/- 112833.92
+..                                                ...  ...                                     ...
+2   Recife, Araçoiaba, Ilha de Itamaracá, Itapissu...  ...                       855.13 +/- 284.09
+10  Recife, Araçoiaba, Ilha de Itamaracá, Itapissu...  ...                       855.13 +/- 284.09
+12  Recife, Araçoiaba, Ilha de Itamaracá, Itapissu...  ...                       855.13 +/- 284.09
+11  Recife, Araçoiaba, Ilha de Itamaracá, Itapissu...  ...                       855.13 +/- 284.09
+13  Recife, Araçoiaba, Ilha de Itamaracá, Itapissu...  ...                       855.13 +/- 284.09
 
-[70 rows x 13 columns]
+[70 rows x 15 columns]
