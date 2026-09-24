@@ -1,0 +1,8 @@
+Território,Horas de Áudio Totais,Duração,População da Região,duracao_norm,territorios_lista,Pop_Total_IBGE,Pop_Urbana_IBGE,Taxa_Urbanizacao_IBGE
+"Recife, Araçoiaba, Ilha de Itamaracá, Itapissuma, Moreno, Abreu e Lima, Ipojuca, São Lourenço da Mata, Igarassu, Camaragibe, Cabo de Santo Agostinho, Paulista, Olinda, Jaboatão dos Guararapes, Petrolina, Caruaru",3562.0,mensal,4553167.0,mensal,"['Recife', 'Araçoiaba', 'Ilha de Itamaracá', 'Itapissuma', 'Moreno', 'Abreu e Lima', 'Ipojuca', 'São Lourenço da Mata', 'Igarassu', 'Camaragibe', 'Cabo de Santo Agostinho', 'Paulista', 'Olinda', 'Jaboatão dos Guararapes', 'Petrolina', 'Caruaru']",4491813.0,4370047.0,0.9728915696178804
+Pará,2649.0,mensal (março),8175000.0,mensal,['Pará'],8120131.0,6095530.0,0.7506689239373109
+Distrito Federal,1385.685,mensal,2982818.0,mensal,['Distrito Federal'],2817381.0,2718082.0,0.9647548556620492
+Brasil (M1: Média Ponderada),117894.91660737355,Mensal,212583720.0,mensal,['Brasil'],212583720.0,185814748.5780053,0.8740779800918212
+Brasil (M2: Regressão Linear),107201.15116712014,Mensal,212583720.0,mensal,['Brasil'],212583720.0,185814748.5780053,0.8740779800918212
+Brasil (M1: Média Ponderada),1414738.999288483,Anual,212583720.0,anual,['Brasil'],212583720.0,185814748.5780053,0.8740779800918212
+Brasil (M2: Regressão Linear),1286413.8140054417,Anual,212583720.0,anual,['Brasil'],212583720.0,185814748.5780053,0.8740779800918212
