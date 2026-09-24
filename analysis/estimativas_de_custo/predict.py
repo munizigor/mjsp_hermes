@@ -55,12 +55,17 @@ Não levados em consideração:
 '''
 
 cost_models_dir = os.path.join(os.path.dirname(__file__), 'costs_models')
+base_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 train_data_dir = os.path.join(os.path.dirname(__file__), 'train_data')
-cenarios_excel_path = os.path.join(os.path.dirname(__file__), 'cenarios.xlsx')
+dados_coletados = os.path.join(base_dir, "artefatos", "dados_coletados")
+cenarios_excel_path = os.path.join(dados_coletados, 'cenarios.xlsx')
 agencias_parsed_path = cenarios_excel_path.replace(".xlsx", "_agencias_parsed.csv")
 pop_file = os.path.join(train_data_dir, 'populacao_brasil.txt')
 
 meses_no_ano = 12
+HORAS_POR_MES = 720
+HORAS_POR_ANO = 8760
+SEGUNDOS_EM_HORA = 3600
 
 model_path = sys.argv[1]
 results_path = sys.argv[2]
@@ -155,7 +160,7 @@ for names_set, clf in [(mensal_names, 'mensal'), (anual_names, 'anual')]:
         'Pop_Urbana_IBGE': POP_BRASIL * taxa_urb_brasil,
     })
 
-    agencias_brasil.append({
+    '''agencias_brasil.append({
         'Território': 'Brasil (M2: Regressão Linear)',
         'Horas de Áudio Totais': horas_br_m2,
         'Duração': clf.capitalize(),
@@ -165,7 +170,7 @@ for names_set, clf in [(mensal_names, 'mensal'), (anual_names, 'anual')]:
         'População da Região': POP_BRASIL,
         'duracao_norm': clf.lower(),
         'Pop_Urbana_IBGE': POP_BRASIL * taxa_urb_brasil,
-    })
+    })'''
 
 # Remove o "Brasil" original que não possuía horas mapeadas (evita falha na multiplicação cambial logo abaixo)
 agencias = agencias[agencias['Território'].str.lower() != 'brasil'].copy()
@@ -177,6 +182,13 @@ agencias = pd.concat([agencias, agencias_brasil_df], ignore_index=True)
 agencias.to_csv(results_path.replace('.csv', '_agencias_projections.csv'), index=False)
 
 for _, agencia_row in agencias.iterrows():
+    if agencia_row["duracao_norm"] in mensal_names:
+        timespan_hours = HORAS_POR_MES
+    elif agencia_row["duracao_norm"] in anual_names:
+        timespan_hours = HORAS_POR_ANO
+    else:
+        timespan_hours = np.nan
+
     nome_agencia = agencia_row["Território"] + " (" + agencia_row["Duração"] + ")"
     horas_totais = agencia_row["Horas de Áudio Totais"]
     territorios = agencia_row["territorios_lista"] 
@@ -191,10 +203,17 @@ for _, agencia_row in agencias.iterrows():
         db_gb_avg = round(horas_totais * db_size_gb_per_hour, 2)
         db_gb_std = round(horas_totais * db_size_gb_per_hour_std, 2)
 
-        custo_tokens_input_avg = (in_tokens_per_hour * horas_totais) / 1000000 * custo_input_1m
-        custo_tokens_output_avg = (out_tokens_per_hour * horas_totais) / 1000000 * custo_output_1m
-        custo_tokens_input_std = (in_tokens_per_hour_std * horas_totais) / 1000000 * custo_input_1m
-        custo_tokens_output_std = (out_tokens_per_hour_std * horas_totais) / 1000000 * custo_output_1m
+        million_input_tokens_avg = (in_tokens_per_hour * horas_totais) / 1000000
+        million_input_tokens_std = (in_tokens_per_hour_std * horas_totais) / 1000000
+
+        custo_tokens_input_avg  = million_input_tokens_avg * custo_input_1m
+        custo_tokens_input_std = million_input_tokens_std * custo_input_1m
+
+        million_output_tokens_avg = (out_tokens_per_hour * horas_totais) / 1000000
+        million_output_tokens_std = (out_tokens_per_hour_std * horas_totais) / 1000000
+
+        custo_tokens_output_avg = million_output_tokens_avg * custo_output_1m
+        custo_tokens_output_std = million_output_tokens_std * custo_output_1m
         
         variancia_input = custo_tokens_input_std ** 2
         variancia_output = custo_tokens_output_std ** 2
@@ -212,17 +231,43 @@ for _, agencia_row in agencias.iterrows():
         custo_tokens_output_avg_reais = round(custo_tokens_output_avg * valor_dolar, 2)
         custo_tokens_output_std_real = round(custo_tokens_output_std * valor_dolar, 2)
 
+        million_input_tokens_per_sec = million_input_tokens_avg / timespan_hours / SEGUNDOS_EM_HORA
+        million_output_tokens_per_sec = million_output_tokens_avg / timespan_hours / SEGUNDOS_EM_HORA
+        million_input_tokens_per_sec_std = million_input_tokens_std / timespan_hours / SEGUNDOS_EM_HORA
+        million_output_tokens_per_sec_std = million_output_tokens_std / timespan_hours / SEGUNDOS_EM_HORA
+
+        million_input_tps_avg_r = round(million_input_tokens_per_sec, 4)
+        million_input_tps_std_r = round(million_input_tokens_per_sec_std, 4)
+        million_output_tps_avg_r = round(million_output_tokens_per_sec, 4)
+        million_output_tps_std_r = round(million_output_tokens_per_sec_std, 4)
+
+        if million_input_tps_std_r > 0.001:
+            input_tokens_per_sec_value = f"{million_input_tps_avg_r} +/- {million_input_tps_std_r}"
+        else:
+            input_tokens_per_sec_value = str(million_input_tps_avg_r)
+        if million_output_tps_std_r > 0.001:
+            output_tokens_per_sec_value = f"{million_output_tps_avg_r} +/- {million_output_tps_std_r}"
+        else:
+            output_tokens_per_sec_value = str(million_output_tps_avg_r)
+
+        custo_total_avg_mi = round(custo_total_avg / 1_000_000, 2)
+        custo_total_std_mi = round(custo_total_std / 1_000_000, 2)
+        
+
         result_lines.append({
             'Cenário de Agência': nome_agencia,
             'Opção de Deploy': nome_deploy,
+            'Custo Total (milhões de R$)': f"{custo_total_avg_mi} +/- {custo_total_std_mi}",
             'Custo Total (R$)': f"{custo_total_avg} +/- {custo_total_std}",
+            'Tamanho Banco de Dados Relacional (GB)': f"{db_gb_avg} +/- {db_gb_std}",
             'Custo Total Mínimo (R$)': custo_total_lower,
             'Custo Total Médio (R$)': custo_total_avg,
             'Custo Total Máximo (R$)': custo_total_upper,
             'Custo ASR (R$)': custo_audio_avg_real,
             'Custo Input Tokens (R$)': f"{custo_tokens_input_avg_reais} +/- {custo_tokens_input_std_real}",
             'Custo Output Tokens (R$)': f"{custo_tokens_output_avg_reais} +/- {custo_tokens_output_std_real}",
-            'Tamanho Banco de Dados Relacional (GB)': f"{db_gb_avg} +/- {db_gb_std}",
+            'Milhões de Tokens por segundo (Input)': input_tokens_per_sec_value,
+            'Milhões de Tokens por segundo (Output)': output_tokens_per_sec_value,
         })
 
 result_df = pd.DataFrame(result_lines)

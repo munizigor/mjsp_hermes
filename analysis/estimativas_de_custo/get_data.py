@@ -12,7 +12,7 @@ import numpy as np
 
 base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 train_data_dir = os.path.join(os.path.dirname(__file__), 'train_data')
-dados_coletados = base_dir, "dados_coletados"
+dados_coletados = os.path.join(base_dir, "artefatos", "dados_coletados")
 cenarios_excel_path = os.path.join(dados_coletados, 'cenarios.xlsx')
 
 def normalizar_nome(nome):
