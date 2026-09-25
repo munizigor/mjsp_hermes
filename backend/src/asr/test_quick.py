@@ -31,6 +31,15 @@ else:
     full_mname = asr_model
 
 worker_func = select_worker(hardware_config)
+
+def high_timeout_worker(full_mname,
+        transcript_queue,
+        result_queue,
+        hardware_config,
+        language,
+        n_cpus,):
+    worker_func(full_mname, transcript_queue, result_queue, hardware_config, language, n_cpus, timeout=32)
+
 transcript_queue = mp.Queue()
 result_queue = mp.Queue()
 
@@ -46,7 +55,7 @@ result_queue = mp.Queue()
     ),
 )'''
 worker_thread = threading.Thread(
-    target=worker_func,
+    target=high_timeout_worker,
     args=(
         full_mname,
         transcript_queue,

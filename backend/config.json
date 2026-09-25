@@ -4,7 +4,7 @@
         "api_processes": 1
     },
     "asr": {
-        "model": "qwen3_asr_0.6b",
+        "model": "Qwen/Qwen3-ASR-0.6B",
         "language": "pt",
         "hardware_config": "vllm-api",
         "n_asr_workers": 6,

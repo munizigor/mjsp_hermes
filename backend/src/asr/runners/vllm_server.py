@@ -13,7 +13,7 @@ from runners.asr_utils import (
 short_to_full_name = {"qwen3_asr_1.7b": "Qwen/Qwen3-ASR-1.7B"}
 
 
-def call_vllm_api(api_url, audio_path, model_name):
+def call_vllm_api(api_url, audio_path, model_name, timeout=12):
     """
     Chama a API padrão OpenAI do vLLM (Qwen3-ASR) mantendo a assinatura
     de retorno esperada: total_inf_time, inf_start, result_dict.
@@ -30,7 +30,7 @@ def call_vllm_api(api_url, audio_path, model_name):
             # O vLLM espera a chave "file" em vez de "audio"
             files = {"file": (os.path.basename(audio_path), f, "audio/wav")}
 
-            response = requests.post(api_url, data=payload, files=files, timeout=12)
+            response = requests.post(api_url, data=payload, files=files, timeout=timeout)
 
         total_inf_time = time() - inf_start
 
@@ -66,7 +66,7 @@ def call_vllm_api(api_url, audio_path, model_name):
 
 
 def vllm_caller_process(
-    model_name, audio_queue, result_queue, hardware_config, language, n_cpus
+    model_name, audio_queue, result_queue, hardware_config, language, n_cpus, timeout=12
 ):
     """
     Processo worker equivalente ao google_caller_process.
@@ -99,7 +99,7 @@ def vllm_caller_process(
 
             # 2. Chama a função de requisição modularizada
             total_inf_time, inf_start, result = call_vllm_api(
-                api_url, audio_path, model_name
+                api_url, audio_path, model_name, timeout=timeout
             )
 
             if result.get("status_code") == 200 and "text" in result:
