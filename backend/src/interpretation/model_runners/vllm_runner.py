@@ -4,12 +4,10 @@ import sys
 import time
 from typing import List, Optional, Tuple, Any
 
-from pydantic import ValidationError, BaseModel
 from openai import OpenAI, APITimeoutError, APIConnectionError
 
 from model_runners.templates import InterpretationClient
 
-# --- Environment Loading (Kept as is) ---
 if os.path.exists(".env"):
     env_vals = {
         rawline.split("=")[0]: rawline.split("=")[1].rstrip("\n")

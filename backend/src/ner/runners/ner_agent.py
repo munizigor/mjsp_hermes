@@ -224,6 +224,10 @@ class NERAgent:
                 from runners.vllm_endpoint import (
                     vllm_worker_process as worker_process_func,
                 )
+            elif hardware_config in ["serpro-llm"]:
+                from runners.serpro_llm import (
+                    serpro_llm_worker_process as worker_process_func,
+                )
             else:
                 worker_process_func = None
 
@@ -262,9 +266,28 @@ class NERAgent:
         )
         sequencer_worker.start()
 
+        self.initial_test(transcript_queue)
+
     def stop(self, max_wait: float = 8.0):
         print("Stopping NER agent...")
         self.running_flag.value = 0
         while self.running_flag.value == 1 and max_wait > 0:
             time.sleep(0.5)
             max_wait -= 0.5
+
+    def initial_test(self, transcript_queue):
+        """
+        Initial test to check if the model is working
+        """
+
+        transcript_text = "Operador: Corpo de Bombeiros, em que posso ajudar?\nSolicitante: Moço, eu preciso de ajuda. Um rapaz aqui, ele bateu a cabeça, tá no chão e parece que não consegue levantar.\nOperador: Ele está consciente?\nSolicitante: Não sei ao certo, ele tá falando muito baixo, tá tonto, meio zonzo. E sangrando um pouco na testa.\nOperador: Entendi. Ele chegou a cair de algum lugar alto?\nSolicitante: Não, acho que ele escorregou e bateu a cabeça na parede. Mas foi uma pancada forte.\nOperador: Você consegue dizer onde estão?\nSolicitante: Aqui na BR-369, número 456, é numa loja 1445. Perto da parada, Parada Brasília.\nOperador: Certo, entendi. Ele se queixa de dor em mais algum lugar?\nSolicitante: Ele só reclama muito de dor na cabeça. Tá com a mão no rosto, dizendo que tá tonto.\nOperador: Tudo bem, peço que evite mexer muito nele. Deixe-o deitado até chegarmos. Algum ponto de referência?\nSolicitante: É bem ao lado da parada. Tô aqui fora da loja 1445. Dá pra ver de longe.\nOperador: Vamos a caminho. Se ele parar de responder ou se o sangramento aumentar, me ligue de volta, tá bom? Fique ao lado dele e tente acalmá-lo.\nSolicitante: Tá certo. Obrigado, tô aguardando vocês."
+        transcript_text2 = "Operador: Corpo de Bombeiros, em que posso ajudar?\nSolicitante: Moço, eu preciso de ajuda. Um rapaz aqui, ele bateu a cabeça, tá no chão e  e MORREU!\nOperador: Entendi. Solicitante: Aqui na BR-369, número 456, é numa loja 1445"
+
+        print(transcript_text)
+        print("Extraindo entidades...\n")
+        transcript_queue.put(("-1", -1, transcript_text))
+        time.sleep(5)
+        print(transcript_text2)
+        print("Extraindo entidades...\n")
+        transcript_queue.put(("-2", -1, transcript_text2))
+        print("Testes iniciais terminados")

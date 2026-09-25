@@ -46,6 +46,7 @@ def save_ner_to_db(to_save: dict, redo_queue: mp.Queue):
         horario_fim;
         entities;
     """
+    redo = True
     cols = """id_emergencia, horario_contexto, horario_fim, 
             tipo_de_inferencia, resultado, duracao_inferencia, 
             duracao_outros_processamentos, input_tokens, output_tokens, 
@@ -58,32 +59,37 @@ def save_ner_to_db(to_save: dict, redo_queue: mp.Queue):
         print(f"worker_save_everything: {meta}")
 
         id_emergencia = int(to_save["id_emergencia"])
-        horario_contexto = to_save["horario_contexto"]
-        horario_fim = to_save["horario_fim"]
-        tipo_de_inferencia = "ner"
-        resultado = json.dumps(to_save["entities"], ensure_ascii=False)
-        duracao_inferencia = meta.get("processing_time", None)
-        duracao_outros_processamentos = meta.get("no_gpu_time", None)
-        input_tokens = meta.get("input_tokens", None)
-        output_tokens = meta.get("output_tokens", None)
-        modelo_utilizado = meta.get("model_name", None)
-        new_line = (
-            id_emergencia,
-            horario_contexto,
-            horario_fim,
-            tipo_de_inferencia,
-            resultado,
-            duracao_inferencia,
-            duracao_outros_processamentos,
-            input_tokens,
-            output_tokens,
-            modelo_utilizado,
-        )
-        cursor.execute(
-            f"""INSERT INTO resultados_inferencia 
-            ({cols}) VALUES (?,?,?,?,?,?,?,?,?,?)""",
-            new_line,
-        )
+        if int(id_emergencia) > 0 and int(to_save["horario_contexto"]) > 0:
+            horario_contexto = to_save["horario_contexto"]
+            horario_fim = to_save["horario_fim"]
+            tipo_de_inferencia = "ner"
+            resultado = json.dumps(to_save["entities"], ensure_ascii=False)
+            duracao_inferencia = meta.get("processing_time", None)
+            duracao_outros_processamentos = meta.get("no_gpu_time", None)
+            input_tokens = meta.get("input_tokens", None)
+            output_tokens = meta.get("output_tokens", None)
+            modelo_utilizado = meta.get("model_name", None)
+            new_line = (
+                id_emergencia,
+                horario_contexto,
+                horario_fim,
+                tipo_de_inferencia,
+                resultado,
+                duracao_inferencia,
+                duracao_outros_processamentos,
+                input_tokens,
+                output_tokens,
+                modelo_utilizado,
+            )
+            cursor.execute(
+                f"""INSERT INTO resultados_inferencia 
+                ({cols}) VALUES (?,?,?,?,?,?,?,?,?,?)""",
+                new_line,
+            )
+        else:
+            print(f"It looks like {to_save} was a test", file=sys.stderr)
+            print(to_save)
+            redo = False
     else:
         id_emergencia = to_save["id_emergencia"]
         print("gliner_inference_saver: Error in inference, not saving to DB")
@@ -91,7 +97,9 @@ def save_ner_to_db(to_save: dict, redo_queue: mp.Queue):
 
     sqlite_conn.commit()
     sqlite_conn.close()
-    redo_queue.put(int(to_save["id_emergencia"]))
+
+    if redo:
+        redo_queue.put(int(to_save["id_emergencia"]))
 
 
 def call_gcp_server_thread(

@@ -9,7 +9,10 @@ from runners.gliner_utilities import GLINER_MODEL_NAME
 from runners.ner_agent import NERAgent
 
 if __name__ == "__main__":
-    config_json = json.load(open("/config.json", "r"))
+    config_path = "/config.json"
+    if not os.path.exists(config_path):
+        config_path = "config.json"
+    config_json = json.load(open(config_path, "r"))
     ner_config = config_json.get("ner", {})
     n_gliner_workers = ner_config.get("n_gliner_workers", 1)
     batch_size = ner_config.get("batch_size", 5)
