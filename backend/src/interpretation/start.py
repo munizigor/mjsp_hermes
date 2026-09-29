@@ -6,6 +6,7 @@ import signal
 
 from interpreters import EmergencyInterpreter
 from agent import InterpretationAgent
+from pipeline_naturezas import connection_test
 
 
 def start_and_listen(
@@ -56,6 +57,8 @@ if __name__ == "__main__":
     delay = interpretation_config.get("delay", 5)
     n_in_batch = interpretation_config.get("n_in_batch", 10)
     min_transcricao = interpretation_config.get("min_transcricao", 10)
+
+    connection_test(hardware_config, model_name=model)
 
     while not os.path.exists(os.environ["SQLITE_DB_PATH"]):
         print(f'asr/start.py waiting 4s for {os.environ["SQLITE_DB_PATH"]}')

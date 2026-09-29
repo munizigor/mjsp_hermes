@@ -20,6 +20,7 @@ class EmergencyInterpreter:
         "gcp-api": "gcp-api",
         "triton-server": "triton-server",
         "vllm-api": "vllm-api",
+        "serpro-llm": "serpro-llm"
     }
     SUPPORTED_INTERPRETERS = [
         "llama_cpp",
@@ -29,6 +30,7 @@ class EmergencyInterpreter:
         "gcp-api",
         "triton-server",
         "vllm-api",
+        "serpro-llm"
     ]
     EMBEDDING_DEVICES = ["cpu", "cuda"]
 
@@ -70,7 +72,7 @@ class EmergencyInterpreter:
             else:
                 raise ValueError(f"Interpreter type {interpreter_type} not supported.")
             self.concurrency_mode = "batch"
-        elif interpreter_type in ["azure-api", "triton-server", "gcp-api", "vllm-api"]:
+        elif interpreter_type in ["azure-api", "triton-server", "gcp-api", "vllm-api", "serpro-llm"]:
             from pipeline_naturezas import PipelineNaturezasAPI
 
             self.interpreter = PipelineNaturezasAPI(

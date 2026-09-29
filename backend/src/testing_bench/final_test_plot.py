@@ -35,6 +35,7 @@ cores = {
     "gcp.open_cost": "#8B0000",  # Vermelho escuro
     "gcp.open_mid": "#E74C3C",  # Vermelho
     "gcp.open_qual": "#F1948A",  # Salmão
+    "local.local_qwen_and_serpro": "#2E7D32", # Verde escuro
 }
 cor_padrao = "#808080"  # Cinza caso apareça uma nova config
 
@@ -169,6 +170,13 @@ for nome_config in dados_extraidos.keys():
             nome_bonito += " - Ministral 3B"
         elif "qual" in nome_config:
             nome_bonito += " - Ministral 8B"
+    elif "local.local" in nome_config:
+        nome_bonito = "Modelos Abertos"
+        if "local_qwen" in nome_config:
+            nome_bonito += " - Qwen ASR"
+
+        if "_and_serpro" in nome_config:
+            nome_bonito += " + Qwen 3.6 35B"
 
     conf_labels.append(nome_bonito)
 

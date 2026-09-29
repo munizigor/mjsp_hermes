@@ -131,6 +131,7 @@ def parse_costs(
                 "Custo por Hora ($)": on_demand_hour,
                 "Custo ($)": vm_cost,
             }
+            print("Host:", new_line)
             cost_lines.append(new_line)
 
     """vms = set([line["Sub-recurso"] for line in cost_lines if line["Recurso"] == "Maquina Virtual"])

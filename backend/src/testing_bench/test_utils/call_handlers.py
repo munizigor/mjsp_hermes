@@ -1,3 +1,4 @@
+from numpy.ma import getdata
 import json
 import requests
 import time
@@ -266,6 +267,7 @@ def process_audio_call_hf(
     hermes_url, hermes_headers, audio_info, operator_code, output_dir
 ):
     global stop_threads
+    get_delay_secs = 3
     """Processa uma chamada de áudio completa"""
     try:
         # Delay para respeitar a carga
@@ -301,14 +303,35 @@ def process_audio_call_hf(
         send_audio_duration = 0.0
         inf_get_duration = 0.0
         last_length = 0.0
+        info_get_delays = []
         for audio_path, audio_length in zip(audio_paths, audio_lengths):
             # send_start = time.time()
             if stop_threads:
                 return
             to_sleep = audio_length - send_audio_duration - inf_get_duration
+
+            #Perform several gets to simulate frontend requesting info about call
+            while to_sleep > get_delay_secs:
+                try:
+                    get_start = time.time()
+                    _ = requests.get(
+                        f"{hermes_url}/get_all_inference_results/",
+                        params={"id_emergencia": emergency_id},
+                        headers=hermes_headers,
+                        timeout=get_delay_secs
+                    )
+                except Exception as err:
+                    print("Erro tentando obter resultados:", err, err.__context__)
+                    pass
+                info_get_delays.append(time.time() - get_start)
+                to_sleep -= get_delay_secs
+                print(f"{emergency_id} esperando {get_delay_secs}s")
+                time.sleep(get_delay_secs)
+
             if to_sleep > 0:
                 print(f"{emergency_id} esperando {to_sleep}s")
                 time.sleep(to_sleep)
+            
             send_start = time.time()
             audio_sent = send_audio(
                 hermes_url, hermes_headers, emergency_id, audio_path
@@ -379,6 +402,7 @@ def process_audio_call_hf(
             "call_start_delay": delay,
             "audio_lengths": audio_lengths,
             "delay_local": delay_local,
+            "frontend_get_delays": info_get_delays,
             "results": inf_results,
         }
 
