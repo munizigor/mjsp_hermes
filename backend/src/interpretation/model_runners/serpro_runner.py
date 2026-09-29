@@ -315,9 +315,20 @@ class SerproLLMTextAPIRunner(InterpretationClient):
         if len(meta["failures"]) > 0:
             meta["failures"] = meta["failures"][0]
 
+        parsed_output = None
         if answer is not None:
+            try:
+                parsed_output = format_schema.model_validate(answer)
+            except Exception as e:
+                print(f"[ERROR] Failed to parse response: {answer}")
+                print(f"[ERROR] Error: {e}")
+                print(f"[ERROR] Original prompt: {prompt}")
+                print(f"[ERROR] Original schema:", fmd_json)
+                parsed_output = None
+
+        if parsed_output is not None:
             return (
-                answer,
+                parsed_output,
                 meta["prompt_tokens"],
                 meta["completion_tokens"],
                 meta["request_time"],
@@ -327,5 +338,3 @@ class SerproLLMTextAPIRunner(InterpretationClient):
             if verbose:
                 print("Failure: not saved")
             return (None, None, None, meta["request_time"], response_json)
-
-        return parsed_output, input_tokens, output_tokens, latency, response_json

@@ -6,7 +6,7 @@ import sys
 
 import numpy as np
 import polars as pl
-from datasets import load_dataset, Audio, load_from_disk
+from datasets import load_dataset, Audio, load_from_disk, Dataset
 
 from test_utils.scheduling import calcular_delays, read_audio_length
 
@@ -337,25 +337,33 @@ def save_to_parquet(output_dir):
 def get_inputs(n_samples: int, dataset_name: str):
     # Only load if a file with the correct sampling has not been sampled and saved yet
     df_path = f"inputs/df_{n_samples}.parquet"
-    if os.path.exists(df_path):
-        print(f"Loading from {df_path}")
-        ds = load_from_disk(df_path)
-        return ds, df_path
-    else:
-        print("Downloading dataset...")
-        ds = load_dataset(
-            dataset_name,
-            split="train",
-            streaming=False,
-            # columns=colunas,
-        )  # .take(max_n)
-        ds = ds.filter(lambda x: x["modelo_texto"] != "cnmoro-gemma3-gaia-ptbr-4b_q8_0")
-        ds = ds.shuffle(seed=1337)
-        ds = ds.select(range(n_samples))
-        print("Casting audio column...")
-        ds = ds.cast_column("audio", Audio(sampling_rate=16000))
-        sample = next(iter(ds))["audio"]["array"]
-        print("Sample:", sample.shape)
-        os.makedirs("inputs", exist_ok=True)
-        ds.save_to_disk(df_path)
-        return ds, df_path
+    print("Downloading dataset...")
+    ds = load_dataset(
+        dataset_name,
+        split="train",
+        streaming=False,
+        # columns=colunas,
+    )  # .take(max_n)
+    ds = ds.filter(lambda x: x["modelo_texto"] != "cnmoro-gemma3-gaia-ptbr-4b_q8_0")
+    ds = ds.shuffle()
+    ds = ds.select(range(n_samples))
+    print("Casting audio column...")
+    ds = ds.cast_column("audio", Audio(sampling_rate=16000))
+    sample = next(iter(ds))["audio"]["array"]
+    print("Sample:", sample.shape)
+    os.makedirs("inputs", exist_ok=True)
+    ds.save_to_disk(df_path)
+    return ds, df_path
+
+def get_input_selection(ds: Dataset, n_first_to_ignore: int, n_next_to_select: int, output_dir: str):
+    n_total_samples = len(ds)
+    ds_path = f"{output_dir}/test_dataset"
+    indexes_to_select = list(range(n_first_to_ignore, n_first_to_ignore + n_next_to_select))
+    assert all([i < n_total_samples for i in indexes_to_select]), f"Indexes {indexes_to_select} are out of bounds for dataset of size {n_total_samples}"
+    assert indexes_to_select[0] >= 0, f"Index {indexes_to_select[0]} is negative"
+    print(f"Selected {len(indexes_to_select)} samples: {indexes_to_select}")
+    ds = ds.select(indexes_to_select)
+    ds.save_to_disk(ds_path)
+    print(f"Selected dataset saved to {ds_path}")
+    return ds, ds_path
+    

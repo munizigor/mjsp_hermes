@@ -19,12 +19,15 @@ sudo docker build -t $IMAGE_NAME . \
         $IMAGE_NAME \
         qwen-asr-serve Qwen/Qwen3-ASR-0.6B \
         --host 0.0.0.0 --port 8000 \
-        --gpu-memory-utilization 0.4 \
+        --gpu-memory-utilization 0.82 \
         --max-model-len 2048 \
-        --max-num-seqs 16 \
+        --max-num-seqs 32 \
         --max-num-batched-tokens 8192 \
         --enable-chunked-prefill \
         --enable-prefix-caching \
         --override-generation-config '{"temperature": 0.0}' \
         --compilation-config '{"compile_mm_encoder": true}' \
         --disable-log-requests
+
+    #
+    

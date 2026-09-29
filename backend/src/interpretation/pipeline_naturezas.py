@@ -6,6 +6,7 @@ from typing import List
 
 from model_runners.templates import (
     user_template_with_schema,
+    user_template_with_involv_schema,
     EmergencyInterpretationA,
     NaturezaOcorrenciaA,
     prompt_b_template,
@@ -270,7 +271,7 @@ class PipelineNaturezasAPI(BaseAPIRunner):
         """
         cpu_start = time.time()
         user_prompts = [
-            user_template_with_schema.replace("[[[[transcript_content]]]]", t)
+            user_template_with_involv_schema.replace("[[[[transcript_content]]]]", t)
             for t in transcriptions
         ]
 
@@ -324,17 +325,24 @@ class PipelineNaturezasAPI(BaseAPIRunner):
 
         return results2
 
-if __name__ == "__main__":
+def connection_test(hardware_config, model_name=None):
     # Bloco de demonstração: executa interpretações de exemplo quando o arquivo é executado diretamente.
     transcript_text = "Operador: Corpo de Bombeiros, em que posso ajudar?\nSolicitante: Moço, eu preciso de ajuda. Um rapaz aqui, ele bateu a cabeça, tá no chão e parece que não consegue levantar.\nOperador: Ele está consciente?\nSolicitante: Não sei ao certo, ele tá falando muito baixo, tá tonto, meio zonzo. E sangrando um pouco na testa.\nOperador: Entendi. Ele chegou a cair de algum lugar alto?\nSolicitante: Não, acho que ele escorregou e bateu a cabeça na parede. Mas foi uma pancada forte.\nOperador: Você consegue dizer onde estão?\nSolicitante: Aqui na BR-369, número 456, é numa loja 1445. Perto da parada, Parada Brasília.\nOperador: Certo, entendi. Ele se queixa de dor em mais algum lugar?\nSolicitante: Ele só reclama muito de dor na cabeça. Tá com a mão no rosto, dizendo que tá tonto.\nOperador: Tudo bem, peço que evite mexer muito nele. Deixe-o deitado até chegarmos. Algum ponto de referência?\nSolicitante: É bem ao lado da parada. Tô aqui fora da loja 1445. Dá pra ver de longe.\nOperador: Vamos a caminho. Se ele parar de responder ou se o sangramento aumentar, me ligue de volta, tá bom? Fique ao lado dele e tente acalmá-lo.\nSolicitante: Tá certo. Obrigado, tô aguardando vocês."
     transcript_text2 = "Operador: Corpo de Bombeiros, em que posso ajudar?\nSolicitante: Moço, eu preciso de ajuda. Um rapaz aqui, ele bateu a cabeça, tá no chão e  e MORREU!\nOperador: Entendi. Solicitante: Aqui na BR-369, número 456, é numa loja 1445"
-    client_types = [
-        ("gemma-4-31b-it-vllm", "serpro-llm"),
-        ("deepseek-v4-flash", "serpro-llm"),
-        ("gpt-oss-120b", "serpro-llm"),
-        ("mistral-small-4-119b", "serpro-llm"),
-        ("qwen3.6-35b", "serpro-llm"),
-    ]
+    
+    if hardware_config == "serpro-llm":
+        client_types = [
+            ("gemma-4-31b-it-vllm", hardware_config),
+            ("deepseek-v4-flash", hardware_config),
+            ("gpt-oss-120b", hardware_config),
+            ("mistral-small-4-119b", hardware_config),
+            ("qwen3.6-35b", hardware_config),
+        ]
+    else:
+        client_types = [
+            (model_name, hardware_config),
+        ]
+
     for model_name, client_type in client_types:
         print(
             f"\n\n--- Testing PipelineNaturezasAPI with client_type={client_type} and model={model_name} ---\n"
@@ -354,3 +362,6 @@ if __name__ == "__main__":
         for structured_resp, tokens1, tokens2, inf_time, raw in resps:
             print(structured_resp)
             print(inf_time, tokens1, tokens2)
+    
+if __name__ == "__main__":
+    connection_test("serpro-llm")

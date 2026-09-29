@@ -128,6 +128,10 @@ emergencyInterpretationA_schema_str = json.dumps(
     EmergencyInterpretationA.model_json_schema(), ensure_ascii=False, indent=2
 )
 
+envolvimentos_schema_str = json.dumps(
+    EnvolvimentosEmergencia.model_json_schema(), ensure_ascii=False, indent=2
+)
+
 
 class NaturezaOcorrenciaA(BaseModel):
     natureza_da_ocorrencia_indice: int = Field(
@@ -166,6 +170,18 @@ user_template_with_schema = f"""
 Você é um assistente especializado em extrair informações de transcrições de chamadas de emergência.
 Sua tarefa é analisar uma transcrição e produzir um JSON estritamente válido de acordo com o seguinte schema:
 {emergencyInterpretationA_schema_str}
+
+Você não deve discursar sobre o significado do schema, nem incluir elementos pré-textuais antes das informações dele. 
+Apenas dê a saída em JSON puro e estritamente válido.
+
+Você deve analisar a seguinte transcrição:
+[[[[transcript_content]]]]
+"""
+
+user_template_with_involv_schema = f"""
+Você é um assistente especializado em extrair informações de transcrições de chamadas de emergência.
+Sua tarefa é analisar uma transcrição e produzir um JSON estritamente válido de acordo com o seguinte schema:
+{envolvimentos_schema_str}
 
 Você não deve discursar sobre o significado do schema, nem incluir elementos pré-textuais antes das informações dele. 
 Apenas dê a saída em JSON puro e estritamente válido.

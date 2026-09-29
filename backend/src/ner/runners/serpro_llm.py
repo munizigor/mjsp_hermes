@@ -230,6 +230,11 @@ def call_serpro_llm_with_schema(
             verbose=True,
         )
 
+        if len(list(output_json.keys())) == 0:
+            print(f"[WARNING] Empty response for transcript: {transcript}")
+            output_json = None
+            #raise Exception("Empty response")
+
         processing_time = time.time() - start_time
 
         if meta is not None:
@@ -337,7 +342,7 @@ def call_serpro_llm_with_schema(
                 "error": error_type,
                 "input_tokens": input_tokens,
                 "output_tokens": output_tokens,
-                "model_name": params_dict["gliner_mname"],
+                "model_name": params_dict["model_name"],
             },
         }
         save_ner_to_db(to_save, redo_queue)
