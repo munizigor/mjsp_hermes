@@ -103,26 +103,23 @@ class EmergencyInterpretationABasic(BaseModel):
     outras_observacoes: str = Field(
         description="Outras observações que o solicitante tenha feito durante a transcrição, mas que não estão presentes na descrição breve."
     )
-    # tipo_chamada: str = Field(description="Tipo de ligação recebida.",
-    #    enum=["Ocorrência", 'Ligação Muda', 'Trote', 'Queda de Ligação', 'Informação', 'Agradecimento', 'Denúncia'])
-
 
 class EmergencyInterpretationA(BaseModel):
     descricao_breve: str = Field(
-        description="Breve descrição da ocorrência da chamada de emergência (máximo de 200 caracteres)."
+        max_length=200,
+        description=(
+            "Fatos relatados pelo solicitante em estilo telegráfico, usando apenas termos "
+            "explícitos na transcrição. PROIBIDO supor causa, gravidade, risco ou estado da vítima não ditos."
+            "Quando faltarem informações, diga que é este o caso, ao invés de adivinhar ou inventar."
+        ),
     )
-    outras_observacoes: str = Field(
-        description="Outras observações que o solicitante tenha feito durante a transcrição, mas que não estão presentes na descrição breve."
+    outras_observacoes: Optional[str] = Field(
+        default=None,
+        description=(
+            "Dados factuais extras ditos pelo solicitante que não couberam acima "
+            "(ex: ponto de referência, acesso). Retorne null se nada mais foi dito."
+        ),
     )
-    """ponto_de_referencia: Optional[str] = Field(
-        None,
-        description="Ponto de referência (rua, logradouro, etc.). Máximo de 100 caracteres.",
-    )
-    nome_do_solicitante: Optional[str] = Field(
-        None,
-        description="Nome do solicitante na chamada. Pessoa que fez a chamada. Máximo de 150 caracteres.",
-    )"""
-
 
 emergencyInterpretationA_schema_str = json.dumps(
     EmergencyInterpretationA.model_json_schema(), ensure_ascii=False, indent=2

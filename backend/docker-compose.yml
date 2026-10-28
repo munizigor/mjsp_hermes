@@ -68,6 +68,7 @@ services:
       - ${LOCAL_SQL_DB_PATH}:/app/sqlite_data
       - ./logs/:/logs
       - hf_cache_vol:/tmp/hf_cache_dir
+      - ./datasets:/datasets
       - ./src/ner:/src
       - /tmp:/tmp
       - ./config.json:/config.json

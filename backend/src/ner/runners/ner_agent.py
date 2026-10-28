@@ -6,6 +6,7 @@ import multiprocessing as mp
 from queue import Empty as QueueEmptyError
 
 from runners.gliner_utilities import GLINER_MODEL_NAME
+from testing.long_test import eval_ner
 
 print("Iniciando modulo do NERAgent")
 
@@ -266,7 +267,7 @@ class NERAgent:
         )
         sequencer_worker.start()
 
-        self.initial_test(transcript_queue)
+        self.initial_test(transcript_queue, result_queue, sqlite_path)
 
     def stop(self, max_wait: float = 8.0):
         print("Stopping NER agent...")
@@ -275,14 +276,15 @@ class NERAgent:
             time.sleep(0.5)
             max_wait -= 0.5
 
-    def initial_test(self, transcript_queue):
+    def initial_test(self, transcript_queue, results_queue, sqlite_path):
         """
         Initial test to check if the model is working
         """
 
+        eval_path = eval_ner(transcript_queue, results_queue)
+
         transcript_text = "Operador: Corpo de Bombeiros, em que posso ajudar?\nSolicitante: Moço, eu preciso de ajuda. Um rapaz aqui, ele bateu a cabeça, tá no chão e parece que não consegue levantar.\nOperador: Ele está consciente?\nSolicitante: Não sei ao certo, ele tá falando muito baixo, tá tonto, meio zonzo. E sangrando um pouco na testa.\nOperador: Entendi. Ele chegou a cair de algum lugar alto?\nSolicitante: Não, acho que ele escorregou e bateu a cabeça na parede. Mas foi uma pancada forte.\nOperador: Você consegue dizer onde estão?\nSolicitante: Aqui na BR-369, número 456, é numa loja 1445. Perto da parada, Parada Brasília.\nOperador: Certo, entendi. Ele se queixa de dor em mais algum lugar?\nSolicitante: Ele só reclama muito de dor na cabeça. Tá com a mão no rosto, dizendo que tá tonto.\nOperador: Tudo bem, peço que evite mexer muito nele. Deixe-o deitado até chegarmos. Algum ponto de referência?\nSolicitante: É bem ao lado da parada. Tô aqui fora da loja 1445. Dá pra ver de longe.\nOperador: Vamos a caminho. Se ele parar de responder ou se o sangramento aumentar, me ligue de volta, tá bom? Fique ao lado dele e tente acalmá-lo.\nSolicitante: Tá certo. Obrigado, tô aguardando vocês."
         transcript_text2 = "Operador: Corpo de Bombeiros, em que posso ajudar?\nSolicitante: Moço, eu preciso de ajuda. Um rapaz aqui, ele bateu a cabeça, tá no chão e  e MORREU!\nOperador: Entendi. Solicitante: Aqui na BR-369, número 456, é numa loja 1445"
-
         print(transcript_text)
         print("Extraindo entidades...\n")
         transcript_queue.put(("-1", -1, transcript_text))
@@ -291,3 +293,12 @@ class NERAgent:
         print("Extraindo entidades...\n")
         transcript_queue.put(("-2", -1, transcript_text2))
         print("Testes iniciais terminados")
+
+        # Remove anything with id_emergencia < 0
+        # tables: emergency_transcripts, resultados_inferencia
+        sqlite_conn = sqlite.connect(sqlite_path)
+        cursor = sqlite_conn.cursor()
+        cursor.execute("DELETE FROM emergency_transcripts WHERE id_emergencia < 0")
+        cursor.execute("DELETE FROM resultados_inferencia WHERE id_emergencia < 0")
+        sqlite_conn.commit()
+        sqlite_conn.close()

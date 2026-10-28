@@ -53,7 +53,11 @@ def call_vllm_server_thread_with_schema(
     """
     proc_start = time.time()
     endpoint = os.environ["TRITON_SERVER_URL_NER"]
-    base_url = f"http://{endpoint}/v1"
+    if "https" in endpoint:
+        base_url = f"{endpoint}/v1"
+    else:
+        base_url = f"http://{endpoint}/v1"
+
     try:
         vllm_client = OpenAI(base_url=base_url, api_key="EMPTY")
     except Exception as err:

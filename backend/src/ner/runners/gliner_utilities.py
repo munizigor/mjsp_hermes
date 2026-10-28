@@ -15,37 +15,55 @@ env_vals = {
 for k, v in env_vals.items():
     os.environ[k] = v
 
+INCLUDE_DF_SCHEMA = os.environ.get("INCLUDE_DF_SCHEMA", "True")
+INCLUDE_DF_SCHEMA = True if INCLUDE_DF_SCHEMA.lower() == "true" else False
 
 from pydantic import BaseModel, Field
 from typing import List, Optional, Literal
 
 
-class EmergencyEntities(BaseModel):
+class BaseEmergencyEntities(BaseModel):
     rua_ou_logradouro: Optional[List[str]] = Field(
-        None, description="Nome de rua, logradouro ou avenida"
+        None, description="Nome de rua, logradouro, avenida ou rodovia"
     )
-    # rua: Optional[List[str]] = Field(None, description="Nome de rua")
-    bairro: Optional[List[str]] = Field(None, description="Nome de bairro")
-    municipio: Optional[List[str]] = Field(None, description="Nome de município")
-    cidade: Optional[List[str]] = Field(None, description="Nome de cidade")
+    numero: Optional[List[str]] = Field(
+        None, description="Número principal do endereço"
+    )
+    bairro: Optional[List[str]] = Field(
+        None, description="Nome de bairro"
+    )
+    cidade: Optional[List[str]] = Field(
+        None, description="Nome de cidade"
+    )
+    municipio: Optional[List[str]] = Field(
+        None, description="Nome de município"
+    )
+    endereço_complemento: Optional[List[str]] = Field(
+        None, description="Complemento padrão (Ex: apt 301, casa A, fundos)"
+    )
     ponto_de_referencia: Optional[List[str]] = Field(
         None, description="Nome de ponto de referência do endereço"
     )
     nome_do_solicitante: Optional[List[str]] = Field(
         None, description="Nome do solicitante (pessoa que está fazendo o chamado)"
     )
-    """pessoa: Optional[List[str]] = Field(
-        None, description="Nome de pessoa ou participante"
-    )"""
-    numero: Optional[List[str]] = Field(None, description="Número do endereço")
-    # street_number: Optional[List[str]] = Field(None, description="Street Number")
-    # number: Optional[List[str]] = Field(None, description="Número")
-    """complemento: Optional[List[str]] = Field(
-        None, description="Complemento do endereço (Exemplos: apt 301, casa A, etc)"
-    )"""
-    endereço_complemento: Optional[List[str]] = Field(
-        None,
-        description="Número ou código da casa, apartamento ou loja naquele endereço",
+
+#Definimos a classe filha estendendo a base para o DF
+class DFEmergencyEntities(BaseEmergencyEntities):
+    setor_ou_via_df: Optional[List[str]] = Field(
+        None, description="Setor, Superquadra ou Via principal no DF (Ex: Asa Norte, W3, SQS)"
+    )
+    quadra_df: Optional[List[str]] = Field(
+        None, description="Número ou identificador da Quadra no DF (Ex: 706, Q 10)"
+    )
+    bloco_ou_conjunto_df: Optional[List[str]] = Field(
+        None, description="Letra ou número do Bloco ou Conjunto no DF"
+    )
+    lote_df: Optional[List[str]] = Field(
+        None, description="Número do Lote no DF"
+    )
+    regiao_administrativa_df: Optional[List[str]] = Field(
+        None, description="Região Administrativa no DF (Ex: Plano Piloto, Taguatinga)"
     )
 
 
@@ -72,10 +90,21 @@ class EmergencyClassifications(BaseModel):
     )
 
 
+
 class FullSchema(BaseModel):
-    entities: EmergencyEntities
+    entities: BaseEmergencyEntities
     classifications: EmergencyClassifications
 
+class FullSchemaDF(BaseModel):
+    entities: DFEmergencyEntities
+    classifications: EmergencyClassifications
+
+def get_extraction_schema(include_df_region: bool):
+    if include_df_region:
+        return FullSchemaDF
+    return FullSchema
+
+full_schema_class = get_extraction_schema(INCLUDE_DF_SCHEMA)
 
 schema_key_translations = {
     "fato_ocorrendo_neste_momento": "Fato Ocorrendo Neste Momento ?",
@@ -140,22 +169,31 @@ def get_ner_schema() -> dict:
 
     full_schema_dict = {
         "entities": {
-            # "rua_ou_logradouro": "Nome de rua, logradouro ou avenida",
             "rua": "Nome de rua",
             "bairro": "Nome de bairro",
             "municipio": "Nome de município",
             "cidade": "Nome de cidade",
             "ponto_de_referencia": "Nome de ponto de referência do endereço",
             "nome_do_solicitante": "Nome do solicitante (pessoa que está fazendo o chamado)",
-            # "pessoa": "Nome de pessoa ou participante",
             "numero": "Número do endereço",
+            "endereço_complemento": "Número ou código da casa, apartamento ou loja naquele endereço",
+            # "rua_ou_logradouro": "Nome de rua, logradouro ou avenida",
+            # "pessoa": "Nome de pessoa ou participante",
             # "street_number": "Street Number",
             # "number": "Número",
             # "complemento": "Complemento do endereço (Exemplos: apt 301, casa A, etc)",
-            "endereço_complemento": "Número ou código da casa, apartamento ou loja naquele endereço",
         },
         "boolean": {"natureza_da_ocorrencia": clfs_bool},
     }
+
+    if INCLUDE_DF_SCHEMA:
+        full_schema_dict["entities"].update({
+            "setor_ou_via_df": "Setor, Superquadra ou Via principal no DF (Ex: Asa Norte, W3, SQS)",
+            "quadra_df": "Número ou identificador da Quadra no DF (Ex: 706, Q 10)",
+            "bloco_ou_conjunto_df": "Letra ou número do Bloco ou Conjunto no DF",
+            "lote_df": "Número do Lote no DF",
+            "regiao_administrativa_df": "Região Administrativa no DF (Ex: Plano Piloto, Taguatinga)",
+        })
 
     return full_schema_dict
 
@@ -182,8 +220,17 @@ ner_labels = {
     "emergency_gliclass": get_ner_schema(),
 }
 
+if INCLUDE_DF_SCHEMA:
+    ner_labels["emergency_basic"].extend([
+        "setor_ou_via_df",
+        "quadra_df",
+        "bloco_ou_conjunto_df",
+        "lote_df",
+        "regiao_administrativa_df",
+    ])
+
 ner_labels_pydantic = {
-    "emergency_gliclass": FullSchema,
+    "emergency_gliclass": full_schema_class,
 }
 
 sinonimos = {
