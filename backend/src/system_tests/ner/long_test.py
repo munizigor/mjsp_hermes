@@ -2,7 +2,7 @@ import os
 import json
 import multiprocessing as mp
 from queue import Empty as QueueEmptyError
-from time import time
+from time import time, sleep
 
 import polars as pl
 
@@ -11,7 +11,7 @@ DATASETS_DIR = "/datasets"
 def download_eval_dataset(total_rows=36, estado_especifico = 'Distrito Federal',
         estado_especifico_perc = 1/3):
 
-    expected_path = f"{DATASETS_DIR}/df_emergencies_eval.parquet"
+    expected_path = f"{DATASETS_DIR}/df_emergencies_eval-n={total_rows}.parquet"
     if os.path.exists(expected_path):
         print(f"NER eval dataset already exists at {expected_path}")
         return pl.read_parquet(expected_path)
@@ -20,7 +20,8 @@ def download_eval_dataset(total_rows=36, estado_especifico = 'Distrito Federal',
     n_other_states = total_rows - n_estado
 
     COLUMNS = [
-        "roteiro",
+        "ID",
+        "roteiro_segmentado",
         "endereco_completo",
         "nome_solicitante",
         "rua",
@@ -35,7 +36,7 @@ def download_eval_dataset(total_rows=36, estado_especifico = 'Distrito Federal',
         "autorDoFatoNoLocal",
         "autorDoFatoArmado",
         "feridosComRiscoDeMorte",
-        "riscoTumulto",
+        "riscoDeTumulto",
         "leiMariaPenha",
     ]
 
@@ -70,11 +71,18 @@ def download_eval_dataset(total_rows=36, estado_especifico = 'Distrito Federal',
     return df_eval
 
 
-def eval_ner(transcript_queue: mp.Queue, result_queue: mp.Queue):
+def eval_ner(transcript_queue: mp.Queue, result_queue: mp.Queue, total_rows=36):
 
     expected_result_path = f"{DATASETS_DIR}/ner_eval_results.json"
 
-    df_eval = download_eval_dataset()
+    df_eval = download_eval_dataset(total_rows=total_rows)
+
+    existing_rows = 0
+    if os.path.exists(expected_result_path):
+        old_results = json.load(open(expected_result_path, "r"))
+        existing_rows = len(old_results)
+        if existing_rows >= total_rows:
+            return expected_result_path
 
     test_id = -1
     results = []
@@ -86,7 +94,7 @@ def eval_ner(transcript_queue: mp.Queue, result_queue: mp.Queue):
 
         transcript_queue.put((str(test_id), -1, transcript))
         wait_start = time()
-        time.sleep(1)
+        sleep(1)
         result_attempts = 3
         result_timeoff_secs = 3
         while result_attempts > 0:
@@ -100,11 +108,12 @@ def eval_ner(transcript_queue: mp.Queue, result_queue: mp.Queue):
             except QueueEmptyError:
                 result_attempts -= 1
                 result_timeoff_secs *= 2
+                print("NER Timeout after", time() - wait_start, "; attempts left: ", result_attempts)
 
         test_id -= 1
     
-    with open(expected_result_path, "w") as f:
-        json.dump(results, f, indent=4, ensure_ascii=False)
+        with open(expected_result_path, "w") as f:
+            json.dump(results, f, indent=4, ensure_ascii=False)
 
     return expected_result_path
 

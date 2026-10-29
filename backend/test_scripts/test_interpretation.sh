@@ -43,8 +43,8 @@ else
   AUDIO_MODEL="$3"
 fi
 
-echo "Iniciando testing_bench para executar os testes..."
-conda run --live-stream -n testing_bench python src/testing_bench/run_tests.py $1 $2 ${AUDIO_MODEL}
+echo "Iniciando system_tests para executar os testes..."
+conda run --live-stream -n system_tests python src/system_tests/run_load_tests.py $1 $2 ${AUDIO_MODEL}
 echo "Testes concluídos."
 
 docker compose down

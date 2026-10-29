@@ -5,10 +5,6 @@ import threading
 import time
 import os
 from shutil import copy as cp
-import signal
-import atexit
-import subprocess
-import shutil
 from glob import glob
 from shutil import copytree
 
@@ -18,38 +14,16 @@ import numpy as np
 from test_utils.call_handlers import process_audio_call_hf
 from test_utils.data_processing import get_inputs, get_input_selection
 from test_utils.audio_processing import prepare_api_audio_files
-from test_utils.scheduling import get_docker_measurer, calcular_delay_hf
-from docker_control import DockerController
+from test_utils.scheduling import calcular_delay_hf
+from docker_control import safely_start_docker
+
+from startup_routine import (proj_dir, env_vals, api_key, hermes_addr, hermes_port, sqlite_path, 
+    docker_ctrl, config_path, configs, output_dir_base, header, dataset_name, 
+    fake_calls_dataset_path, hermes_url, hermes_headers, config_name)
 """
-Example: python run_tests.py ../envs/config.gcp.glinerx_ministral.json
+Example: python run_load_tests.py ../envs/config.gcp.glinerx_ministral.json
 """
 print("Argumentos recebidos:", sys.argv)
-
-# Handle constants and environment variables
-
-proj_dir = "../.."
-mandatory_keys = ["LOCAL_SQL_DB_PATH", "API_KEY", "HERMES_ADDR", "HERMES_PORT"]
-env_path = f"{proj_dir}/.env"
-env_vals = {
-    rawline.split("=")[0]: rawline.split("=")[1].rstrip("\n")
-    for rawline in open(env_path, "r").read().split("\n")
-    if "=" in rawline
-}
-for key, value in env_vals.items():
-    os.environ[key] = value
-
-if not all(key in os.environ for key in mandatory_keys):
-    print("❌ Missing mandatory keys in .env file")
-    print("Missing:", [key for key in mandatory_keys if key not in os.environ])
-    sys.exit(1)
-
-print(env_vals)
-api_key = os.environ["API_KEY"]
-hermes_addr = os.environ["HERMES_ADDR"]
-hermes_port = os.environ["HERMES_PORT"]
-sqlite_path = f"{proj_dir}/{os.environ['LOCAL_SQL_DB_PATH']}/database.sqlite"
-
-docker_ctrl = DockerController(proj_dir=proj_dir, env_vals=env_vals)
 
 '''test_parameters = [
     {
@@ -108,10 +82,8 @@ quick_test_parameters = [
     },
 ]
 
-
 if len(sys.argv) not in [2, 3]:
     sys.exit(1)
-config_path = sys.argv[1]
 if len(sys.argv) == 3:
     quick_test = sys.argv[2] == "quick"
 else:
@@ -122,19 +94,6 @@ if quick_test:
 
 total_to_download = sum([t['n_ligacoes'] for t in test_parameters]) + 1
 
-configs = json.load(open(config_path, "r"))
-output_dir_base = f"{proj_dir}/{configs['test_output_dir']}"
-header = f"X-Hermes-API-Key: {api_key}"
-dataset_name = "fake-emergencies-br"
-fake_calls_dataset_path = "pitagoras-alves/fake-emergencies-br"
-hermes_url = f"http://{hermes_addr}:{hermes_port}"
-hermes_headers = {"X-Hermes-API-Key": api_key}
-
-print(f"Endereço Hermes: {hermes_addr}:{hermes_port}")
-print(f"URL Hermes: {hermes_url}")
-print(f"Caminho do dataset: {fake_calls_dataset_path}")
-
-config_name = os.path.basename(config_path).replace("config.", "").replace(".json", "")
 
 for test_config in test_parameters:
 
@@ -153,6 +112,8 @@ for test_config in test_parameters:
 
 # Download and prepare all inputs once
 all_calls_dataset, all_calls_dataset_path = get_inputs(total_to_download, fake_calls_dataset_path)
+
+
 
 def perform_test(test_config, previous_n):
     output_dir = test_config["output_dir"]
@@ -186,34 +147,8 @@ def perform_test(test_config, previous_n):
     audios_ds = audios_ds.add_column("audio_lengths", audio_lengths_col)
     print("Columns:", audios_ds[0].keys())
 
-    docker_ctrl.start_docker(config_path, output_dir=output_dir)
-
-    # Verifica se a API do Hermes está rodando
-    delays = [2, 4, 5]
-    running = False
-    for delay in delays:
-        try:
-            response = requests.get(f"{hermes_url}/", headers=hermes_headers)
-            if response.status_code == 200:
-                print("API do Hermes está rodando e acessível")
-                running = True
-                break
-            else:
-                print(f"API do Hermes retornou status {response.status_code}")
-                time.sleep(delay)
-        except Exception as e:
-            print(f"Erro ao conectar com API do Hermes: {e}")
-            time.sleep(delay)
-    if running:
-        time.sleep(12)
-    else:
-        print("API do Hermes não está rodando")
-        docker_ctrl.docker_stop()
-        sys.exit(1)
-
-    measurer, readings, stop_flag = get_docker_measurer()
-    measurer.start()
-    start_time = time.time()
+    measurer, readings, stop_flag, start_time = safely_start_docker(docker_ctrl, 
+        config_path, output_dir, hermes_url, hermes_headers)
 
     # Processa as chamadas em threads paralelas
     print(f"\nIniciando processamento de {len(audios_ds)} chamadas em paralelo...")

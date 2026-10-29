@@ -2,9 +2,9 @@
 
 Este módulo contém scripts para testar o sistema Hermes Agents, simulando chamadas de emergência com áudios reais.
 
-## Script Principal: `run_tests.py`
+## Script Principal: `run_load_tests.py`
 
-O script `run_tests.py` é responsável por:
+O script `run_load_tests.py` é responsável por:
 
 1. **Iniciar emergências** na API do Hermes
 2. **Enviar áudios** para cada emergência
@@ -21,7 +21,7 @@ O script `run_tests.py` é responsável por:
 
 ```
 conda env create -f env.yml
-conda activate testing_bench
+conda activate system_tests
 ```
 
 ## Uso
@@ -37,7 +37,7 @@ conda activate testing_bench
 
 ```bash
 # Teste com dataset local
-cd src/testing_bench
+cd src/system_tests
 python run_test.py <n_ligacoes> <carga_de_ligacoes> <config_path> [hermes_addr]
 
 # Exemplo de uso

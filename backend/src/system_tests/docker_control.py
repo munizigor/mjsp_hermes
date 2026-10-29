@@ -9,6 +9,10 @@ import threading
 from contextlib import contextmanager
 from shutil import copy as cp
 from typing import Dict, Optional
+import time
+import requests
+
+from test_utils.scheduling import get_docker_measurer
 
 
 def set_output_permissions(output_dir: str):
@@ -360,10 +364,48 @@ class DockerController:
         with self._synchronized():
             if output_dir is not None:
                 self.set_output_dir(output_dir)
-            cp(config_json_path, os.path.join(self.proj_dir, "config.json"))
+            target_path = os.path.join(self.proj_dir, "config.json")
+            new_config_content = open(config_json_path, "r").read()
+            target_content = open(target_path, "r").read()
+            if new_config_content != target_content:
+                print("Config has changed, updating...")
+                cp(config_json_path, target_path)
             self.docker_run()
 
     # Aliases
     start = start_docker
     stop = docker_stop
     run = docker_run
+
+
+def safely_start_docker(docker_ctrl: DockerController, config_path, output_dir, hermes_url, hermes_headers):
+    docker_ctrl.start_docker(config_path, output_dir=output_dir)
+
+    # Verifica se a API do Hermes está rodando
+    delays = [2, 4, 5]
+    running = False
+    for delay in delays:
+        try:
+            response = requests.get(f"{hermes_url}/", headers=hermes_headers)
+            if response.status_code == 200:
+                print("API do Hermes está rodando e acessível")
+                running = True
+                break
+            else:
+                print(f"API do Hermes retornou status {response.status_code}")
+                time.sleep(delay)
+        except Exception as e:
+            print(f"Erro ao conectar com API do Hermes: {e}")
+            time.sleep(delay)
+    if running:
+        time.sleep(12)
+    else:
+        print("API do Hermes não está rodando")
+        docker_ctrl.docker_stop()
+        sys.exit(1)
+
+    measurer, readings, stop_flag = get_docker_measurer()
+    measurer.start()
+    start_time = time.time()
+
+    return measurer, readings, stop_flag, start_time

@@ -58,6 +58,8 @@ def call_vllm_server_thread_with_schema(
     else:
         base_url = f"http://{endpoint}/v1"
 
+    print(f"VLLM Endpoint for NER: {base_url}")
+
     try:
         vllm_client = OpenAI(base_url=base_url, api_key="EMPTY")
     except Exception as err:
@@ -129,6 +131,7 @@ def call_vllm_server_thread_with_schema(
         output_json = None
     except (APITimeoutError, APIConnectionError) as e:
         print(f"Attempt failed: {e}")
+        raise e
         error_type = "api_timeout_or_connection_error"
         output_json = None
     except Exception as e:

@@ -228,7 +228,7 @@ def convert_sqlite_to_parquet(table_names, sqlite_path, output_dir):
 
 def save_to_parquet(output_dir):
     sqlite_path = f"{output_dir}/sqlite.db"
-    call_info_jsons = glob.glob(f"{output_dir}/run_tests-*.json")
+    call_info_jsons = glob.glob(f"{output_dir}/run_load_tests-*.json")
     results_by_index = {}
     for p in call_info_jsons:
         d = json.load(open(p, "r"))

@@ -30,6 +30,8 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+inference_servers/*.log
+backend/datasets/df_emergencies_eval*
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -118,7 +120,7 @@ ipython_config.py
 #   pdm stores project-wide configurations in .pdm.toml, but it is recommended to not include it
 #   in version control.
 #   https://pdm.fming.dev/latest/usage/project/#working-with-version-control
-run_tests*.json
+run_load_tests*.json
 .pdm.toml
 .pdm-python
 .pdm-build/

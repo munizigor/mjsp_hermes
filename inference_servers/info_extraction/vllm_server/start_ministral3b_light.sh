@@ -12,24 +12,16 @@ sudo docker pull vllm/vllm-openai:v0.15.1 && \
     -e "LD_LIBRARY_PATH=/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH" \
     -e "HF_TOKEN=$HF_TOKEN" \
     -e "VLLM_LOGGING_LEVEL=DEBUG" \
-    -p 8000:8000 \
+    -p8030:8000 -p8031:8001 -p8032:8002 \
     --network hermes-network \
     --ip 172.20.0.14 \
     --name vllm-inf-extraction \
     vllm/vllm-openai:v0.15.1 \
+    --host 0.0.0.0 --port 8000 \
     --model $model_name \
-    --max-model-len 4900  \
-    --gpu-memory-utilization 0.82 \
+    --max-model-len 3800  \
+    --gpu-memory-utilization 0.52 \
     --max-num-seqs 3 \
     --tokenizer_mode mistral \
     --config_format mistral --load_format mistral \
     --enable-auto-tool-choice --tool-call-parser mistral
-
-#--kv-cache-dtype fp8 \
-#-e "VLLM_HOST_IP=127.0.0.1" \
-#--ipc=host \
-#-e "VLLM_USE_V1=0" \
-#-e "NCCL_P2P_DISABLE=1" \
-#--shm-size=8g \
-#--ipc=host \
-#--tensor-parallel-size 1 --disable-custom-all-reduce \

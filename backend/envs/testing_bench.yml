@@ -1,4 +1,4 @@
-name: testing_bench
+name: system_tests
 channels:
   - conda-forge
 dependencies:
@@ -57,4 +57,4 @@ dependencies:
       - typing-extensions==4.15.0
       - urllib3==2.5.0
       - xlsxwriter==3.2.5
-prefix: /home/pita/miniforge3/envs/testing_bench
+prefix: /home/pita/miniforge3/envs/system_tests

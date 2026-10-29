@@ -13,7 +13,7 @@ RUN pip install --break-system-packages pydantic langdetect
 RUN pip install --break-system-packages spacy
 #RUN pip install --break-system-packages gliner[cpu,tokenizers,stanza]==0.2.22
 RUN pip install --break-system-packages numpy tritonclient[http]
-RUN pip install --break-system-packages --upgrade openai google-genai
+RUN pip install --break-system-packages --upgrade openai google-genai polars
 RUN pip cache purge
 
 RUN pip freeze > /requirements2.txt

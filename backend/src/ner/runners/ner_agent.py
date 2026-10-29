@@ -6,10 +6,8 @@ import multiprocessing as mp
 from queue import Empty as QueueEmptyError
 
 from runners.gliner_utilities import GLINER_MODEL_NAME
-from testing.long_test import eval_ner
 
 print("Iniciando modulo do NERAgent")
-
 
 def ultimos_horarios_de_transcricao(sqlite_path):
     query = """SELECT 
@@ -280,8 +278,6 @@ class NERAgent:
         """
         Initial test to check if the model is working
         """
-
-        eval_path = eval_ner(transcript_queue, results_queue)
 
         transcript_text = "Operador: Corpo de Bombeiros, em que posso ajudar?\nSolicitante: Moço, eu preciso de ajuda. Um rapaz aqui, ele bateu a cabeça, tá no chão e parece que não consegue levantar.\nOperador: Ele está consciente?\nSolicitante: Não sei ao certo, ele tá falando muito baixo, tá tonto, meio zonzo. E sangrando um pouco na testa.\nOperador: Entendi. Ele chegou a cair de algum lugar alto?\nSolicitante: Não, acho que ele escorregou e bateu a cabeça na parede. Mas foi uma pancada forte.\nOperador: Você consegue dizer onde estão?\nSolicitante: Aqui na BR-369, número 456, é numa loja 1445. Perto da parada, Parada Brasília.\nOperador: Certo, entendi. Ele se queixa de dor em mais algum lugar?\nSolicitante: Ele só reclama muito de dor na cabeça. Tá com a mão no rosto, dizendo que tá tonto.\nOperador: Tudo bem, peço que evite mexer muito nele. Deixe-o deitado até chegarmos. Algum ponto de referência?\nSolicitante: É bem ao lado da parada. Tô aqui fora da loja 1445. Dá pra ver de longe.\nOperador: Vamos a caminho. Se ele parar de responder ou se o sangramento aumentar, me ligue de volta, tá bom? Fique ao lado dele e tente acalmá-lo.\nSolicitante: Tá certo. Obrigado, tô aguardando vocês."
         transcript_text2 = "Operador: Corpo de Bombeiros, em que posso ajudar?\nSolicitante: Moço, eu preciso de ajuda. Um rapaz aqui, ele bateu a cabeça, tá no chão e  e MORREU!\nOperador: Entendi. Solicitante: Aqui na BR-369, número 456, é numa loja 1445"

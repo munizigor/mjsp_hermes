@@ -71,6 +71,79 @@ def send_audio(hermes_url, hermes_headers, emergency_id, audio_path, sample_rate
         print(f"Erro ao enviar áudio: {e}")
         return False
 
+def send_transcript(hermes_url, hermes_headers, emergency_id, transcript: str):
+    '''
+    "/send_transcript/": {
+      "post": {
+        "summary": "Store Transcript",
+        "description": "Extract entities from the given transcript.\n\nArgs:\n    id_emergencia (str): ID of an existing emergency.\n    transcript (str): The call transcript from which to extract entities.\n\nReturns:\n    dict: The ID for the stored transcript",
+        "operationId": "store_transcript_send_transcript__post",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id_emergencia",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Id Emergencia"
+            }
+          },
+          {
+            "name": "transcript",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Transcript"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "title": "Response Store Transcript Send Transcript  Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    '''
+    try:
+        response = requests.post(
+            f"{hermes_url}/send_transcript/?id_emergencia={emergency_id}&transcript={transcript}",
+            verify=False,
+            headers=hermes_headers,
+        )
+        if response.status_code == 200:
+            print(f"Transcript enviada com sucesso para emergência {emergency_id}")
+            return True
+        else:
+            print(f"Erro ao enviar transcript: {response.status_code}")
+            return False
+    except Exception as e:
+        print(f"Erro ao enviar transcript: {e}")
+        return False
 
 def end_emergency(hermes_url, hermes_headers, emergency_id):
     """Encerra uma emergência na API do Hermes"""
@@ -210,7 +283,7 @@ def process_audio_call(hermes_url, audio_info, audio_path, operator_code):
             "results": inf_results,
         }
 
-        filename = "run_tests-result." + str(audio_info["ID"]) + ".json"
+        filename = "run_load_tests-result." + str(audio_info["ID"]) + ".json"
         fh = open(filename, "w")
         json.dump(final_result, fh, ensure_ascii=False)
         fh.close()
@@ -406,7 +479,7 @@ def process_audio_call_hf(
             "results": inf_results,
         }
 
-        filename = output_dir + "/run_tests-result." + str(audio_info["ID"]) + ".json"
+        filename = output_dir + "/run_load_tests-result." + str(audio_info["ID"]) + ".json"
         fh = open(filename, "w")
         json.dump(final_result, fh, ensure_ascii=False)
         fh.close()
