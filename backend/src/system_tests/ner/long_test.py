@@ -6,13 +6,14 @@ from time import time, sleep
 
 import polars as pl
 
-DATASETS_DIR = "/datasets"
+DATASETS_DIR = "../../datasets"
 
 def download_eval_dataset(total_rows=36, estado_especifico = 'Distrito Federal',
         estado_especifico_perc = 1/3):
 
     expected_path = f"{DATASETS_DIR}/df_emergencies_eval-n={total_rows}.parquet"
-    if os.path.exists(expected_path):
+    expected_csv = f"{DATASETS_DIR}/df_emergencies_eval-n={total_rows}.csv"
+    if os.path.exists(expected_path) and os.path.exists(expected_csv):
         print(f"NER eval dataset already exists at {expected_path}")
         return pl.read_parquet(expected_path)
 
@@ -43,21 +44,16 @@ def download_eval_dataset(total_rows=36, estado_especifico = 'Distrito Federal',
     # Lazy scan across all Parquet shards on the Hub
     lf = pl.scan_parquet("hf://datasets/pitagoras-alves/fake-emergencies-br/data/train-*.parquet")
 
+    full_df = lf.select(COLUMNS).collect()
+
     df = (
-        lf.select(COLUMNS)
-        .filter(pl.col("estado") == estado_especifico)
-        .head(n_estado)  # Adjust the number of rows you want to fetch
-        .collect()
+        full_df.filter(pl.col("estado") == estado_especifico)
+        .sample(n=n_estado, seed=42)
     )
 
-    print(f"Downloaded {len(df)} rows.")
-    print(df.head())
-
     df_other_states = (
-        lf.select(COLUMNS)
-        .filter(pl.col("estado") != estado_especifico)
-        .head(n_other_states)  # Adjust the number of rows you want to fetch
-        .collect()
+        full_df.filter(pl.col("estado") != estado_especifico)
+        .sample(n=n_other_states, seed=42)
     )
 
     print(f"Downloaded {len(df_other_states)} rows.")
@@ -67,7 +63,13 @@ def download_eval_dataset(total_rows=36, estado_especifico = 'Distrito Federal',
 
     # Save locally if needed
     df_eval.write_parquet(expected_path)
-    df_eval.write_csv(expected_path.replace('.parquet', '.csv'))
+    print(df_eval.schema)
+    #convert roteiro_segmentado to str
+    roteiro_raw_lists = df_eval["roteiro_segmentado"].to_list()
+    roteiro_strs = ["\n\n".join([f"{a}: {b}" for a, b in roteiro]) for roteiro in roteiro_raw_lists]
+    df_eval2 = df_eval.with_columns(pl.Series("roteiro_segmentado", roteiro_strs))
+    print(df_eval2.schema)
+    df_eval2.write_csv(expected_path.replace('.parquet', '.csv'))
     return df_eval
 
 

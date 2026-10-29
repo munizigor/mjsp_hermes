@@ -61,10 +61,12 @@ if not os.path.exists(test_config['output_dir']):
 with open(f"{test_config['output_dir']}/test_config.json", "w") as f:
     json.dump(test_config, f, indent=4)
 
+print("Headers:", hermes_headers)
+
 docker_ctrl.set_output_dir(test_config["output_dir"])
 
 measurer, readings, stop_flag, start_time = safely_start_docker(docker_ctrl, config_path,
-    test_config["output_dir"], hermes_url, hermes_headers)
+    test_config["output_dir"], hermes_url, hermes_headers, additional_delay=16)
 
 get_delay_secs = 3
 
@@ -91,15 +93,15 @@ info_columns = [
     "riscoDeTumulto",
     "leiMariaPenha",
 ]
+time_per_char = 0.03
 
 for row in ner_eval_df.rows(named=True):
     original_info = {k: row[k] for k in info_columns}
     test_id = row["ID"]
-    operator_code = f"operator_{test_id:03d}"
+    operator_code = f"operator_{test_id}"
     transcript = row["roteiro_segmentado"]
     print(f"Processing {test_id}")
     lines = [(speaker, l2.strip()) for speaker, l2 in transcript if len(l2.strip()) > 0]
-    time_per_char = 0.005
     total_chars = sum([len(line[1]) for line in lines])
     total_time_secs = time_per_char * total_chars
     print(f"\tTotal characters: {total_chars}; total time for this transcript: {total_time_secs}s")
@@ -110,18 +112,40 @@ for row in ner_eval_df.rows(named=True):
         print(f"Falha ao iniciar emergência para áudio {test_id}")
         continue
     inf_results = {}
+    if len(lines) == 1:
+        speaker_a, all_lines = lines[0]
+        if 'operador' in speaker_a.lower():
+            speaker_b = "Solicitante"
+        else:
+            speaker_b = "Operador"
+        splitted_lines = all_lines.split("\n")
+        new_lines = []
+        index = 1
+        for line in splitted_lines:
+            is_odd = index % 2 != 0
+            if is_odd:
+                new_lines.append((speaker_a, line))
+            else:
+                new_lines.append((speaker_b, line))
+            index += 1
+        lines = new_lines
+        
     for i, (speaker, line) in enumerate(lines):
         to_sleep = len(line) * time_per_char
         time.sleep(to_sleep)
-        sent = send_transcript(hermes_url, hermes_headers, emergency_id, transcript)
+        sent = send_transcript(hermes_url, hermes_headers, emergency_id, line, actor=speaker)
+        if not sent:
+            print(f"Falha ao enviar transcrição para áudio {test_id}")
+            break
     
     print(f"Encerrando emergência {emergency_id}")
-    end_emergency(hermes_url, emergency_id)
+    end_emergency(hermes_url, hermes_headers, emergency_id)
 
     delay_local = 0.0
     delay_wait_time = 1
     max_wait_time = 16  # Tempo máximo de espera em segundos
     wait_start = time.time()
+    un_auth = False
     while True:
         if time.time() - wait_start > max_wait_time:
             print(f"Tempo máximo de espera excedido para emergência {emergency_id}")
@@ -129,15 +153,26 @@ for row in ner_eval_df.rows(named=True):
         end_status = requests.get(
             f"{hermes_url}/processing_finished/",
             params={"id_emergencia": emergency_id},
+            headers=hermes_headers,
         )
         content = end_status.json()
-        if content["terminado"] == False:
-            print(emergency_id, content)
-            houve_delay = True
-            time.sleep(delay_wait_time)
+        if "terminado" in content:
+            if content["terminado"] == False:
+                print(emergency_id, content)
+                houve_delay = True
+                time.sleep(delay_wait_time)
+            else:
+                delay_local = time.time() - wait_start
+                break
         else:
-            delay_local = time.time() - wait_start
+            print(f"Error in /processing_finished/ response: {content}")
+            if 'detail' in content:
+                if content['detail'] == 'Acesso não autorizado.':
+                    un_auth = True
             break
+    
+    if un_auth:
+        break
 
     if delay_local <= 2:
         delay_local = 0.0
@@ -148,6 +183,7 @@ for row in ner_eval_df.rows(named=True):
         inf_results = requests.get(
             f"{hermes_url}/get_all_inference_results/",
             params={"id_emergencia": emergency_id},
+            headers=hermes_headers,
         ).json()
         print(inf_results)
     except Exception as err:
@@ -166,6 +202,22 @@ for row in ner_eval_df.rows(named=True):
     with open(results_json_path, "w") as f:
         json.dump(results_raw, f, ensure_ascii=False, indent=4)
     global_bar.update(1)
+
+stop_flag.set()
+
+cp(sqlite_path, test_config["output_dir"] + "/sqlite.db")
+print("\nTodas as chamadas foram processadas!")
+# Stop containers first without locking permissions so logs are flushed before copying
+docker_ctrl.docker_stop(apply_permissions=False)
+
+cp(config_path, f"{test_config['output_dir']}/config.json")
+cp(f"{proj_dir}/start_stdout.log", f"{test_config['output_dir']}/start_stdout.log")
+cp(f"{proj_dir}/start_stderr.log", f"{test_config['output_dir']}/start_stderr.log")
+cp(f"{proj_dir}/containers.log", f"{test_config['output_dir']}/containers.log")
+
+ner_eval_df.write_parquet(f"{test_config['output_dir']}/ner_eval_df.parquet")
+
+docker_ctrl.set_permissions(test_config["output_dir"])
 
         
     

@@ -44,12 +44,12 @@ class TritonMonitor:
             response = requests.get(url, timeout=5000)
             response.raise_for_status()
         except Exception as err:
-            print(
+            '''print(
                 f"TritonMonitor: Failed to get metrics from {url}",
                 "Error:",
                 err,
                 file=sys.stderr,
-            )
+            )'''
             return {}
 
         # Dicionário inicial zerado
@@ -163,13 +163,13 @@ class VLLMMonitor:
             response = requests.get(url, timeout=5000)
             response.raise_for_status()
         except requests.RequestException as err:
-            print(
+            '''print(
                 "VLLMMonitor: Failed to get metrics from",
                 url,
                 "Error:",
                 err,
                 file=sys.stderr,
-            )
+            )'''
             return {}
 
         # Dicionário inicial zerado

@@ -31,12 +31,13 @@ def start_emergency(hermes_url, hermes_headers, operator_code):
         )
         if response.status_code == 200:
             data = response.json()
+            print("New emergency started:", data)
             return data["new_emergency_id"]
         else:
             print(f"Erro ao iniciar emergência: {response.status_code}")
             return None
     except Exception as e:
-        print(f"Erro ao conectar com API: {e}")
+        print(f"Erro ao conectar com API para iniciar emergencia: {e}")
         return None
 
 
@@ -71,67 +72,10 @@ def send_audio(hermes_url, hermes_headers, emergency_id, audio_path, sample_rate
         print(f"Erro ao enviar áudio: {e}")
         return False
 
-def send_transcript(hermes_url, hermes_headers, emergency_id, transcript: str):
-    '''
-    "/send_transcript/": {
-      "post": {
-        "summary": "Store Transcript",
-        "description": "Extract entities from the given transcript.\n\nArgs:\n    id_emergencia (str): ID of an existing emergency.\n    transcript (str): The call transcript from which to extract entities.\n\nReturns:\n    dict: The ID for the stored transcript",
-        "operationId": "store_transcript_send_transcript__post",
-        "security": [
-          {
-            "APIKeyHeader": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "id_emergencia",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Id Emergencia"
-            }
-          },
-          {
-            "name": "transcript",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Transcript"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "string",
-                  "title": "Response Store Transcript Send Transcript  Post"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-    '''
+def send_transcript(hermes_url, hermes_headers, emergency_id, transcript: str, actor: str):
     try:
         response = requests.post(
-            f"{hermes_url}/send_transcript/?id_emergencia={emergency_id}&transcript={transcript}",
+            f"{hermes_url}/store_transcript/?id_emergencia={emergency_id}&transcript={transcript}&actor={actor}",
             verify=False,
             headers=hermes_headers,
         )
@@ -139,11 +83,13 @@ def send_transcript(hermes_url, hermes_headers, emergency_id, transcript: str):
             print(f"Transcript enviada com sucesso para emergência {emergency_id}")
             return True
         else:
-            print(f"Erro ao enviar transcript: {response.status_code}")
+            
+            response_content = response.content
+            print(f"Erro ao enviar transcript: Err code: {response.status_code} | Response: {response_content}")
             return False
     except Exception as e:
-        print(f"Erro ao enviar transcript: {e}")
-        return False
+        print(f"Exceção ao enviar transcript: {e}")
+        raise e
 
 def end_emergency(hermes_url, hermes_headers, emergency_id):
     """Encerra uma emergência na API do Hermes"""

@@ -378,7 +378,7 @@ class DockerController:
     run = docker_run
 
 
-def safely_start_docker(docker_ctrl: DockerController, config_path, output_dir, hermes_url, hermes_headers):
+def safely_start_docker(docker_ctrl: DockerController, config_path, output_dir, hermes_url, hermes_headers, additional_delay=0.1):
     docker_ctrl.start_docker(config_path, output_dir=output_dir)
 
     # Verifica se a API do Hermes está rodando
@@ -407,5 +407,7 @@ def safely_start_docker(docker_ctrl: DockerController, config_path, output_dir, 
     measurer, readings, stop_flag = get_docker_measurer()
     measurer.start()
     start_time = time.time()
+
+    time.sleep(additional_delay)
 
     return measurer, readings, stop_flag, start_time
