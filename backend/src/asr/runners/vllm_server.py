@@ -1,6 +1,8 @@
 import os
 import re
+import sys
 import requests
+import urllib3
 from time import time, sleep
 
 
@@ -11,9 +13,9 @@ from runners.asr_utils import (
 )
 
 short_to_full_name = {"qwen3_asr_1.7b": "Qwen/Qwen3-ASR-1.7B"}
+DEFAULT_VLLM_PORT = 443
 
-
-def call_vllm_api(api_url, audio_path, model_name, timeout=12):
+def call_vllm_api(api_url, audio_path, model_name, timeout=12, verify=True):
     """
     Chama a API padrão OpenAI do vLLM (Qwen3-ASR) mantendo a assinatura
     de retorno esperada: total_inf_time, inf_start, result_dict.
@@ -29,8 +31,9 @@ def call_vllm_api(api_url, audio_path, model_name, timeout=12):
         with open(audio_path, "rb") as f:
             # O vLLM espera a chave "file" em vez de "audio"
             files = {"file": (os.path.basename(audio_path), f, "audio/wav")}
-
-            response = requests.post(api_url, data=payload, files=files, timeout=timeout)
+            if not verify:
+                print(f"Unsafe call to {api_url}", file=sys.stderr)
+            response = requests.post(api_url, data=payload, files=files, timeout=timeout, verify=verify)
 
         total_inf_time = time() - inf_start
 
@@ -61,6 +64,7 @@ def call_vllm_api(api_url, audio_path, model_name, timeout=12):
 
     except Exception as e:
         print(f"vLLM API Error: {e}")
+        print(f"Host with error: {api_url}")
         total_inf_time = time() - inf_start
         return total_inf_time, inf_start, {"status_code": 500, "error": str(e)}
 
@@ -72,12 +76,29 @@ def vllm_caller_process(
     Processo worker equivalente ao google_caller_process.
     """
     vllm_ip = os.environ.get("ASR_VLLM_HOST", None)
-    vllm_port = os.environ.get("ASR_VLLM_PORT", None)
+    vllm_port = os.environ.get("ASR_VLLM_PORT", DEFAULT_VLLM_PORT)
+    vllm_port = str(vllm_port)
+
+    enforce_secure = os.environ.get("ASR_VLLM_ENFORCE_SECURE", "True").lower() == "true"
+    if not enforce_secure:
+        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+        print("Not enforcing safe requests on asr vllm host")
 
     assert vllm_ip is not None, "ASR_VLLM_HOST not found in environment variables"
-    assert vllm_port is not None, "ASR_VLLM_PORT not found in environment variables"
+    #assert vllm_port is not None, "ASR_VLLM_PORT not found in environment variables"
 
-    api_url = f"http://{vllm_ip}:{vllm_port}/v1/audio/transcriptions"
+    prot = 'http'
+    if 'https' in vllm_ip.lower():
+        prot = 'https'
+    if '://' in vllm_ip:
+        vllm_ip = vllm_ip.split('://')[1]
+    vllm_ip = f"{prot}://{vllm_ip}"
+
+    if str(vllm_port) != '443':
+        api_url = f"{vllm_ip}:{vllm_port}/v1/audio/transcriptions"
+    else:
+        api_url = f"{vllm_ip}/v1/audio/transcriptions"
+
     print(f"Loaded VLLM ASR worker! Targeting {api_url}")
 
     while True:
@@ -99,7 +120,7 @@ def vllm_caller_process(
 
             # 2. Chama a função de requisição modularizada
             total_inf_time, inf_start, result = call_vllm_api(
-                api_url, audio_path, model_name, timeout=timeout
+                api_url, audio_path, model_name, timeout=timeout,verify=enforce_secure
             )
 
             if result.get("status_code") == 200 and "text" in result:

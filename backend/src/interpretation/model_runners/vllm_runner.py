@@ -1,6 +1,7 @@
 import json
 import os
 import sys
+import httpx
 import time
 from typing import List, Optional, Tuple, Any
 
@@ -36,8 +37,33 @@ class VLLMTextAPIRunner(InterpretationClient):
     ):
         super().__init__(model_name)
         self.model_name = model_name
-        self.base_url = f"http://{host}:{port}/v1"
-        self.client = OpenAI(base_url=self.base_url, api_key="EMPTY")
+
+        if '443' == port:
+            port = None
+        prot = 'http'
+        if 'https' in host.lower():
+            prot = 'https'
+        if '://' in host:
+            host = host.split('://')[1]
+        
+        if port != None:
+            host = host + ":" + port
+        
+        if not host.endswith("/v1"):
+            host = f"{host}/v1"
+        self.base_url = f"{prot}://{host}"
+
+        enforce_secure = os.environ.get("INTERPRETATION_VLLM_ENFORCE_SECURE", "True").lower() == "true"
+        print(f"VLLM Endpoint for INTERPRETATION: {self.base_url}, safe=({enforce_secure})")
+
+        if enforce_secure:
+            self.client = OpenAI(base_url=self.base_url, api_key="EMPTY")
+        else:
+            self.client = OpenAI(
+                base_url=self.base_url,
+                api_key="EMPTY",
+                http_client=httpx.Client(verify=enforce_secure)
+            )
 
         # vLLM does not expose context length easily → fallback
         self.context_len = 1000000

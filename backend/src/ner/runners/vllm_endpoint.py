@@ -4,6 +4,8 @@ import sys
 import os
 from queue import Empty as QueueEmptyError
 import threading
+import urllib3
+import httpx
 
 from pydantic import ValidationError
 
@@ -52,16 +54,32 @@ def call_vllm_server_thread_with_schema(
         dict: A dictionary containing the extracted information.
     """
     proc_start = time.time()
-    endpoint = os.environ["TRITON_SERVER_URL_NER"]
-    if "https" in endpoint:
-        base_url = f"{endpoint}/v1"
-    else:
-        base_url = f"http://{endpoint}/v1"
 
-    print(f"VLLM Endpoint for NER: {base_url}")
+    endpoint = os.environ["TRITON_SERVER_URL_NER"]
+    if ':443' in endpoint:
+        endpoint = endpoint.replace(':443','')
+    prot = 'http'
+    if 'https' in endpoint.lower():
+        prot = 'https'
+    if '://' in endpoint:
+        endpoint = endpoint.split('://')[1]
+    
+    if not endpoint.endswith("/v1"):
+        endpoint = f"{endpoint}/v1"
+    base_url = f"{prot}://{endpoint}"
+
+    enforce_secure = os.environ.get("NER_VLLM_ENFORCE_SECURE", "True").lower() == "true"
+    print(f"VLLM Endpoint for NER: {base_url}, safe=({enforce_secure})")
 
     try:
-        vllm_client = OpenAI(base_url=base_url, api_key="EMPTY")
+        if enforce_secure:
+            vllm_client = OpenAI(base_url=base_url, api_key="EMPTY")
+        else:
+            vllm_client = OpenAI(
+                base_url=base_url,
+                api_key="EMPTY",
+                http_client=httpx.Client(verify=enforce_secure)
+            )
     except Exception as err:
         print("call_vllm_server_thread: Unable to create vllm openai client")
         print(err)
@@ -135,9 +153,15 @@ def call_vllm_server_thread_with_schema(
         error_type = "api_timeout_or_connection_error"
         output_json = None
     except Exception as e:
-        print(f"An unexpected error occurred: {e}", file=sys.stderr)
-        error_type = "unknown_error"
-        output_json = None
+        error_str = str(e)
+        if '404' in error_str:
+            print(f"Error 404 accessing openai api on {base_url}, safe=({enforce_secure}), model={model_name}", file=sys.stderr)
+            error_type = "Error 404"
+            output_json = None
+        else:
+            print(f"An unexpected error occurred: {e}", file=sys.stderr)
+            error_type = "unknown_error"
+            output_json = None
 
     id_emergencia = params_dict["id_emergencia"]
     horario_contexto = params_dict["horario_contexto"]

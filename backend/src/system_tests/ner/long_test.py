@@ -23,6 +23,7 @@ def download_eval_dataset(total_rows=36, estado_especifico = 'Distrito Federal',
     COLUMNS = [
         "ID",
         "roteiro_segmentado",
+        "roteiro",
         "endereco_completo",
         "nome_solicitante",
         "rua",
@@ -44,16 +45,19 @@ def download_eval_dataset(total_rows=36, estado_especifico = 'Distrito Federal',
     # Lazy scan across all Parquet shards on the Hub
     lf = pl.scan_parquet("hf://datasets/pitagoras-alves/fake-emergencies-br/data/train-*.parquet")
 
-    full_df = lf.select(COLUMNS).collect()
+    full_df = lf.select(COLUMNS).unique(subset=["roteiro"], keep="first", maintain_order=True).collect()
 
-    df = (
-        full_df.filter(pl.col("estado") == estado_especifico)
-        .sample(n=n_estado, seed=42)
-    )
+    df = full_df.filter(pl.col("estado") == estado_especifico)
+    if len(df) > n_estado:
+        df = df.sample(n=n_estado, seed=1337)
+    else:
+        print(f"Not enough data for {estado_especifico}. Only found {len(df)} rows.")
+        n_other_states = total_rows - len(df)
+        
 
     df_other_states = (
         full_df.filter(pl.col("estado") != estado_especifico)
-        .sample(n=n_other_states, seed=42)
+        .sample(n=n_other_states, seed=1337)
     )
 
     print(f"Downloaded {len(df_other_states)} rows.")

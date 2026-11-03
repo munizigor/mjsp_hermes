@@ -25,9 +25,8 @@ Example: python run_ner_tests.py ../envs/config.gcp.glinerx_ministral.json
 """
 print("Argumentos recebidos:", sys.argv)
 
-
 test_parameters = {
-    "n_ligacoes": 60
+    "n_ligacoes": 200
 }
 quick_test_parameters = {
     "n_ligacoes": 16

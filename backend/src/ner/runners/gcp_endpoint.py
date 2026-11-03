@@ -20,9 +20,6 @@ from runners.gliner_utilities import (
     env_vals,
 )
 
-if not os.getenv("GEMINI_API_KEY"):
-    print("Environment variable GEMINI_API_KEY not set, quitting")
-    quit(1)
 if not os.getenv("GEMINI_NER_TIMEOUT_SECS"):
     os.environ["GEMINI_NER_TIMEOUT_SECS"] = "5"
 
@@ -123,6 +120,7 @@ def call_gcp_server_thread(
         - horario_contexto:
 
     """
+    
     proc_start = time.time()
     try:
         client = genai.Client(api_key=GEMINI_API_KEY)
@@ -278,6 +276,9 @@ def gcp_worker_process(
     max_tokens: int,
     n_cpus: int,
 ):
+    if not os.getenv("GEMINI_API_KEY"):
+        print("Environment variable GEMINI_API_KEY not set, quitting")
+        quit(1)
     GEMINI_API_KEY = os.environ["GEMINI_API_KEY"]
     while True:
         try:
