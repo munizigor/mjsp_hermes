@@ -6,9 +6,7 @@ import time
 import sqlite3 as sqlite
 import multiprocessing as mp
 
-from model_runners.embedding_stores import EmbeddingStore, naturezas_dump_path
-from model_runners.templates import naturezas_vec
-
+from pipelines.pipeline_naturezas import PipelineNaturezasAPI
 
 class EmergencyInterpreter:
 
@@ -37,7 +35,6 @@ class EmergencyInterpreter:
     def __init__(
         self,
         model_name,
-        lista_de_naturezas=naturezas_vec,
         hardware_config="cpu",
         embedding_device="cpu",
         sqlite_path="",
@@ -54,51 +51,15 @@ class EmergencyInterpreter:
         self.sqlite_path = sqlite_path
         if not os.path.exists(self.sqlite_path):
             raise FileNotFoundError(f"SQLite database not found at {self.sqlite_path}")
-        if "llama" in interpreter_type:
-            from model_runners.llama_cpp_runner import LlamaCppRunner
-
-            if interpreter_type == "llama_cpp":
-                self.interpreter = LlamaCppRunner(
-                    low_end_gpu=False, full_cpu=False, n_cpus=n_cpus
-                )
-            elif interpreter_type == "llama_cpp_low_end":
-                self.interpreter = LlamaCppRunner(
-                    low_end_gpu=True, full_cpu=False, n_cpus=n_cpus
-                )
-            elif interpreter_type == "llama_cpp_cpu":
-                self.interpreter = LlamaCppRunner(
-                    low_end_gpu=False, full_cpu=True, n_cpus=n_cpus
-                )
-            else:
-                raise ValueError(f"Interpreter type {interpreter_type} not supported.")
-            self.concurrency_mode = "batch"
-        elif interpreter_type in ["azure-api", "triton-server", "gcp-api", "vllm-api", "serpro-llm"]:
-            from pipeline_naturezas import PipelineNaturezasAPI
+        if interpreter_type in ["azure-api", "triton-server", "gcp-api", "vllm-api", "serpro-llm"]:
 
             self.interpreter = PipelineNaturezasAPI(
-                model_name, client_type=interpreter_type
+                model_name, client_type=interpreter_type, embedding_device=embedding_device
             )
             self.concurrency_mode = "async"
         else:
             raise ValueError(f"Interpreter type {interpreter_type} not supported.")
-
-        # embedding_device = 'cpu' if hardware_config in ['cpu', 'cuda-low'] else 'cuda'
-
-        if os.path.exists(naturezas_dump_path):
-            self.embedding_store = EmbeddingStore.load_store(
-                naturezas_dump_path, backend=embedding_device
-            )
-        else:
-            print(
-                f"Naturezas cache não encontrado em {naturezas_dump_path}, criando novo.",
-                file=sys.stderr,
-            )
-            self.embedding_store = EmbeddingStore(backend=embedding_device)
-
         self.sqlite_conn = sqlite.connect(self.sqlite_path)
-
-        self.embedding_store.add_documents(lista_de_naturezas)
-        self.embedding_store.persist(naturezas_dump_path)
         self.max_similar_natures = max_similar_natures
         self.redo_queue = None
 
@@ -209,9 +170,8 @@ class EmergencyInterpreter:
 
                 self.send_interpretations([interpretation_1])
 
-                similares = self.embedding_store.search([desc])
+                similares = self.interpreter.find_similar_natures([desc], max_n=max_naturezas)
                 similares = similares[desc]
-                similares["sims_dict"] = similares["sims_dict"][:max_naturezas]
                 similares_vec = similares["sims_dict"]
                 meta_vec_similares = similares["meta"]
                 interpretation_2 = {
@@ -403,9 +363,7 @@ class EmergencyInterpreter:
         interpretations_vec_1 = [t for t in interpretations_vec_1 if t is not None]
         self.send_interpretations(interpretations_vec_1)
 
-        similares = self.embedding_store.search(descs)
-        for desc in descs:
-            similares[desc]["sims_dict"] = similares[desc]["sims_dict"][:max_naturezas]
+        similares = self.interpreter.find_similar_natures(descs, max_n=max_naturezas)
         similares_vecs = [similares[desc]["sims_dict"] for desc in descs]
         meta_vecs = [similares[desc]["meta"] for desc in descs]
         interpretations_vec_2 = []

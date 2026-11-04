@@ -10,11 +10,12 @@ from model_runners.templates import (
     EmergencyInterpretationA,
     NaturezaOcorrenciaA,
     prompt_b_template,
-    BaseAPIRunner,
-    EnvolvimentoPessoa,
+    RemoteInferenceAPIRunner,
     EnvolvimentosEmergencia,
-    chance_de_classificacao_to_float,
 )
+
+from model_runners.embedding_stores import EmbeddingStore, naturezas_dump_path
+from model_runners.templates import naturezas_vec
 
 env_vals = {
     rawline.split("=")[0]: rawline.split("=")[1].rstrip("\n")
@@ -25,7 +26,7 @@ for k, v in env_vals.items():
     os.environ[k] = v
 
 
-class PipelineNaturezasAPI(BaseAPIRunner):
+class PipelineNaturezasAPI(RemoteInferenceAPIRunner):
     """
     Runner que encapsula chamadas á API de geração de texto para determinar naturezas de ocorrencia.
 
@@ -40,7 +41,7 @@ class PipelineNaturezasAPI(BaseAPIRunner):
 
     system_prompt = "Você é um assistente que sempre responde estritamente no formato JSON especificado."
 
-    def __init__(self, model_name, client_type="azure-api"):
+    def __init__(self, model_name, client_type="azure-api", embedding_device="cpu", nat_dump_path=naturezas_dump_path):
         """
         Inicializa o runner para o `model_name` especificado.
 
@@ -50,32 +51,20 @@ class PipelineNaturezasAPI(BaseAPIRunner):
             KeyError: se qualquer variável de ambiente esperada não existir
             KeyError: se `model_name` não estiver presente em `azure_context_lengths`
         """
-        super().__init__(model_name)
-        self.client_type = client_type
-        if self.client_type == "azure-api":
-            from model_runners.azure_runner import AzureAPIRunner
-
-            self.client = AzureAPIRunner(model_name)
-        elif self.client_type == "gcp-api":
-            from model_runners.gcp_runner import GCPTextAPIRunner
-
-            self.client = GCPTextAPIRunner(model_name)
-        elif self.client_type == "triton-server":
-            from model_runners.triton_runner import TritonCustomHTTPClient
-
-            self.client = TritonCustomHTTPClient(model_name)
-        elif self.client_type == "vllm-api":
-            from model_runners.vllm_runner import VLLMTextAPIRunner
-
-            self.client = VLLMTextAPIRunner(model_name)
-        elif self.client_type == "serpro-llm":
-            from model_runners.serpro_runner import SerproLLMTextAPIRunner
-            
-            self.client = SerproLLMTextAPIRunner(model_name)
+        super().__init__(model_name, client_type)
+        if os.path.exists(nat_dump_path):
+            self.embedding_store = EmbeddingStore.load_store(
+                nat_dump_path, backend=embedding_device
+            )
         else:
-            raise ValueError(f"Unknown client type: {self.client_type}")
+            print(
+                f"Naturezas cache não encontrado em {nat_dump_path}, criando novo.",
+                file=sys.stderr,
+            )
+            self.embedding_store = EmbeddingStore(backend=embedding_device)
 
-        self.context_len = self.client.context_len
+        self.embedding_store.add_documents(naturezas_vec)
+        self.embedding_store.persist(nat_dump_path)
 
     def supports_parallel(self):
         """
@@ -84,30 +73,6 @@ class PipelineNaturezasAPI(BaseAPIRunner):
             bool: True se suportado.
         """
         return True
-
-    def extract_structured(self, input_dict):
-        """
-        Envia o prompt para o Azure e tenta obter saída parseada (estrutura definida via Pydantic).
-
-        Args:
-            input_dict (dict): deve conter:
-                - 'prompt' (str): texto a ser enviado
-                - 'format' (str): especificador de formatação/text_format esperado pela API
-
-        Returns:
-            tuple: (parsed_output_or_None, input_tokens_or_None, output_tokens_or_None, inference_time_seconds, raw_response_or_exception)
-                - parsed_output_or_None: objeto parseado conforme o schema (ou None)
-                - input_tokens_or_None, output_tokens_or_None: contagem de tokens quando disponível
-                - inference_time_seconds: tempo de inferência em segundos
-                - raw_response_or_exception: objeto de resposta cru do client ou a exceção capturada
-
-        Tratamento de erros:
-            - Captura ValidationError do pydantic e retorna o erro no lugar do raw_response.
-        """
-
-        out = self.client.extract_structured(input_dict)
-        struct_resp, input_tokens, output_tokens, inf_time, raw_resp = out
-        return struct_resp, input_tokens, output_tokens, inf_time, raw_resp
 
     def create_interpretation_a(self, transcriptions: List[str]):
         """
@@ -183,6 +148,12 @@ class PipelineNaturezasAPI(BaseAPIRunner):
                 results2.append((None, meta))
 
         return results2
+    
+    def find_similar_natures(self, descs: List[str], max_n: int = 24):
+        similares = self.embedding_store.search(descs)
+        for desc, res in similares.items():
+            res["sims_dict"] = res["sims_dict"][:max_n]
+        return similares
 
     def create_interpretation_b(self, transcriptions: List[str], classification_lists):
         """
@@ -200,6 +171,7 @@ class PipelineNaturezasAPI(BaseAPIRunner):
 
         cpu_start = time.time()
         user_prompts = []
+        indexings = []
         for transcription, classifications in zip(transcriptions, classification_lists):
             classifications_indexed = {
                 n + 1: c for n, c in enumerate([x for s, x in classifications])
@@ -212,11 +184,16 @@ class PipelineNaturezasAPI(BaseAPIRunner):
                 "naturezas_similares", classifications_json
             ).replace("[[[[transcript_content]]]]", transcription)
             user_prompts.append(user_prompt)
+            indexings.append(classifications_indexed)
 
         results = self.extract_multiple_structured(user_prompts, NaturezaOcorrenciaA)
         max_inf_time = max([tp[-2] for tp in results])
         results2 = []
+
+        request_idx = 0
         for structured_resp, tokens1, tokens2, inf_time, raw in results:
+            classifications_indexed = indexings[request_idx]
+            request_idx += 1
             no_gpu_time = time.time() - cpu_start - max_inf_time
             meta = {
                 "meta": {
@@ -230,6 +207,7 @@ class PipelineNaturezasAPI(BaseAPIRunner):
             if structured_resp is not None:
                 try:
                     nat_id = structured_resp.natureza_da_ocorrencia_indice
+                    meta["meta"]["nat_id"] = nat_id
                 except Exception as err:
                     print("Natureza ocorrencia inválida:" + str(err), file=sys.stderr)
                     meta["meta"]["message"] = str(raw)

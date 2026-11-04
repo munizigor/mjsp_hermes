@@ -6,7 +6,7 @@ import signal
 
 from interpreters import EmergencyInterpreter
 from agent import InterpretationAgent
-from pipeline_naturezas import connection_test
+from pipelines.pipeline_naturezas import connection_test
 
 
 def start_and_listen(

@@ -10,6 +10,7 @@ from pydantic import BaseModel, Field
 import pandas as pd
 from abc import ABC, abstractmethod
 
+from model_runners.factories import load_llm_client
 
 def extrair_json_do_markdown(texto: str):
     # Extrai o bloco JSON
@@ -255,6 +256,11 @@ class BaseAPIRunner(ABC):
         raise NotImplementedError
 
     @abstractmethod
+    def find_similar_natures(self, descs: List[str], max_n: int):
+        """Wrapper que encontra naturezas similares."""
+        raise NotImplementedError
+
+    @abstractmethod
     def create_interpretation_b(self, transcriptions: List[str], classification_lists):
         """Wrapper que decide a natureza da ocorrência."""
         raise NotImplementedError
@@ -263,3 +269,36 @@ class BaseAPIRunner(ABC):
     def create_envolvimentos(self, transcriptions: List[str]):
         """Wrapper que decide os envolvimentos das pessoas na ocorrência."""
         raise NotImplementedError
+
+class RemoteInferenceAPIRunner(BaseAPIRunner):
+
+    def __init__(self, model_name: str, client_type: str):
+        super().__init__(model_name)
+        self.client_type = client_type
+        self.client = load_llm_client(client_type, model_name)
+        self.context_len = self.client.context_len
+    
+    def extract_structured(self, input_dict):
+        """
+        Envia o prompt para o client e tenta obter saída parseada (estrutura definida via Pydantic).
+
+        Args:
+            input_dict (dict): deve conter:
+                - 'prompt' (str): texto a ser enviado
+                - 'format' (str): especificador de formatação/text_format esperado pela API
+
+        Returns:
+            tuple: (parsed_output_or_None, input_tokens_or_None, output_tokens_or_None, inference_time_seconds, raw_response_or_exception)
+                - parsed_output_or_None: objeto parseado conforme o schema (ou None)
+                - input_tokens_or_None, output_tokens_or_None: contagem de tokens quando disponível
+                - inference_time_seconds: tempo de inferência em segundos
+                - raw_response_or_exception: objeto de resposta cru do client ou a exceção capturada
+
+        Tratamento de erros:
+            - Captura ValidationError do pydantic e retorna o erro no lugar do raw_response.
+        """
+
+        out = self.client.extract_structured(input_dict)
+        struct_resp, input_tokens, output_tokens, inf_time, raw_resp = out
+        return struct_resp, input_tokens, output_tokens, inf_time, raw_resp
+    
