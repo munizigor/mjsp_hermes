@@ -16,6 +16,15 @@ RUN pip install --break-system-packages numpy tritonclient[http]
 RUN pip install --break-system-packages --upgrade openai google-genai
 RUN pip cache purge
 
+# Runner experimental do Laya ("hardware_config": "laya"). Desligado por padrão
+# para não aumentar a imagem; ative com o build arg INSTALL_LAYA=true.
+ARG INSTALL_LAYA=false
+RUN if [ "$INSTALL_LAYA" = "true" ]; then \
+        pip install --break-system-packages torch --index-url https://download.pytorch.org/whl/cpu && \
+        pip install --break-system-packages "laya>=0.4.23" && \
+        pip cache purge; \
+    fi
+
 RUN pip freeze > /requirements2.txt
 #RUN pip install -r /requirements.txt --break-system-packages
 

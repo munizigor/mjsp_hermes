@@ -183,6 +183,30 @@ Você também pode realizar o NER com servidores de inferência vLLM. Pode inclu
 TRITON_SERVER_URL_NER=[IP_DO_SERVIDOR]:[PORTA_DO_VLLM]
 ```
 
+##### Laya (experimental)
+
+O runner `laya` (`src/ner/runners/laya_runner.py`) usa o [Laya](https://huggingface.co/convaiinnovations/laya), um modelo de decisão não autorregressivo, para responder as seis classificações booleanas da ocorrência (fato ocorrendo neste momento, autor no local, autor armado, feridos com risco de morte, risco de tumulto e Lei Maria da Penha). Ele roda localmente em CPU, sem chamada a LLM, e devolve uma probabilidade calibrada para cada pergunta, que é convertida em 1.0 ou 0.0 pelo limiar `LAYA_THRESHOLD`. As perguntas são geradas a partir das descrições de `EmergencyClassifications`, as mesmas usadas pelos runners baseados em LLM.
+
+O Laya não extrai trechos de texto, então endereço, nome do solicitante e demais entidades não saem dele. Com `LAYA_ENTITIES_BACKEND=gliner` as entidades são extraídas pelo GLiNER local (modelo definido em `gliner_mname`, e o pacote `gliner` precisa estar instalado na imagem); com o padrão `none` elas ficam vazias, o que serve para avaliar só as classificações.
+
+Para usar, construa a imagem do NER com o pacote `laya`, adicionando ao serviço `hermes-ner` do `docker-compose.yml`:
+```yaml
+    build:
+      dockerfile: docker/Dockerfile.ner_cpu
+      args:
+        INSTALL_LAYA: "true"
+```
+e use o preset `envs/config.local.laya_and_serpro.json` (ou `"hardware_config": "laya"` na seção `ner`). Variáveis opcionais:
+```shell
+LAYA_MODEL=convaiinnovations/laya      # ou caminho local do checkpoint, para uso offline
+LAYA_SUBFOLDER=multilingual            # checkpoint multilíngue, necessário para português
+LAYA_DEVICE=cpu                        # cpu, cuda, mps ou xpu; vazio para detecção automática
+LAYA_MAX_LEN=                          # vazio usa o limite do checkpoint (1024); até 8192 no multilingual
+LAYA_THRESHOLD=0.5
+LAYA_ENTITIES_BACKEND=none             # ou gliner
+```
+Na primeira execução o checkpoint é baixado do Hugging Face para o cache em `HF_HOME`. Este runner é experimental: a acurácia do Laya em transcrições de emergência em português ainda não foi medida e deve ser comparada com os runners atuais antes de qualquer uso em produção.
+
 ## Configurações do Projeto (config.json)
 
 O arquivo `config.json` na raiz do projeto é utilizado para configurar diversos aspectos dos serviços Hermes, incluindo modelos de ASR (Reconhecimento Automático de Fala), NER (Reconhecimento de Entidades Nomeadas) e o serviço de Interpretação. 

@@ -228,6 +228,10 @@ class NERAgent:
                 from runners.serpro_llm import (
                     serpro_llm_worker_process as worker_process_func,
                 )
+            elif hardware_config in ["laya"]:
+                from runners.laya_runner import (
+                    laya_worker_process as worker_process_func,
+                )
             else:
                 worker_process_func = None
 

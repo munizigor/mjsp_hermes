@@ -1,0 +1,30 @@
+{
+    "test_output_dir": "results",
+    "hermes-api": {
+        "api_processes": 1
+    },
+    "asr": {
+        "model": "Qwen/Qwen3-ASR-0.6B",
+        "language": "pt",
+        "hardware_config": "vllm-api",
+        "n_asr_workers": 6,
+        "n_cpus": 1
+    },
+    "ner": {
+        "n_gliner_workers": 1,
+        "hardware_config": "laya",
+        "n_cpus": 4,
+        "gliner_mname": "knowledgator/gliner-x-large",
+        "batch_size": 4,
+        "max_tokens": 256
+    },
+    "interpretation": {
+        "hardware_config": "serpro-llm",
+        "embedding_hardware": "cpu",
+        "model": "qwen3.6-35b",
+        "n_cpus": 6,
+        "min_transcricao": 120,
+        "n_in_batch": 10,
+        "max_similar_natures": 20
+    }
+}
