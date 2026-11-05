@@ -194,7 +194,11 @@ if __name__ == "__main__":
                 row["cost_per_transcript"] = np.inf
                 row["seconds_per_transcript"] = np.inf
 
-            row["mean_quality"] = (row["mean_fmax"] + row["mean_jw_sim"]) / 2
+            # Resultados só de classificação (ex.: Laya) não têm jw_sim.
+            if row["mean_fmax"] is not None and row["mean_jw_sim"] is not None:
+                row["mean_quality"] = (row["mean_fmax"] + row["mean_jw_sim"]) / 2
+            else:
+                row["mean_quality"] = None
 
             data.append(row)
 
@@ -204,13 +208,13 @@ if __name__ == "__main__":
     for entry in data:
         model = entry["full_model"]
         curr_samples = entry.get("samples", 0)
-        curr_quality = entry.get("mean_quality", 0)
+        curr_quality = entry.get("mean_quality") or 0
         if (
             model not in best_entries
             or curr_samples > best_entries[model].get("samples", 0)
             or (
                 curr_samples == best_entries[model].get("samples", 0)
-                and curr_quality > best_entries[model].get("mean_quality", 0)
+                and curr_quality > (best_entries[model].get("mean_quality") or 0)
             )
         ):
             best_entries[model] = entry
@@ -218,7 +222,10 @@ if __name__ == "__main__":
 
     # Sort if mean_quality can be calculated (requires mean_fmax and mean_jw_sim to be non-None)
     # We'll filter out rows where calculation fails for sorting, or treat Nonetype as 0
-    data.sort(key=lambda x: x["mean_quality"], reverse=True)
+    data.sort(
+        key=lambda x: x["mean_quality"] if x["mean_quality"] is not None else -1,
+        reverse=True,
+    )
 
     # Create DataFrame
     import pandas as pd

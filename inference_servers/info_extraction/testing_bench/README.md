@@ -40,6 +40,19 @@ Now, do the same for 4B model.
 python test_nuextract.py results/nuextract_results.json numind/NuExtract-2.0-4B
 ```
 
+### 1.2. Laya
+
+O Laya responde só as seis classificações booleanas (não extrai entidades). O teste usa as mesmas perguntas do runner `laya` do backend e grava, além do Fmax, as métricas no limiar fixo usado em produção (`--threshold`, padrão 0.5).
+
+```sh
+pip install laya
+python test_laya.py results/laya_results.json
+# comparando o Fmax com resultados já gerados
+python test_laya.py results/laya_results.json --compare results/serpro_open_results.json results/gemini_results.json
+```
+
+Opções úteis: `--limit N` para uma rodada rápida, `--device cpu|cuda`, `--batch-size`, `--max-len` e `--subfolder` (padrão `multilingual`). O arquivo gerado pode entrar no `make_df.py` junto com os demais; como não tem métrica de entidades, a coluna de qualidade geral fica vazia para ele.
+
 ## 2. Generate Results
 
 ```sh
