@@ -219,7 +219,9 @@ Abaixo, detalhamos as seções e parâmetros configuráveis:
         "n_cpus": 2,
         "min_transcricao": 16,
         "n_in_batch": 10,
-        "max_similar_natures": 20
+        "max_similar_natures": 16,
+        "b25_weight": 0.15,
+        "emb_model": "PORTULAN/serafim-100m-portuguese-pt-sentence-encoder"
     }
 }
 ```

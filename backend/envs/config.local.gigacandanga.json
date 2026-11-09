@@ -25,6 +25,8 @@
         "n_cpus": 4,
         "min_transcricao": 120,
         "n_in_batch": 6,
-        "max_similar_natures": 16
+        "max_similar_natures": 16,
+        "b25_weight": 0.15,
+        "emb_model": "PORTULAN/serafim-100m-portuguese-pt-sentence-encoder"
     }
 }

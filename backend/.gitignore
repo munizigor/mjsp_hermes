@@ -34,6 +34,10 @@ inference_servers/*.log
 datasets/df_emergencies_eval*
 .docker_controller.lock
 .docker_controller_output_dir
+naturezas.csv.bm25_indexing
+substr*.out
+substr*.err
+containers.err
 
 # PyInstaller
 #  Usually these files are written by a python script from a template

@@ -3,6 +3,7 @@ import os
 import sys
 import time
 from typing import List
+from collections import defaultdict
 
 from model_runners.templates import (
     user_template_with_schema,
@@ -10,11 +11,13 @@ from model_runners.templates import (
     EmergencyInterpretationA,
     NaturezaOcorrenciaA,
     prompt_b_template,
-    BaseAPIRunner,
-    EnvolvimentoPessoa,
     EnvolvimentosEmergencia,
-    chance_de_classificacao_to_float,
+    naturezas_vec,
+    naturezas_path
 )
+from model_runners.embedding_stores import EmbeddingStore, naturezas_dump_path
+from nlp.substr_models import RobustBM25Model
+from pipelines.base_api_runner import RemoteInferenceAPIRunner
 
 env_vals = {
     rawline.split("=")[0]: rawline.split("=")[1].rstrip("\n")
@@ -25,7 +28,10 @@ for k, v in env_vals.items():
     os.environ[k] = v
 
 
-class PipelineNaturezasAPI(BaseAPIRunner):
+script_dir = os.path.dirname(os.path.abspath(__file__))
+PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(script_dir)))
+
+class PipelineNaturezasAPI(RemoteInferenceAPIRunner):
     """
     Runner que encapsula chamadas á API de geração de texto para determinar naturezas de ocorrencia.
 
@@ -40,7 +46,7 @@ class PipelineNaturezasAPI(BaseAPIRunner):
 
     system_prompt = "Você é um assistente que sempre responde estritamente no formato JSON especificado."
 
-    def __init__(self, model_name, client_type="azure-api"):
+    def __init__(self, model_name: str, emb_model: str, client_type="azure-api", embedding_device="cpu", nat_dump_path=naturezas_dump_path):
         """
         Inicializa o runner para o `model_name` especificado.
 
@@ -50,32 +56,21 @@ class PipelineNaturezasAPI(BaseAPIRunner):
             KeyError: se qualquer variável de ambiente esperada não existir
             KeyError: se `model_name` não estiver presente em `azure_context_lengths`
         """
-        super().__init__(model_name)
-        self.client_type = client_type
-        if self.client_type == "azure-api":
-            from model_runners.azure_runner import AzureAPIRunner
-
-            self.client = AzureAPIRunner(model_name)
-        elif self.client_type == "gcp-api":
-            from model_runners.gcp_runner import GCPTextAPIRunner
-
-            self.client = GCPTextAPIRunner(model_name)
-        elif self.client_type == "triton-server":
-            from model_runners.triton_runner import TritonCustomHTTPClient
-
-            self.client = TritonCustomHTTPClient(model_name)
-        elif self.client_type == "vllm-api":
-            from model_runners.vllm_runner import VLLMTextAPIRunner
-
-            self.client = VLLMTextAPIRunner(model_name)
-        elif self.client_type == "serpro-llm":
-            from model_runners.serpro_runner import SerproLLMTextAPIRunner
-            
-            self.client = SerproLLMTextAPIRunner(model_name)
+        super().__init__(model_name, client_type)
+        if os.path.exists(nat_dump_path):
+            self.embedding_store = EmbeddingStore.load_store(
+                nat_dump_path, model_name=emb_model, backend=embedding_device
+            )
         else:
-            raise ValueError(f"Unknown client type: {self.client_type}")
+            print(
+                f"Naturezas cache não encontrado em {nat_dump_path}, criando novo.",
+                file=sys.stderr,
+            )
+            self.embedding_store = EmbeddingStore(model_name=emb_model, backend=embedding_device)
+        self.emb_model = self.embedding_store.model_name
 
-        self.context_len = self.client.context_len
+        self.embedding_store.add_documents(naturezas_vec)
+        self.embedding_store.persist(nat_dump_path)
 
     def supports_parallel(self):
         """
@@ -84,30 +79,6 @@ class PipelineNaturezasAPI(BaseAPIRunner):
             bool: True se suportado.
         """
         return True
-
-    def extract_structured(self, input_dict):
-        """
-        Envia o prompt para o Azure e tenta obter saída parseada (estrutura definida via Pydantic).
-
-        Args:
-            input_dict (dict): deve conter:
-                - 'prompt' (str): texto a ser enviado
-                - 'format' (str): especificador de formatação/text_format esperado pela API
-
-        Returns:
-            tuple: (parsed_output_or_None, input_tokens_or_None, output_tokens_or_None, inference_time_seconds, raw_response_or_exception)
-                - parsed_output_or_None: objeto parseado conforme o schema (ou None)
-                - input_tokens_or_None, output_tokens_or_None: contagem de tokens quando disponível
-                - inference_time_seconds: tempo de inferência em segundos
-                - raw_response_or_exception: objeto de resposta cru do client ou a exceção capturada
-
-        Tratamento de erros:
-            - Captura ValidationError do pydantic e retorna o erro no lugar do raw_response.
-        """
-
-        out = self.client.extract_structured(input_dict)
-        struct_resp, input_tokens, output_tokens, inf_time, raw_resp = out
-        return struct_resp, input_tokens, output_tokens, inf_time, raw_resp
 
     def create_interpretation_a(self, transcriptions: List[str]):
         """
@@ -183,6 +154,12 @@ class PipelineNaturezasAPI(BaseAPIRunner):
                 results2.append((None, meta))
 
         return results2
+    
+    def find_similar_natures(self, descs: List[str], max_n: int = 24, transcripts: List[str] = []):
+        similares = self.embedding_store.search(descs)
+        for desc, res in similares.items():
+            res["sims_dict"] = res["sims_dict"][:max_n]
+        return similares
 
     def create_interpretation_b(self, transcriptions: List[str], classification_lists):
         """
@@ -200,6 +177,7 @@ class PipelineNaturezasAPI(BaseAPIRunner):
 
         cpu_start = time.time()
         user_prompts = []
+        indexings = []
         for transcription, classifications in zip(transcriptions, classification_lists):
             classifications_indexed = {
                 n + 1: c for n, c in enumerate([x for s, x in classifications])
@@ -212,11 +190,16 @@ class PipelineNaturezasAPI(BaseAPIRunner):
                 "naturezas_similares", classifications_json
             ).replace("[[[[transcript_content]]]]", transcription)
             user_prompts.append(user_prompt)
+            indexings.append(classifications_indexed)
 
         results = self.extract_multiple_structured(user_prompts, NaturezaOcorrenciaA)
         max_inf_time = max([tp[-2] for tp in results])
         results2 = []
+
+        request_idx = 0
         for structured_resp, tokens1, tokens2, inf_time, raw in results:
+            classifications_indexed = indexings[request_idx]
+            request_idx += 1
             no_gpu_time = time.time() - cpu_start - max_inf_time
             meta = {
                 "meta": {
@@ -230,6 +213,7 @@ class PipelineNaturezasAPI(BaseAPIRunner):
             if structured_resp is not None:
                 try:
                     nat_id = structured_resp.natureza_da_ocorrencia_indice
+                    meta["meta"]["nat_id"] = nat_id
                 except Exception as err:
                     print("Natureza ocorrencia inválida:" + str(err), file=sys.stderr)
                     meta["meta"]["message"] = str(raw)
@@ -325,7 +309,60 @@ class PipelineNaturezasAPI(BaseAPIRunner):
 
         return results2
 
-def connection_test(hardware_config, model_name=None):
+
+
+
+class PipelineNaturezasAPIb25(PipelineNaturezasAPI):
+    def __init__(self, model_name: str, emb_model: str, client_type="azure-api", embedding_device="cpu", 
+            nat_dump_path=naturezas_dump_path):
+        super().__init__(model_name, emb_model, client_type, embedding_device, nat_dump_path)
+        self.bm_model_path = naturezas_path+".bm25_indexing"
+        if os.path.exists(self.bm_model_path):
+            print(f"Loading BM25 Model from {self.bm_model_path}")
+            self.bm25 = RobustBM25Model()
+            self.bm25.load(self.bm_model_path)
+        else:
+            print(f"Training new BM25 Model to {self.bm_model_path}")
+            self.bm25 = RobustBM25Model()
+            self.bm25.fit(naturezas_vec)
+            self.bm25.save(self.bm_model_path)
+    
+    def find_similar_natures(self, descs: List[str], max_n: int = 24, bm25_weight: float = 0.1, verbose=True, transcripts: List[str] = []):
+        assert len(transcripts) > 0, "transcripts must be provided"
+        assert len(transcripts) == len(descs), "transcripts must have same length as descs"
+        desc_to_script = {desc: script for desc, script in zip(descs, transcripts)}
+        semantic_weight = 1.0 - bm25_weight
+        similares = self.embedding_store.search(descs)
+        if verbose:
+            print(f"semantic_weight={semantic_weight}, bm25_weight={bm25_weight}")
+        for desc, res in similares.items():
+            if bm25_weight > 0:
+                script = desc_to_script[desc]
+                bm25_sims = self.bm25.predict_similarity(f"{desc}\n{script}")
+            else:
+                #any_str -> 0.0
+                bm25_sims = defaultdict(lambda : 0.0)
+            for idx in range(len(res["sims_dict"])):
+                doc = res["sims_dict"][idx][1]
+                bm25_sim = bm25_sims[doc]
+                semantic_sim = res["sims_dict"][idx][0]
+                new_sim = bm25_sim * bm25_weight + semantic_sim * semantic_weight
+                res["sims_dict"][idx] = (new_sim, doc)
+            
+            res["sims_dict"].sort(key=lambda x: x[0], reverse=True)
+            if len(res["sims_dict"]) > max_n:
+                res["sims_dict"] = res["sims_dict"][:max_n]
+            
+            if verbose:
+                print(f"Similarities to {desc}")
+                to_print = res["sims_dict"] if len(res["sims_dict"]) < 12 else res["sims_dict"][:12]
+                for sim, doc in to_print:
+                    bm25_sim = bm25_sims[doc]
+                    original_semantic = (sim - bm25_sim * bm25_weight) / semantic_weight if semantic_weight > 0 else 0
+                    print(f"\t{doc}: semantic={original_semantic:.4f}, bm25={bm25_sim:.4f}, final={sim:.4f}")
+        return similares
+
+def connection_test(hardware_config, emb_model, model_name=None):
     # Bloco de demonstração: executa interpretações de exemplo quando o arquivo é executado diretamente.
     transcript_text = "Operador: Corpo de Bombeiros, em que posso ajudar?\nSolicitante: Moço, eu preciso de ajuda. Um rapaz aqui, ele bateu a cabeça, tá no chão e parece que não consegue levantar.\nOperador: Ele está consciente?\nSolicitante: Não sei ao certo, ele tá falando muito baixo, tá tonto, meio zonzo. E sangrando um pouco na testa.\nOperador: Entendi. Ele chegou a cair de algum lugar alto?\nSolicitante: Não, acho que ele escorregou e bateu a cabeça na parede. Mas foi uma pancada forte.\nOperador: Você consegue dizer onde estão?\nSolicitante: Aqui na BR-369, número 456, é numa loja 1445. Perto da parada, Parada Brasília.\nOperador: Certo, entendi. Ele se queixa de dor em mais algum lugar?\nSolicitante: Ele só reclama muito de dor na cabeça. Tá com a mão no rosto, dizendo que tá tonto.\nOperador: Tudo bem, peço que evite mexer muito nele. Deixe-o deitado até chegarmos. Algum ponto de referência?\nSolicitante: É bem ao lado da parada. Tô aqui fora da loja 1445. Dá pra ver de longe.\nOperador: Vamos a caminho. Se ele parar de responder ou se o sangramento aumentar, me ligue de volta, tá bom? Fique ao lado dele e tente acalmá-lo.\nSolicitante: Tá certo. Obrigado, tô aguardando vocês."
     transcript_text2 = "Operador: Corpo de Bombeiros, em que posso ajudar?\nSolicitante: Moço, eu preciso de ajuda. Um rapaz aqui, ele bateu a cabeça, tá no chão e  e MORREU!\nOperador: Entendi. Solicitante: Aqui na BR-369, número 456, é numa loja 1445"
@@ -347,7 +384,7 @@ def connection_test(hardware_config, model_name=None):
         print(
             f"\n\n--- Testing PipelineNaturezasAPI with client_type={client_type} and model={model_name} ---\n"
         )
-        interpreter = PipelineNaturezasAPI(model_name, client_type=client_type)
+        interpreter = PipelineNaturezasAPI(model_name, emb_model, client_type=client_type)
         user_prompts = [
             user_template_with_schema.replace(
                 "[[[[transcript_content]]]]", transcript_text
@@ -362,6 +399,6 @@ def connection_test(hardware_config, model_name=None):
         for structured_resp, tokens1, tokens2, inf_time, raw in resps:
             print(structured_resp)
             print(inf_time, tokens1, tokens2)
-    
+
 if __name__ == "__main__":
     connection_test("serpro-llm")

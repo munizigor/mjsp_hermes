@@ -10,7 +10,7 @@
         "n_asr_workers": 1,
         "n_cpus": 1
     },
-    "ner":{
+    "ner": {
         "n_gliner_workers": 2,
         "hardware_config": "cuda",
         "n_cpus": 3,
@@ -25,6 +25,8 @@
         "n_cpus": 6,
         "min_transcricao": 150,
         "n_in_batch": 10,
-        "max_similar_natures": 20
+        "max_similar_natures": 16,
+        "b25_weight": 0.15,
+        "emb_model": "PORTULAN/serafim-100m-portuguese-pt-sentence-encoder"
     }
 }

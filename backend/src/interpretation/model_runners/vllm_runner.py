@@ -1,7 +1,14 @@
 import json
 import os
 import sys
-import httpx
+try:
+    import httpx
+except ModuleNotFoundError as err:
+    try:
+        import httpx2 as httpx
+    except ImportError:
+        raise ImportError("Both 'httpx' and 'httpx2' are missing. Please install one of them.")
+
 import time
 from typing import List, Optional, Tuple, Any
 
