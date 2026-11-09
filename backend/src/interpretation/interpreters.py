@@ -6,14 +6,11 @@ import time
 import sqlite3 as sqlite
 import multiprocessing as mp
 
-from pipelines.pipeline_naturezas import PipelineNaturezasAPI
+from pipelines.pipeline_naturezas import PipelineNaturezasAPI, PipelineNaturezasAPIb25
 
 class EmergencyInterpreter:
 
     hardware_to_interpreter = {
-        "cuda-low": "llama_cpp_low_end",
-        "cuda": "llama_cpp",
-        "cpu": "llama_cpp_cpu",
         "azure-api": "azure-api",
         "gcp-api": "gcp-api",
         "triton-server": "triton-server",
@@ -21,9 +18,6 @@ class EmergencyInterpreter:
         "serpro-llm": "serpro-llm"
     }
     SUPPORTED_INTERPRETERS = [
-        "llama_cpp",
-        "llama_cpp_low_end",
-        "llama_cpp_cpu",
         "azure-api",
         "gcp-api",
         "triton-server",
@@ -35,11 +29,13 @@ class EmergencyInterpreter:
     def __init__(
         self,
         model_name,
+        emb_model,
         hardware_config="cpu",
         embedding_device="cpu",
         sqlite_path="",
         n_cpus=6,
         max_similar_natures=16,
+        b25_weight=0.15
     ):
         assert hardware_config in EmergencyInterpreter.hardware_to_interpreter.keys()
         interpreter_type = EmergencyInterpreter.hardware_to_interpreter[hardware_config]
@@ -53,8 +49,8 @@ class EmergencyInterpreter:
             raise FileNotFoundError(f"SQLite database not found at {self.sqlite_path}")
         if interpreter_type in ["azure-api", "triton-server", "gcp-api", "vllm-api", "serpro-llm"]:
 
-            self.interpreter = PipelineNaturezasAPI(
-                model_name, client_type=interpreter_type, embedding_device=embedding_device
+            self.inf_pipeline = PipelineNaturezasAPIb25(
+                model_name, emb_model, client_type=interpreter_type, embedding_device=embedding_device
             )
             self.concurrency_mode = "async"
         else:
@@ -62,6 +58,7 @@ class EmergencyInterpreter:
         self.sqlite_conn = sqlite.connect(self.sqlite_path)
         self.max_similar_natures = max_similar_natures
         self.redo_queue = None
+        self.b25_weight = b25_weight
 
     def set_agent_can_redo_queue(self, redo_queue: mp.Queue):
         self.redo_queue = redo_queue
@@ -126,15 +123,15 @@ class EmergencyInterpreter:
 
             # Reduzir caso o comprimento maximo de contexto seja pequeno
             c_len = (
-                self.interpreter.context_len
-                if self.interpreter.context_len != None
+                self.inf_pipeline.context_len
+                if self.inf_pipeline.context_len != None
                 else 10000
             )
             transcription = (
                 transcription if len(transcription) <= c_len else transcription[-c_len:]
             )
 
-            interpretation_a = self.interpreter.create_interpretation_a([transcription])
+            interpretation_a = self.inf_pipeline.create_interpretation_a([transcription])
             interpretation_a, meta_dict = interpretation_a[0]
 
             desc = None
@@ -170,7 +167,8 @@ class EmergencyInterpreter:
 
                 self.send_interpretations([interpretation_1])
 
-                similares = self.interpreter.find_similar_natures([desc], max_n=max_naturezas)
+                similares = self.inf_pipeline.find_similar_natures([desc], max_n=max_naturezas, 
+                    transcripts=[transcription], bm25_weight=self.b25_weight)
                 similares = similares[desc]
                 similares_vec = similares["sims_dict"]
                 meta_vec_similares = similares["meta"]
@@ -186,7 +184,7 @@ class EmergencyInterpreter:
                 }
                 self.send_interpretations([interpretation_2])
 
-                interpretations_b = self.interpreter.create_interpretation_b(
+                interpretations_b = self.inf_pipeline.create_interpretation_b(
                     [transcription], [similares_vec]
                 )
                 meta_dict_b = [m for _, m in interpretations_b][0]
@@ -242,7 +240,7 @@ class EmergencyInterpreter:
                     }
                 result_queue.append(final_result)
 
-            interpretation_env = self.interpreter.create_envolvimentos([transcription])
+            interpretation_env = self.inf_pipeline.create_envolvimentos([transcription])
             interpretation_env, meta_dict = interpretation_env[0]
             m = meta_dict["meta"]
             if "error" in m:
@@ -301,10 +299,10 @@ class EmergencyInterpreter:
         transcriptions = [x["transcription"] for x in contexts]
 
         # Reduzir caso o comprimento maximo de contexto seja pequeno
-        c_len = self.interpreter.context_len
+        c_len = self.inf_pipeline.context_len
         transcriptions = [t if len(t) <= c_len else t[-c_len:] for t in transcriptions]
 
-        interpretations_a = self.interpreter.create_interpretation_a(transcriptions)
+        interpretations_a = self.inf_pipeline.create_interpretation_a(transcriptions)
         meta_dicts_a = [m for _, m in interpretations_a]
         interpretations_a = [x for x, m in interpretations_a]
         descs = [r["descricao_breve"] for r in interpretations_a]
@@ -363,7 +361,8 @@ class EmergencyInterpreter:
         interpretations_vec_1 = [t for t in interpretations_vec_1 if t is not None]
         self.send_interpretations(interpretations_vec_1)
 
-        similares = self.interpreter.find_similar_natures(descs, max_n=max_naturezas)
+        similares = self.inf_pipeline.find_similar_natures(descs, max_n=max_naturezas, 
+            transcripts=transcriptions_all, bm25_weight=self.b25_weight)
         similares_vecs = [similares[desc]["sims_dict"] for desc in descs]
         meta_vecs = [similares[desc]["meta"] for desc in descs]
         interpretations_vec_2 = []
@@ -383,7 +382,7 @@ class EmergencyInterpreter:
             )
         self.send_interpretations(interpretations_vec_2)
 
-        interpretations_b = self.interpreter.create_interpretation_b(
+        interpretations_b = self.inf_pipeline.create_interpretation_b(
             transcriptions, similares_vecs
         )
         meta_dicts_b = [m for _, m in interpretations_b]
@@ -449,7 +448,7 @@ class EmergencyInterpreter:
         interpretations_vec_3 = [t for t in interpretations_vec_3 if t is not None]
         self.send_interpretations(interpretations_vec_3)
 
-        interpretations_env = self.interpreter.create_envolvimentos(transcriptions)
+        interpretations_env = self.inf_pipeline.create_envolvimentos(transcriptions)
         meta_dicts_env = [m for _, m in interpretations_env]
         interpretations_env = [x for x, m in interpretations_env]
         envolvimentos = [r["envolvimentos_emergencia"] for r in interpretations_env]
@@ -505,22 +504,3 @@ class EmergencyInterpreter:
             return self.process_emergencies_batch(contexts, max_naturezas=max_naturezas)
         else:
             return None
-
-
-if __name__ == "__main__":
-    ei = EmergencyInterpreter()
-    contexts_list_path = "/datasets/emergencias-exemplos1.txt"
-    transcription_strs = open(contexts_list_path, "r").readlines()
-    contexts = [
-        {"id_emergencia": n, "transcription": transcription.rstrip("\n").strip()}
-        for n, transcription in enumerate(transcription_strs)
-        if len(transcription.rstrip("\n")) > 0
-    ]
-    r = ei.process_emergencies(contexts)
-    print(json.dumps(r, indent=2, ensure_ascii=False))
-    json.dump(
-        r,
-        open("/data/emergencias-exemplos1.solved.json", "w"),
-        indent=4,
-        ensure_ascii=False,
-    )

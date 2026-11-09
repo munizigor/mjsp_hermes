@@ -20,7 +20,7 @@ curl http://127.0.0.1:8080/inference
 }
 '''
 
-def call_whispercpp_api(api_url, audio_path, model_name):
+def call_whispercpp_api(api_url, audio_path, model_name, timeout):
     """
     Chama a API do Whisper CPP
     """
@@ -30,7 +30,7 @@ def call_whispercpp_api(api_url, audio_path, model_name):
     try:
         with open(audio_path, "rb") as f:
             files = {"file": (os.path.basename(audio_path), f, "audio/wav")}
-            response = requests.post(api_url, files=files, timeout=28)
+            response = requests.post(api_url, files=files, timeout=timeout)
         total_inf_time = time() - inf_start
 
         if response.status_code == 200:
@@ -68,7 +68,7 @@ def call_whispercpp_api(api_url, audio_path, model_name):
 
 
 def whisper_cpp_caller_process(
-    model_name, audio_queue, result_queue, hardware_config, language, n_cpus
+    model_name, audio_queue, result_queue, hardware_config, language, n_cpus, timeout=12
 ):
     """
     Processo worker.
@@ -101,7 +101,7 @@ def whisper_cpp_caller_process(
 
             # 2. Chama a função de requisição modularizada
             total_inf_time, inf_start, result = call_whispercpp_api(
-                api_url, audio_path, model_name
+                api_url, audio_path, model_name, timeout
             )
 
             if result.get("status_code") == 200 and "text" in result:

@@ -16,7 +16,7 @@ RUN CUDACXX=/usr/local/cuda-12/bin/nvcc CMAKE_ARGS="-DGGML_BLAS=ON -DGGML_BLAS_V
     pip install --break-system-packages  llama-cpp-python --upgrade --force-reinstall --no-cache-dir
 RUN pip install --break-system-packages torch torchvision --index-url https://download.pytorch.org/whl/cpu
 RUN pip install --break-system-packages --upgrade huggingface_hub datasets transformers
-RUN pip install --break-system-packages --upgrade openai google-genai
+RUN pip install --break-system-packages --upgrade openai google-genai sentence-transformers PyStemmer scipy
 
 RUN pip cache purge
 RUN pip freeze > /requirements2.txt

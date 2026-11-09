@@ -15,7 +15,7 @@ RUN apt update && apt install -y \
 
 RUN pip install --break-system-packages torch torchvision --index-url https://download.pytorch.org/whl/cpu
 RUN pip install --break-system-packages --upgrade huggingface_hub datasets transformers
-RUN pip install --break-system-packages --upgrade openai google-genai
+RUN pip install --break-system-packages --upgrade openai google-genai sentence-transformers PyStemmer scipy
 
 RUN pip cache purge
 RUN pip freeze > /requirements2.txt
