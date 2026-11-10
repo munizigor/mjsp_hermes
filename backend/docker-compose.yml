@@ -1,4 +1,10 @@
 services:
+  hermes-base:
+    image: hermes-base-cpu:latest
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.base_cpu
+    command: ["true"]
   staging:
     image: alpine:3.14
     volumes:
@@ -14,8 +20,13 @@ services:
       "
     env_file: docker/common.env
   test_asr:
+    depends_on:
+      hermes-base:
+        condition: service_completed_successfully
     build:
       dockerfile: docker/Dockerfile.asr_cpu
+      additional_contexts:
+        hermes-base-cpu:latest: service:hermes-base
     networks:
       - hermes-network
     volumes:
@@ -33,12 +44,16 @@ services:
       "
   hermes-api:
     depends_on:
+      hermes-base:
+        condition: service_completed_successfully
       test_asr:
         condition: service_completed_successfully
       staging:
         condition: service_completed_successfully
     build:
       dockerfile: docker/Dockerfile.hermes
+      additional_contexts:
+        hermes-base-cpu:latest: service:hermes-base
     ports:
       - "${HERMES_PORT}:${HERMES_PORT}"
     networks:
@@ -53,12 +68,16 @@ services:
     env_file: docker/common.env
   hermes-ner:
     depends_on:
+      hermes-base:
+        condition: service_completed_successfully
       test_asr:
         condition: service_completed_successfully
       staging:
         condition: service_completed_successfully
     build:
       dockerfile: docker/Dockerfile.ner_cpu
+      additional_contexts:
+        hermes-base-cpu:latest: service:hermes-base
     networks:
       - hermes-network
 
@@ -77,12 +96,16 @@ services:
 
   hermes-asr:
     depends_on:
+      hermes-base:
+        condition: service_completed_successfully
       staging:
         condition: service_completed_successfully
       test_asr:
         condition: service_completed_successfully
     build:
       dockerfile: docker/Dockerfile.asr_cpu
+      additional_contexts:
+        hermes-base-cpu:latest: service:hermes-base
     networks:
       - hermes-network
 
@@ -97,12 +120,16 @@ services:
     env_file: docker/common.env
   hermes-interpretation:
     depends_on:
+      hermes-base:
+        condition: service_completed_successfully
       test_asr:
         condition: service_completed_successfully
       staging:
         condition: service_completed_successfully
     build:
       dockerfile: docker/Dockerfile.interpretation
+      additional_contexts:
+        hermes-base-cpu:latest: service:hermes-base
     #ports:
     #  - "XXXX:XXXX"
     networks:

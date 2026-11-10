@@ -1,12 +1,6 @@
-FROM ubuntu:24.04
+FROM hermes-base-cpu:latest
 
-RUN apt update && apt install -y \
-    cmake build-essential make gcc \
-    build-essential libboost-system-dev libboost-thread-dev \
-    libboost-program-options-dev libboost-test-dev libboost-filesystem-dev \
-    && rm -rf /var/lib/apt/lists/*
-
-RUN apt update && apt install -y ffmpeg python3 python3-pip sqlite3 && rm -rf /var/lib/apt/lists/*
+RUN apt update && apt install -y ffmpeg iproute2 curl && rm -rf /var/lib/apt/lists/*
 
 #RUN pip install --break-system-packages transformers
 #RUN pip install --break-system-packages -U datasets
@@ -14,7 +8,6 @@ RUN apt update && apt install -y ffmpeg python3 python3-pip sqlite3 && rm -rf /v
 RUN pip install google-cloud-speech librosa numpy soundfile pydub tritonclient[http] --break-system-packages
 RUN pip cache purge
 RUN pip freeze > /requirements.txt
-RUN apt update &&  apt install -y iproute2 curl
 
 COPY ./src/interpretation /src
 

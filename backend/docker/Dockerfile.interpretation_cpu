@@ -1,16 +1,10 @@
-FROM ubuntu:24.04
+FROM hermes-base-cpu:latest
 
-RUN apt update && apt install -y \
-    python3 python3-pip \
-    cmake build-essential make gcc sqlite3 libnuma-dev \
-    build-essential libboost-system-dev libboost-thread-dev \
-    libboost-program-options-dev libboost-test-dev libboost-filesystem-dev \
-    && rm -rf /var/lib/apt/lists/*
 #RUN pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128 --break-system-packages
 RUN pip install --break-system-packages pydantic uv
 RUN uv pip install --break-system-packages pandas scikit-learn --system
 RUN apt update && apt install -y \
-    libopenblas-dev libblas-dev pkg-config \
+    libnuma-dev libopenblas-dev libblas-dev pkg-config \
     && rm -rf /var/lib/apt/lists/*
 RUN CUDACXX=/usr/local/cuda-12/bin/nvcc CMAKE_ARGS="-DGGML_BLAS=ON -DGGML_BLAS_VENDOR=OpenBLAS" FORCE_CMAKE=1 \
     pip install --break-system-packages  llama-cpp-python --upgrade --force-reinstall --no-cache-dir
