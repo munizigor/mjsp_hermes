@@ -1,4 +1,4 @@
-FROM hermes-base-cpu:latest
+FROM hermes_base
 
 RUN pip install --break-system-packages "fastapi[standard]"
 RUN pip install --break-system-packages scipy numpy python-multipart

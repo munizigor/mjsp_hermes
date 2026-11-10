@@ -1,6 +1,6 @@
 services:
   hermes-base:
-    image: hermes-base-cpu:latest
+    image: hermes_base
     build:
       context: .
       dockerfile: docker/Dockerfile.base_cpu
@@ -26,7 +26,7 @@ services:
     build:
       dockerfile: docker/Dockerfile.asr_cpu
       additional_contexts:
-        hermes-base-cpu:latest: service:hermes-base
+        hermes_base: service:hermes-base
     networks:
       - hermes-network
     volumes:
@@ -53,7 +53,7 @@ services:
     build:
       dockerfile: docker/Dockerfile.hermes
       additional_contexts:
-        hermes-base-cpu:latest: service:hermes-base
+        hermes_base: service:hermes-base
     ports:
       - "${HERMES_PORT}:${HERMES_PORT}"
     networks:
@@ -77,7 +77,7 @@ services:
     build:
       dockerfile: docker/Dockerfile.ner_cpu
       additional_contexts:
-        hermes-base-cpu:latest: service:hermes-base
+        hermes_base: service:hermes-base
     networks:
       - hermes-network
 
@@ -105,7 +105,7 @@ services:
     build:
       dockerfile: docker/Dockerfile.asr_cpu
       additional_contexts:
-        hermes-base-cpu:latest: service:hermes-base
+        hermes_base: service:hermes-base
     networks:
       - hermes-network
 
@@ -129,7 +129,7 @@ services:
     build:
       dockerfile: docker/Dockerfile.interpretation
       additional_contexts:
-        hermes-base-cpu:latest: service:hermes-base
+        hermes_base: service:hermes-base
     #ports:
     #  - "XXXX:XXXX"
     networks:

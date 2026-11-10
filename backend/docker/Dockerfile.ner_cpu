@@ -1,4 +1,4 @@
-FROM hermes-base-cpu:latest
+FROM hermes_base
 
 RUN pip install --break-system-packages pydantic langdetect
 #python-mecab-ko janome indic-nlp-library jieba
