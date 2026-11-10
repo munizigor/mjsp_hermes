@@ -14,7 +14,6 @@ env_vals = {
 }
 for k, v in env_vals.items():
     os.environ[k] = v
-print(env_vals)
 
 
 def remove_duplicates_regex(text: str, max_ngram: int = 5) -> str:

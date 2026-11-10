@@ -5,8 +5,6 @@ from time import sleep
 
 from asr_runner import AsrRunner
 from names import asr_models
-#for key, val in os.environ.items():
-#    print(key, val)
 
 
 

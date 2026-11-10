@@ -65,7 +65,6 @@ def parse_triton_hosts():
     vllm_hosts = []
     flask_hosts = []
     for key, value in os.environ.items():
-        print(key, value)
         if "TRITON_SERVER_" in key and not ("TIMEOUT_SECS" in key):
             if "_URL_" in key:
                 servertype = key.split("_URL_")[1]
