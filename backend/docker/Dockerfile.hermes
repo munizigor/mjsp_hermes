@@ -1,17 +1,17 @@
 FROM hermes_base
 
-RUN pip install --break-system-packages "fastapi[standard]"
-RUN pip install --break-system-packages scipy numpy python-multipart
-RUN pip install --break-system-packages librosa
-RUN pip install --break-system-packages soundfile
+RUN pip install --break-system-packages "fastapi[standard]" python-multipart
 RUN pip cache purge
 RUN pip freeze > /requirements2.txt
 #RUN pip install -r /requirements.txt --break-system-packages
 
-COPY ./src/hermes /src
+ENV FASTAPI_MODE=run
+WORKDIR /src/hermes
+
+COPY ./src/hermes /src/hermes
 COPY ./src/init.sql /init.sql
 
 #set open port 8000
 EXPOSE 8001
 
-CMD ["fastapi", "dev", "--host", "0.0.0.0", "--port", "8001", "/src/start.py"]
+CMD ["sh", "-c", "exec fastapi ${FASTAPI_MODE:-run} --host 0.0.0.0 --port 8001 /src/hermes/start.py"]

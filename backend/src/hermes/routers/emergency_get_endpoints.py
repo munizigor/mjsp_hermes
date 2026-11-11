@@ -27,7 +27,6 @@ def list_emergencies(is_open: bool = None) -> dict:
                 ]
             }
     """
-    sqlite_conn = sqlite.connect(os.environ["SQLITE_DB_PATH"])
     cols = [
         "id",
         "start_time",
@@ -40,18 +39,29 @@ def list_emergencies(is_open: bool = None) -> dict:
     ]
     if is_open:
         filter_str = "WHERE end_time IS NULL"
-    elif is_open == None:
+    elif is_open is None:
         filter_str = ""
-    elif is_open == False:
+    else:
         filter_str = "WHERE end_time IS NOT NULL"
-    cursor = sqlite_conn.cursor()
-    query_results = cursor.execute(
-        f"""
-        SELECT {', '.join(cols)}
-        FROM emergencies
-        {filter_str}
-    """
-    ).fetchall()
+
+    sqlite_conn = None
+    cursor = None
+    try:
+        sqlite_conn = sqlite.connect(os.environ["SQLITE_DB_PATH"])
+        cursor = sqlite_conn.cursor()
+        query_results = cursor.execute(
+            f"""
+            SELECT {', '.join(cols)}
+            FROM emergencies
+            {filter_str}
+        """
+        ).fetchall()
+    finally:
+        if cursor is not None:
+            cursor.close()
+        if sqlite_conn is not None:
+            sqlite_conn.close()
+
     if query_results is not None:
         open_emergencies = [
             {cols[n]: row[n] for n in range(len(cols))} for row in query_results
@@ -59,7 +69,6 @@ def list_emergencies(is_open: bool = None) -> dict:
     else:
         open_emergencies = []
 
-    sqlite_conn.close()
     open_emergencies.sort(key=lambda e: e["start_time"], reverse=True)
     return {"emergencies": open_emergencies}
 
@@ -82,7 +91,6 @@ def get_emergency(id_emergencia: int) -> dict:
                     },
             }
     """
-    sqlite_conn = sqlite.connect(os.environ["SQLITE_DB_PATH"])
     cols = [
         "id",
         "start_time",
@@ -94,24 +102,32 @@ def get_emergency(id_emergencia: int) -> dict:
         "destination_phone_number",
     ]
     filter_str = f"WHERE id = {id_emergencia}"
-    cursor = sqlite_conn.cursor()
-    query_results = cursor.execute(
-        f"""
-        SELECT {', '.join(cols)}
-        FROM emergencies
-        {filter_str}
-    """
-    ).fetchall()
-    if query_results is not None:
+    sqlite_conn = None
+    cursor = None
+    try:
+        sqlite_conn = sqlite.connect(os.environ["SQLITE_DB_PATH"])
+        cursor = sqlite_conn.cursor()
+        query_results = cursor.execute(
+            f"""
+            SELECT {', '.join(cols)}
+            FROM emergencies
+            {filter_str}
+        """
+        ).fetchall()
+    finally:
+        if cursor is not None:
+            cursor.close()
+        if sqlite_conn is not None:
+            sqlite_conn.close()
+
+    if query_results:
         open_emergencies = [
             {cols[n]: row[n] for n in range(len(cols))} for row in query_results
         ]
         emergency = open_emergencies[0]
-        sqlite_conn.close()
         print("Emergency found:", emergency)
         return {"emergency": emergency}
     else:
-        sqlite_conn.close()
         print("Emergency not found:", id_emergencia)
         return {"emergency": None}
 
@@ -127,6 +143,8 @@ def start_call_interpretation(operator_unique_code: str) -> dict:
     Returns:
         int: The ID of the newly created emergency session.
     """
+    sqlite_conn = None
+    cursor = None
     try:
         sqlite_conn = sqlite.connect(os.environ["SQLITE_DB_PATH"])
         cursor = sqlite_conn.cursor()
@@ -150,12 +168,15 @@ def start_call_interpretation(operator_unique_code: str) -> dict:
             ),
         )
         sqlite_conn.commit()
-
-        sqlite_conn.close()
         return {"new_emergency_id": new_emergency_id}
     except Exception as e:
         print("Error starting call interpretation:", e)
         return {"new_emergency_id": None, "error": str(e)}
+    finally:
+        if cursor is not None:
+            cursor.close()
+        if sqlite_conn is not None:
+            sqlite_conn.close()
 
 
 @router.get("/processing_finished/", response_class=JSONResponse)
@@ -177,64 +198,68 @@ def processing_finished(id_emergencia: int) -> dict:
     """
 
     print("Status de", id_emergencia)
-    sqlite_conn = sqlite.connect(os.environ["SQLITE_DB_PATH"])
-    cursor = sqlite_conn.cursor()
+    sqlite_conn = None
+    cursor = None
+    try:
+        sqlite_conn = sqlite.connect(os.environ["SQLITE_DB_PATH"])
+        cursor = sqlite_conn.cursor()
 
-    # Verifica se todos os áudios de uma emergência específica estão transcritos
-    query = """SELECT 
-            CASE 
-                WHEN COUNT(*) = 0 THEN 'Todos os áudios transcritos'
-                ELSE 'Áudios pendentes de transcrição'
-            END AS status
-        FROM 
-            emergency_audios
-        WHERE 
-            id_emergencia = ? AND transcription_status != 2;"""
-    status_audios = cursor.execute(query, (id_emergencia,)).fetchone()[0]
-    print(status_audios)
-    audios_transcritos = status_audios == "Todos os áudios transcritos"
+        # Verifica se todos os áudios de uma emergência específica estão transcritos
+        query = """SELECT 
+                CASE 
+                    WHEN COUNT(*) = 0 THEN 'Todos os áudios transcritos'
+                    ELSE 'Áudios pendentes de transcrição'
+                END AS status
+            FROM 
+                emergency_audios
+            WHERE 
+                id_emergencia = ? AND transcription_status != 2;"""
+        status_audios = cursor.execute(query, (id_emergencia,)).fetchone()[0]
+        print(status_audios)
+        audios_transcritos = status_audios == "Todos os áudios transcritos"
 
-    if not audios_transcritos:
-        sqlite_conn.close()
-        return {"terminado": False, "descricao": "Áudios pendentes de transcrição"}
+        if not audios_transcritos:
+            return {"terminado": False, "descricao": "Áudios pendentes de transcrição"}
 
-    # Obtém o horario_de_transcricao mais recente para um id_emergencia específico
-    query = """
-    SELECT 
-        MAX(horario_de_transcricao) AS horario_de_transcricao_mais_recente
-    FROM 
-        emergency_transcripts
-    WHERE 
-        id_emergencia = ?;    
-    """
-    transcricao_mais_recente = cursor.execute(query, (id_emergencia,)).fetchone()[0]
-    print(transcricao_mais_recente)
-    if transcricao_mais_recente == None:
-        # Sem transcrições
-        sqlite_conn.close()
-        return {"terminado": False, "descricao": "Sem transcrições feitas"}
-    else:
-        transcricao_mais_recente = int(transcricao_mais_recente)
-
-    # Obtém o horario_de_transcricao mais recente para um id_emergencia específico
-    query = """
+        # Obtém o horario_de_transcricao mais recente para um id_emergencia específico
+        query = """
         SELECT 
-            MAX(horario_contexto) AS ultimo_contexto_processado
+            MAX(horario_de_transcricao) AS horario_de_transcricao_mais_recente
         FROM 
-            resultados_inferencia
+            emergency_transcripts
         WHERE 
-            id_emergencia = ?
-            AND tipo_de_inferencia = 'natureza_decisiva';    
+            id_emergencia = ?;    
         """
-    ultimo_contexto_processado = cursor.execute(query, (id_emergencia,)).fetchone()[0]
-    print(ultimo_contexto_processado)
-    if ultimo_contexto_processado == None:
-        # Sem transcrições
-        sqlite_conn.close()
-        return {"terminado": False, "descricao": "Sem natureza_decisiva criada"}
+        transcricao_mais_recente = cursor.execute(query, (id_emergencia,)).fetchone()[0]
+        print(transcricao_mais_recente)
+        if transcricao_mais_recente is None:
+            # Sem transcrições
+            return {"terminado": False, "descricao": "Sem transcrições feitas"}
+        else:
+            transcricao_mais_recente = int(transcricao_mais_recente)
+
+        # Obtém o horario_de_transcricao mais recente para um id_emergencia específico
+        query = """
+            SELECT 
+                MAX(horario_contexto) AS ultimo_contexto_processado
+            FROM 
+                resultados_inferencia
+            WHERE 
+                id_emergencia = ?
+                AND tipo_de_inferencia = 'natureza_decisiva';    
+            """
+        ultimo_contexto_processado = cursor.execute(query, (id_emergencia,)).fetchone()[0]
+        print(ultimo_contexto_processado)
+        if ultimo_contexto_processado is None:
+            # Sem transcrições
+            return {"terminado": False, "descricao": "Sem natureza_decisiva criada"}
+    finally:
+        if cursor is not None:
+            cursor.close()
+        if sqlite_conn is not None:
+            sqlite_conn.close()
 
     diff = transcricao_mais_recente - ultimo_contexto_processado
-    sqlite_conn.close()
     if diff > 1:
         return {
             "terminado": False,

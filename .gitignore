@@ -2,3 +2,4 @@
 artefatos/dados_coletados/cenarios_agencias_parsed.csv
 analysis/estimativas_de_custo/train_data/*
 diff.txt
+.fuse_hidden*

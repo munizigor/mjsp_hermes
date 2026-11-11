@@ -1,7 +1,8 @@
-#FROM alpine:3.14
+FROM hermes_base
 
-#RUN apk add --no-cache sqlite
-#COPY ./src/init.sql /init.sql
-#RUN sqlite3 /sqlite.db/database.sqlite < echo /init.sql
+WORKDIR /src/staging
 
-#CMD ['ls']
+COPY ./src/staging /src/staging
+COPY ./src/init.sql /init.sql
+
+CMD ["python3", "-u", "/src/staging/start.py"]

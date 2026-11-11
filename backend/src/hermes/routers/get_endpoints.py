@@ -34,48 +34,28 @@ def get_transcriptions(id_emergencia: int) -> dict:
         ]
     }
     """
-    sqlite_conn = sqlite.connect(os.environ["SQLITE_DB_PATH"])
-    cursor = sqlite_conn.cursor()
+    sqlite_conn = None
+    cursor = None
+    try:
+        sqlite_conn = sqlite.connect(os.environ["SQLITE_DB_PATH"])
+        cursor = sqlite_conn.cursor()
 
-    # Get all transcript parts for the emergency, ordered by start_time
-    cursor.execute(
-        """
-        SELECT id, part, start_time, horario_de_transcricao, is_analyzed, 
-                transcription_seconds, transcription_model
-        FROM emergency_transcripts 
-        WHERE id_emergencia = ? 
-        ORDER BY start_time ASC
-    """,
-        (id_emergencia,),
-    )
+        cursor.execute(
+            """
+            SELECT et.part, et.horario_de_transcricao, et.actor, et.start_time
+            FROM emergency_transcripts et
+            WHERE et.id_emergencia = ?
+            ORDER BY et.start_time ASC
+        """,
+            (id_emergencia,),
+        )
+        transcript_parts = cursor.fetchall()
+    finally:
+        if cursor is not None:
+            cursor.close()
+        if sqlite_conn is not None:
+            sqlite_conn.close()
 
-    transcripts = []
-    lines = cursor.fetchall()
-    if lines != None:
-        for row in lines:
-            transcripts.append(
-                {
-                    "id": row[0],
-                    "part": row[1],
-                    "start_time": row[2],
-                    "horario_de_transcricao": row[3],
-                    "is_analyzed": bool(row[4]),
-                    "transcription_seconds": row[5],
-                    "transcription_model": row[6],
-                }
-            )
-
-    cursor.execute(
-        """
-        SELECT et.part, et.horario_de_transcricao, et.actor, et.start_time
-        FROM emergency_transcripts et
-        WHERE et.id_emergencia = ?
-        ORDER BY et.start_time ASC
-    """,
-        (id_emergencia,),
-    )
-    transcript_parts = cursor.fetchall()
-    sqlite_conn.close()
     full_transcription = []
     if len(transcript_parts) > 0:
         for cols in transcript_parts:
@@ -92,7 +72,6 @@ def get_transcriptions(id_emergencia: int) -> dict:
                 }
             )
 
-    sqlite_conn.close()
     return {"transcripts": full_transcription}
 
 
@@ -161,34 +140,42 @@ def get_all_inference_results(id_emergencia: int) -> dict:
     }
     """
 
-    sqlite_conn = sqlite.connect(os.environ["SQLITE_DB_PATH"])
-    cursor = sqlite_conn.cursor()
+    sqlite_conn = None
+    cursor = None
+    try:
+        sqlite_conn = sqlite.connect(os.environ["SQLITE_DB_PATH"])
+        cursor = sqlite_conn.cursor()
 
-    """cols = ['id', 'horario_contexto', 'horario_fim', 'tipo_de_inferencia', 'resultado', 'duracao_inferencia',
-        'duracao_outros_processamentos', 'input_tokens', 'output_tokens', 'modelo_utilizado']"""
+        """cols = ['id', 'horario_contexto', 'horario_fim', 'tipo_de_inferencia', 'resultado', 'duracao_inferencia',
+            'duracao_outros_processamentos', 'input_tokens', 'output_tokens', 'modelo_utilizado']"""
 
-    inference_rows = cursor.execute(
-        "SELECT * FROM resultados_inferencia WHERE id_emergencia = ?", (id_emergencia,)
-    ).fetchall()
-    cursor.execute("SELECT * FROM resultados_inferencia LIMIT 1")
-    inference_columns = [desc[0] for desc in cursor.description]
-    inference_results = []
-    for row in inference_rows:
-        inference_results.append(
-            {inference_columns[n]: row[n] for n in range(len(inference_columns))}
+        inference_rows = cursor.execute(
+            "SELECT * FROM resultados_inferencia WHERE id_emergencia = ?", (id_emergencia,)
+        ).fetchall()
+        cursor.execute("SELECT * FROM resultados_inferencia LIMIT 1")
+        inference_columns = [desc[0] for desc in cursor.description]
+        inference_results = []
+        for row in inference_rows:
+            inference_results.append(
+                {inference_columns[n]: row[n] for n in range(len(inference_columns))}
+            )
+
+        cursor.execute(
+            """
+            SELECT et.part, et.horario_de_transcricao, et.actor 
+            FROM emergency_transcripts et
+            WHERE et.id_emergencia = ?
+            ORDER BY et.start_time ASC
+        """,
+            (id_emergencia,),
         )
+        transcript_parts = cursor.fetchall()
+    finally:
+        if cursor is not None:
+            cursor.close()
+        if sqlite_conn is not None:
+            sqlite_conn.close()
 
-    cursor.execute(
-        """
-        SELECT et.part, et.horario_de_transcricao, et.actor 
-        FROM emergency_transcripts et
-        WHERE et.id_emergencia = ?
-        ORDER BY et.start_time ASC
-    """,
-        (id_emergencia,),
-    )
-    transcript_parts = cursor.fetchall()
-    sqlite_conn.close()
     if transcript_parts == None:
         transcript_parts = []
     if len(transcript_parts) > 0:
@@ -200,8 +187,6 @@ def get_all_inference_results(id_emergencia: int) -> dict:
         )
     else:
         full_transcription = ""
-
-    sqlite_conn.close()
 
     # print('Resultados da emergencia', id_emergencia, file=sys.stderr)
     # print(len(inference_results), 'resultados de inferencia', file=sys.stderr)
@@ -233,12 +218,19 @@ def get_all_inference_results(id_emergencia: int) -> dict:
 
 @router.get("/get_cluster_metrics/", response_class=JSONResponse)
 def get_cluster_metrics() -> dict:
-    sqlite_conn = sqlite.connect(os.environ["SQLITE_DB_PATH"])
-    cursor = sqlite_conn.cursor()
-    cursor.execute("SELECT * FROM metrics")
-    columns = [description[0] for description in cursor.description]
-    metrics = cursor.fetchall()
-    sqlite_conn.close()
+    sqlite_conn = None
+    cursor = None
+    try:
+        sqlite_conn = sqlite.connect(os.environ["SQLITE_DB_PATH"])
+        cursor = sqlite_conn.cursor()
+        cursor.execute("SELECT * FROM metrics")
+        columns = [description[0] for description in cursor.description]
+        metrics = cursor.fetchall()
+    finally:
+        if cursor is not None:
+            cursor.close()
+        if sqlite_conn is not None:
+            sqlite_conn.close()
 
     result = [{c: m[i] for i, c in enumerate(columns)} for m in metrics]
     for r in result:

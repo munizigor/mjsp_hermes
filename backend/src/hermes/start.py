@@ -1,13 +1,17 @@
+import atexit
 import os
 import sys
 
-env_vals = {
-    rawline.split("=")[0]: rawline.split("=")[1].rstrip("\n")
-    for rawline in open(".env", "r").read().split("\n")
-    if "=" in rawline
-}
-for k, v in env_vals.items():
-    os.environ[k] = v
+env_file_path = "/.env" if os.path.exists("/.env") else ".env"
+if os.path.exists(env_file_path):
+    with open(env_file_path, "r") as f:
+        env_vals = {
+            rawline.split("=", 1)[0]: rawline.split("=", 1)[1].rstrip("\r\n")
+            for rawline in f.read().split("\n")
+            if "=" in rawline and not rawline.lstrip().startswith("#")
+        }
+    for k, v in env_vals.items():
+        os.environ[k] = v
 
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
@@ -19,9 +23,9 @@ from starlette import status
 from contextlib import asynccontextmanager
 import sqlite3 as sqlite
 
+from time import sleep
 from rendering import render_main_log_html2 as render_main_log_html3
 from monitors.clusters_monitor import start_clusters_monitor
-from monitors.asterisk_monitor_dependent import start_asterisk_monitor
 
 from routers import (
     get_endpoints,
@@ -48,16 +52,21 @@ async def get_api_key(api_key_header: str = Security(api_key_header)):
 
 
 # Start variables that should exist for all workers
+sqlite_conn = None
 try:
+    while not os.path.exists(os.environ["SQLITE_DB_PATH"]):
+        print(f'hermes/start.py waiting 2s for {os.environ["SQLITE_DB_PATH"]}')
+        sleep(2)
     print("Connecting to DB", os.environ["SQLITE_DB_PATH"])
     sqlite_conn = sqlite.connect(os.environ["SQLITE_DB_PATH"])
-    sqlite_conn.close()
     print("DB Pre Initialization success!")
 except Exception as err:
     print("Exception before startup")
     print(err)
-    print(err.with_traceback())
     quit(1)
+finally:
+    if sqlite_conn is not None:
+        sqlite_conn.close()
 
 
 def parse_triton_hosts():
@@ -103,32 +112,56 @@ def parse_triton_hosts():
     return triton_hosts, vllm_hosts, flask_hosts
 
 
+def _stop_monitor_process(proc, sig, name: str, timeout: float = 5.0):
+    if sig is not None:
+        try:
+            sig.value = 1
+        except Exception as err:
+            print(f"Error setting stop signal for {name}: {err}", file=sys.stderr)
+    if proc is not None:
+        try:
+            if proc.is_alive():
+                print(f"Stopping {name}...")
+                proc.join(timeout=timeout)
+            if proc.is_alive():
+                print(f"{name} did not exit within {timeout}s, terminating...", file=sys.stderr)
+                proc.terminate()
+                proc.join(timeout=2.0)
+            if proc.is_alive():
+                print(f"{name} still alive after terminate, killing...", file=sys.stderr)
+                proc.kill()
+                proc.join(timeout=1.0)
+        except Exception as err:
+            print(f"Error stopping {name}: {err}", file=sys.stderr)
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # INICIO DO SERVIDOR
+    triton_monitor = None
+    triton_monitor_process = None
+    triton_stop_signal = None
+
+    def _cleanup_all_monitors():
+        _stop_monitor_process(triton_monitor_process, triton_stop_signal, "Clusters Monitor")
+
+    atexit.register(_cleanup_all_monitors)
+
     try:
-        sqlite_conn = sqlite.connect(os.environ["SQLITE_DB_PATH"])
-        cursor = sqlite_conn.cursor()
-        cursor.executescript(open("/init.sql", "r").read())
-        cursor.close()
-        sqlite_conn.commit()
-        sqlite_conn.close()
-        # start_ner_database(sqlite_conn)
-        print("DB Initialization success!")
-
-        # Emptyes the metrics reading table "metrics" in DB
-        sqlite_conn = sqlite.connect(os.environ["SQLITE_DB_PATH"])
-        cursor = sqlite_conn.cursor()
-        cursor.execute("DELETE FROM metrics")
-        cursor.close()
-        sqlite_conn.commit()
-        sqlite_conn.close()
-        print("Metrics table cleared!")
-
-        use_asterisk = os.environ.get("USE_ASTERISK", "FALSE") == "TRUE"
-        if use_asterisk:
-            print("Starting Asterisk Monitor")
-            monitor, monitor_process, stop_signal = start_asterisk_monitor()
+        sqlite_conn = None
+        cursor = None
+        try:
+            sqlite_conn = sqlite.connect(os.environ["SQLITE_DB_PATH"])
+            cursor = sqlite_conn.cursor()
+            # Empties the metrics reading table "metrics" in DB
+            cursor.execute("DELETE FROM metrics")
+            sqlite_conn.commit()
+            print("Metrics table cleared!")
+        finally:
+            if cursor is not None:
+                cursor.close()
+            if sqlite_conn is not None:
+                sqlite_conn.close()
 
         print("Starting Clusters Monitor")
         triton_hosts, vllm_hosts, flask_hosts = parse_triton_hosts()
@@ -146,13 +179,16 @@ async def lifespan(app: FastAPI):
     except Exception as err:
         print("Error at startup")
         print(err)
+        _cleanup_all_monitors()
         quit(1)
-    yield
-    # FIM DO SERVIDOR
-    print("Stopping Asterisk Monitor")
-    stop_signal.value = 1
-    monitor_process.join()
-    print("Exiting FASTAPI Lifespan")
+
+    try:
+        yield
+    finally:
+        # FIM DO SERVIDOR
+        _cleanup_all_monitors()
+        atexit.unregister(_cleanup_all_monitors)
+        print("Exiting FASTAPI Lifespan")
 
 
 try:
@@ -173,22 +209,26 @@ except Exception as err:
 @app.get("/", response_class=HTMLResponse)
 def read_root():
     # Render the main log HTML page
-    sqlite_conn = sqlite.connect(os.environ["SQLITE_DB_PATH"])
-    cursor = sqlite_conn.cursor()
-    # Busca todas as linhas das tabelas
-    emergency_rows = cursor.execute("SELECT * FROM emergencies").fetchall()
-    emergency_columns = [desc[0] for desc in cursor.description]
-    transcript_rows = cursor.execute("SELECT * FROM emergency_transcripts").fetchall()
-    cursor.execute("SELECT * FROM emergency_transcripts LIMIT 1")
-    transcript_columns = [desc[0] for desc in cursor.description]
+    sqlite_conn = None
+    cursor = None
+    try:
+        sqlite_conn = sqlite.connect(os.environ["SQLITE_DB_PATH"])
+        cursor = sqlite_conn.cursor()
+        # Busca todas as linhas das tabelas
+        emergency_rows = cursor.execute("SELECT * FROM emergencies").fetchall()
+        emergency_columns = [desc[0] for desc in cursor.description]
+        transcript_rows = cursor.execute("SELECT * FROM emergency_transcripts").fetchall()
+        cursor.execute("SELECT * FROM emergency_transcripts LIMIT 1")
+        transcript_columns = [desc[0] for desc in cursor.description]
 
-    audio_rows = cursor.execute("SELECT * FROM emergency_audios").fetchall()
-    cursor.execute("SELECT * FROM emergency_audios LIMIT 1")
-    audio_columns = [desc[0] for desc in cursor.description]
-
-    inference_rows = cursor.execute("SELECT * FROM resultados_inferencia").fetchall()
-    cursor.execute("SELECT * FROM resultados_inferencia LIMIT 1")
-    inference_columns = [desc[0] for desc in cursor.description]
+        audio_rows = cursor.execute("SELECT * FROM emergency_audios").fetchall()
+        cursor.execute("SELECT * FROM emergency_audios LIMIT 1")
+        audio_columns = [desc[0] for desc in cursor.description]
+    finally:
+        if cursor is not None:
+            cursor.close()
+        if sqlite_conn is not None:
+            sqlite_conn.close()
 
     log_html = render_main_log_html3(
         emergency_columns,
@@ -200,5 +240,4 @@ def read_root():
         # inference_columns,
         # inference_rows,
     )
-    sqlite_conn.close()
     return log_html
