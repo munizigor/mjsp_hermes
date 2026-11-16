@@ -176,6 +176,46 @@ systemctl restart hermes-asterisk-agent.service
 - `--min-silence`: Duração mínima do silêncio em ms para considerar um ponto de corte (padrão: 1000)
 - `--keep-silence`: Quantidade de silêncio a manter no início e fim dos segmentos em ms (padrão: 250)
 
+## Configuração da Sinalização SIP (Modos de Comunicação)
+
+O script `sip_sign.py` suporta dois modos de comunicação com o Backend Hermes, que podem ser utilizados individualmente ou em conjunto (como redundância/fallback):
+
+- **`API`**: Envia notificações de início e término de chamadas diretamente para os endpoints HTTP da API do Hermes.
+- **`FILE_SYSTEM`**: Escreve os eventos de início e término de chamadas como arquivos JSON de forma atômica (seguindo o protocolo Maildir com subdiretórios `tmp/` e `new/`) dentro de `<diretório_de_segmentos>/events` (por padrão, `/var/spool/asterisk/monitor/segments/events`).
+
+Por padrão, o serviço `hermes-sip-sign.service` vem configurado para utilizar o modo `API`. Para alterar o modo de comunicação, edite o arquivo de serviço:
+
+```bash
+vi /etc/systemd/system/hermes-sip-sign.service
+```
+
+Modifique a linha `ExecStart` conforme o cenário desejado:
+
+```ini
+# Apenas via API (padrão do serviço)
+ExecStart=/usr/bin/python3 /opt/hermes/hermes-asterisk-agent/sip_sign.py /var/spool/asterisk/monitor --communication-modes API
+
+# Apenas via Sistema de Arquivos
+ExecStart=/usr/bin/python3 /opt/hermes/hermes-asterisk-agent/sip_sign.py /var/spool/asterisk/monitor --communication-modes FILE_SYSTEM
+
+# Ambos os modos simultaneamente (API + Sistema de Arquivos)
+ExecStart=/usr/bin/python3 /opt/hermes/hermes-asterisk-agent/sip_sign.py /var/spool/asterisk/monitor --communication-modes API,FILE_SYSTEM
+```
+
+Depois, recarregue e reinicie o serviço:
+
+```bash
+systemctl daemon-reload
+systemctl restart hermes-sip-sign.service
+```
+
+### Parâmetros (Sinalização SIP)
+
+- `monitor_dir` (posicional): Diretório de gravações do Asterisk a ser monitorado (ex.: `/var/spool/asterisk/monitor`).
+- `--output-dir`, `-o`: Diretório base de saída dos segmentos, onde será criado o subdiretório `events/` (padrão: `<monitor_dir>/segments`).
+- `--communication-modes`, `-c`: Modos de comunicação separados por vírgula (`API`, `FILE_SYSTEM` ou `API,FILE_SYSTEM`).
+- `--test`, `-t`: Executa o script em modo de teste, simulando o início e o encerramento de 3 chamadas em poucos segundos sem necessidade de conexão com o AMI.
+
 ## Logs
 
 Para verificar os logs dos serviços em tempo real:

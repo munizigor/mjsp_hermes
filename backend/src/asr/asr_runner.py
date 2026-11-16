@@ -225,9 +225,9 @@ def worker_sequence_workload(audio_queue):
                     total_items += len(buf["audios"])
                     total_duration += buf["duration"]
 
-                print(
+                '''print(
                     f"Buffers size: {total_items} | Buffers duration: {total_duration} | Queue size: {audio_queue.qsize()}"
-                )
+                )'''
                 last_buffer_print_time = time()
 
         except sqlite.OperationalError as err:

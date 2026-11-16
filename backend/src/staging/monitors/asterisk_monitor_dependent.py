@@ -9,7 +9,6 @@ import sys
 
 import soundfile as sf
 
-ASTERISK_DIR = "/asterisk_recordings"
 ALLOW_MONO_CHANNEL = True
 """
 Diretórios: /asterisk_recordings/exten-102-101-20251107-181136-1762549896.161, 
@@ -256,7 +255,7 @@ class CallMonitor:
 
 class AsteriskMonitor:
     def __init__(
-        self, directory=ASTERISK_DIR, poll_interval_ms=3000, file_stable_seconds=0.4
+        self, directory, poll_interval_ms=3000, file_stable_seconds=0.4
     ):
         self.directory = directory
         self.poll_interval_ms = poll_interval_ms
@@ -356,9 +355,9 @@ class AsteriskMonitor:
         self.stop_signal.value = 1
 
 
-def start_asterisk_monitor():
+def start_asterisk_monitor(recordings_dir: str):
 
-    monitor = AsteriskMonitor()
+    monitor = AsteriskMonitor(directory=recordings_dir)
     stop_signal = monitor.stop_signal
 
     # Start process to monitor recordings, without blocking

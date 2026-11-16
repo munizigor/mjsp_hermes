@@ -13,20 +13,30 @@ if os.path.exists(env_file_path):
         }
     for k, v in env_vals.items():
         os.environ[k] = v
+ASTERISK_DIR = "/asterisk_recordings"
 
-from monitors.asterisk_monitor_dependent import start_asterisk_monitor
+from monitors.asterisk_monitor_dependent import start_asterisk_monitor as start_asterisk_monitor_no_fs
+from monitors.asterisk_monitor_fs import start_asterisk_monitor as start_asterisk_monitor_fs
 
 
 def main():
     monitor = None
     monitor_process = None
     stop_signal = None
+    monitor_mode = os.environ.get("ASTERISK_COMM_MODES", "API")
+
+    if "FILE_SYSTEM" in monitor_mode:
+        start_asterisk_monitor = start_asterisk_monitor_fs
+    elif "API" in monitor_mode:
+        start_asterisk_monitor = start_asterisk_monitor_no_fs
+    else:
+        raise ValueError("Invalid ASTERISK_COMM_MODES: {}".format(monitor_mode))
 
     try:
         use_asterisk = os.environ.get("USE_ASTERISK", "FALSE") == "TRUE"
         if use_asterisk:
             print("Starting Asterisk Monitor")
-            monitor, monitor_process, stop_signal = start_asterisk_monitor()
+            monitor, monitor_process, stop_signal = start_asterisk_monitor(ASTERISK_DIR)
 
         print("Staging service started successfully!")
     except Exception as err:
