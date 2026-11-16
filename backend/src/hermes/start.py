@@ -53,20 +53,21 @@ async def get_api_key(api_key_header: str = Security(api_key_header)):
 
 # Start variables that should exist for all workers
 sqlite_conn = None
-try:
-    while not os.path.exists(os.environ["SQLITE_DB_PATH"]):
-        print(f'hermes/start.py waiting 2s for {os.environ["SQLITE_DB_PATH"]}')
-        sleep(2)
-    print("Connecting to DB", os.environ["SQLITE_DB_PATH"])
-    sqlite_conn = sqlite.connect(os.environ["SQLITE_DB_PATH"])
-    print("DB Pre Initialization success!")
-except Exception as err:
-    print("Exception before startup")
-    print(err)
-    quit(1)
-finally:
-    if sqlite_conn is not None:
-        sqlite_conn.close()
+if os.environ['SQLITE_DB_PATH'] != ':memory:':
+    try:
+        while not os.path.exists(os.environ["SQLITE_DB_PATH"]):
+            print(f'hermes/start.py waiting 2s for {os.environ["SQLITE_DB_PATH"]}')
+            sleep(2)
+        print("Connecting to DB", os.environ["SQLITE_DB_PATH"])
+        sqlite_conn = sqlite.connect(os.environ["SQLITE_DB_PATH"])
+        print("DB Pre Initialization success!")
+    except Exception as err:
+        print("Exception before startup")
+        print(err)
+        quit(1)
+    finally:
+        if sqlite_conn is not None:
+            sqlite_conn.close()
 
 
 def parse_triton_hosts():

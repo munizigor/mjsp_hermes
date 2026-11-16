@@ -124,11 +124,11 @@
         ]
       }
     },
-    "/send_transcript/": {
+    "/store_transcript/": {
       "post": {
         "summary": "Store Transcript",
-        "description": "Extract entities from the given transcript.\n\nArgs:\n    id_emergencia (str): ID of an existing emergency.\n    transcript (str): The call transcript from which to extract entities.\n\nReturns:\n    dict: The ID for the stored transcript",
-        "operationId": "store_transcript_send_transcript__post",
+        "description": "Extract entities from the given transcript.\n\nArgs:\n    id_emergencia (str): ID of an existing emergency.\n    transcript (str): The call transcript from which to extract entities.\n    actor(str): Default = 'transcricao'\n\nReturns:\n    str: The ID for the stored transcript",
+        "operationId": "store_transcript_store_transcript__post",
         "security": [
           {
             "APIKeyHeader": []
@@ -152,6 +152,16 @@
               "type": "string",
               "title": "Transcript"
             }
+          },
+          {
+            "name": "actor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "transcricao",
+              "title": "Actor"
+            }
           }
         ],
         "responses": {
@@ -161,7 +171,7 @@
               "application/json": {
                 "schema": {
                   "type": "string",
-                  "title": "Response Store Transcript Send Transcript  Post"
+                  "title": "Response Store Transcript Store Transcript  Post"
                 }
               }
             }
@@ -674,6 +684,54 @@
             "APIKeyHeader": []
           }
         ]
+      }
+    },
+    "/status": {
+      "get": {
+        "summary": "Get Status",
+        "description": "Get general backend status and activity counts for the last N hours.",
+        "operationId": "get_status_status_get",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "last_hours",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "default": 24,
+              "title": "Last Hours"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Get Status Status Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
       }
     }
   },
