@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hermes — Documentação Oficial & API</title>
+    <style>
+{{STYLES_CSS}}
+
+/* Pygments Syntax Highlighting */
+{{PYGMENTS_CSS}}
+    </style>
+</head>
+<body>
+    <!-- Top Header -->
+    <header class="topbar">
+        <div class="topbar-left">
+            <button class="menu-toggle" onclick="toggleMobileSidebar()" title="Abrir menu">☰</button>
+            <a href="#page=README.md" class="brand" onclick="selectPage('README.md', event)">
+                <span>📞 Hermes Docs</span>
+                <span class="brand-badge">MJSP</span>
+            </a>
+        </div>
+        <div class="topbar-right">
+            <a href="#page=backend/docs/swagger.html" class="top-api-btn" onclick="selectPage('backend/docs/swagger.html', event)" title="Documentação Interativa Swagger / Scalar">
+                <span>⚡</span>
+                <span class="label-text">Swagger API</span>
+            </a>
+            <a href="#page=backend/docs/openapi.html" class="top-api-btn" onclick="selectPage('backend/docs/openapi.html', event)" title="Documentação Interativa ReDoc">
+                <span>📘</span>
+                <span class="label-text">OpenAPI (ReDoc)</span>
+            </a>
+            <button class="theme-btn" id="themeToggleBtn" onclick="toggleTheme()" title="Alternar tema claro/escuro">
+                🌙
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <div class="workspace">
+        <!-- Left File-Tree Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-search">
+                <input
+                    type="search"
+                    id="searchInput"
+                    class="search-input"
+                    placeholder="Buscar arquivo ou conteúdo..."
+                    oninput="handleSearch(this.value)"
+                />
+            </div>
+            <div id="searchResults" class="search-results"></div>
+            <div class="sidebar-toolbar">
+                <span>Arquivos do Repositório</span>
+                <div class="tree-actions">
+                    <button onclick="expandAllFolders(true)" title="Expandir tudo">Expandir</button>
+                    <button onclick="expandAllFolders(false)" title="Recolher tudo">Recolher</button>
+                </div>
+            </div>
+            <nav class="tree-container">
+                <ul class="tree-root">
+{{TREE_HTML}}
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Center Stage -->
+        <main class="main-stage">
+            <div class="breadcrumb-bar">
+                <div class="breadcrumb-path" id="breadcrumbPath">
+                    <span>mjsp_hermes</span> / <span class="breadcrumb-current">README.md</span>
+                </div>
+                <div class="breadcrumb-actions" id="breadcrumbActions"></div>
+            </div>
+
+            <div class="content-scroll" id="contentScroll">
+                <article class="markdown-body" id="markdownViewer"></article>
+            </div>
+
+            <iframe id="apiIframe" class="iframe-stage" title="Documentação Interativa da API"></iframe>
+        </main>
+
+        <!-- Right Table of Contents -->
+        <aside class="toc-sidebar" id="tocSidebar">
+            <div class="toc-title">Nesta Página</div>
+            <ul class="toc-list" id="tocList"></ul>
+        </aside>
+    </div>
+
+    <script>
+const PAGES = {{PAGES_JSON}};
+const BUILD_TIMESTAMP = "{{BUILD_TIMESTAMP}}";
+{{APP_JS}}
+    </script>
+</body>
+</html>

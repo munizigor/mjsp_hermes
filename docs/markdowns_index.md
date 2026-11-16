@@ -11,6 +11,7 @@ Para reconstruir a página estática (`docs/index.html`), execute:
 ## Documentação Principal
 
 - [Visão Geral (README.md)](../README.md)
+- [Construção da Página de Documentação (`docs/README.md`)](./README.md)
 
 ## Backend (`backend/`)
 

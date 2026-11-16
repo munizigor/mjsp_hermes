@@ -1,0 +1,12 @@
+<li class="tree-folder" data-folder-path="{{FOLDER_PATH}}">
+    <div class="tree-folder-row" onclick="toggleFolder(this)" title="{{FOLDER_PATH}}/">
+        <span class="tree-chevron">▾</span>
+        <span class="tree-folder-icon">📁</span>
+        <span class="tree-folder-name">{{FOLDER_NAME}}/</span>
+        <span class="tree-badge {{BADGE_CLASS}}">{{BADGE_TEXT}}</span>
+    </div>
+    <ul class="tree-children">
+        {{CHILDREN_HTML}}
+    </ul>
+</li>
+

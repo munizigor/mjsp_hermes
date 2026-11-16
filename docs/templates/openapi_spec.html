@@ -1,0 +1,28 @@
+<div class="api-spec-header">
+    <h1>{{TITLE}}</h1>
+    <p>Especificação OpenAPI <code>{{OPENAPI_VERSION}}</code> — <strong>{{API_TITLE}}</strong> (v{{API_VERSION}}).</p>
+    <div class="api-action-bar">
+        <a href="#page=backend/docs/swagger.html" class="btn-primary">⚡ Abrir no Swagger / Scalar</a>
+        <a href="#page=backend/docs/openapi.html" class="btn-secondary">📘 Abrir no ReDoc</a>
+        <a href="api/openapi.json" target="_blank" rel="noopener" class="btn-secondary" download="openapi.json">⬇ Baixar openapi.json</a>
+    </div>
+</div>
+<h2 id="endpoints-resumo">Resumo de Endpoints ({{ENDPOINT_COUNT}})</h2>
+<div class="table-wrap">
+    <table>
+        <thead>
+            <tr>
+                <th>Método</th>
+                <th>Endpoint</th>
+                <th>Resumo</th>
+                <th>Operation ID</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{ROWS_HTML}}
+        </tbody>
+    </table>
+</div>
+<h2 id="json-completo">Especificação JSON Completa</h2>
+<pre><code class="language-json">{{PRETTY_JSON}}</code></pre>
+
