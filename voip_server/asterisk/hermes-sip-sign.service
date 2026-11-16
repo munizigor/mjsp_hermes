@@ -6,7 +6,7 @@ After=network.target asterisk.service
 Type=simple
 User=root
 Group=root
-ExecStart=/usr/bin/python3 /opt/hermes/hermes-asterisk-agent/sip_sign.py /var/spool/asterisk/monitor --communication-modes API
+ExecStart=/usr/bin/python3 /opt/hermes/hermes-asterisk-agent/sip_sign.py /var/spool/asterisk/monitor --communication-modes API,FILE_SYSTEM
 Restart=always
 RestartSec=10
 

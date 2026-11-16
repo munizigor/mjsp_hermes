@@ -14,7 +14,7 @@ if os.path.exists(env_file_path):
         os.environ[k] = v
 
 from fastapi import FastAPI
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 
 from fastapi import Security, HTTPException, Depends
 from fastapi.security.api_key import APIKeyHeader
@@ -23,7 +23,7 @@ from starlette import status
 from contextlib import asynccontextmanager
 import sqlite3 as sqlite
 
-from time import sleep
+from time import sleep, time
 from rendering import render_main_log_html2 as render_main_log_html3
 from monitors.clusters_monitor import start_clusters_monitor
 
@@ -241,3 +241,88 @@ def read_root():
         # inference_rows,
     )
     return log_html
+
+
+@app.get("/status", response_class=JSONResponse)
+def get_status(last_hours: float = 24) -> dict:
+    """
+    Get general backend status and activity counts for the last N hours.
+    """
+    cutoff_ts = time() - (last_hours * 3600)
+    sqlite_time_modifier = f"-{last_hours} hours"
+
+    sqlite_conn = None
+    cursor = None
+    try:
+        sqlite_conn = sqlite.connect(os.environ["SQLITE_DB_PATH"])
+        cursor = sqlite_conn.cursor()
+
+        open_calls = cursor.execute(
+            """
+            SELECT COUNT(*) FROM emergencies
+            WHERE end_time IS NULL
+              AND (
+                  CASE
+                      WHEN typeof(start_time) IN ('integer', 'real') THEN start_time >= ?
+                      ELSE start_time >= datetime('now', ?)
+                  END
+              )
+            """,
+            (cutoff_ts, sqlite_time_modifier),
+        ).fetchone()[0]
+
+        closed_calls = cursor.execute(
+            """
+            SELECT COUNT(*) FROM emergencies
+            WHERE end_time IS NOT NULL
+              AND (
+                  CASE
+                      WHEN typeof(start_time) IN ('integer', 'real') THEN start_time >= ?
+                      ELSE start_time >= datetime('now', ?)
+                  END
+              )
+            """,
+            (cutoff_ts, sqlite_time_modifier),
+        ).fetchone()[0]
+
+        audios_received = cursor.execute(
+            """
+            SELECT COUNT(*) FROM emergency_audios
+            WHERE (
+                CASE
+                    WHEN typeof(start_time) IN ('integer', 'real') THEN start_time >= ?
+                    ELSE start_time >= datetime('now', ?)
+                END
+            )
+            """,
+            (cutoff_ts, sqlite_time_modifier),
+        ).fetchone()[0]
+
+        transcriptions_done = cursor.execute(
+            """
+            SELECT COUNT(*) FROM emergency_transcripts
+            WHERE horario_de_transcricao >= ?
+            """,
+            (cutoff_ts,),
+        ).fetchone()[0]
+
+        inferences_done = cursor.execute(
+            """
+            SELECT COUNT(*) FROM resultados_inferencia
+            WHERE horario_fim >= ?
+            """,
+            (cutoff_ts,),
+        ).fetchone()[0]
+    finally:
+        if cursor is not None:
+            cursor.close()
+        if sqlite_conn is not None:
+            sqlite_conn.close()
+
+    return {
+        "open_calls": open_calls,
+        "closed_calls": closed_calls,
+        "audios_received": audios_received,
+        "transcriptions_done": transcriptions_done,
+        "inferences_done": inferences_done,
+    }

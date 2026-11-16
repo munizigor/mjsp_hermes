@@ -176,14 +176,16 @@ systemctl restart hermes-asterisk-agent.service
 - `--min-silence`: Duração mínima do silêncio em ms para considerar um ponto de corte (padrão: 1000)
 - `--keep-silence`: Quantidade de silêncio a manter no início e fim dos segmentos em ms (padrão: 250)
 
-## Configuração da Sinalização SIP (Modos de Comunicação)
+## Configuração da Sinalização SIP (Modos de Comunicação e Fallback)
 
-O script `sip_sign.py` suporta dois modos de comunicação com o Backend Hermes, que podem ser utilizados individualmente ou em conjunto (como redundância/fallback):
+O script `sip_sign.py` opera com uma **lista de prioridade de modos de comunicação** com tratamento automático de fallback:
 
-- **`API`**: Envia notificações de início e término de chamadas diretamente para os endpoints HTTP da API do Hermes.
-- **`FILE_SYSTEM`**: Escreve os eventos de início e término de chamadas como arquivos JSON de forma atômica (seguindo o protocolo Maildir com subdiretórios `tmp/` e `new/`) dentro de `<diretório_de_segmentos>/events` (por padrão, `/var/spool/asterisk/monitor/segments/events`).
+- **`API`**: Envia notificações de início e término de chamadas diretamente para os endpoints HTTP da API do Hermes (verificando acessibilidade via `GET /status?last_hours=1`).
+- **`FILE_SYSTEM`**: Escreve os eventos de início e término de chamadas como arquivos JSON de forma atômica (seguindo o protocolo Maildir com subdiretórios `tmp/` e `new/`) dentro de `<diretório_de_segmentos>/events` (verificando acessibilidade com teste de escrita/leitura no diretório).
 
-Por padrão, o serviço `hermes-sip-sign.service` vem configurado para utilizar o modo `API`. Para alterar o modo de comunicação, edite o arquivo de serviço:
+Quando mais de um modo é informado (ex.: `API,FILE_SYSTEM`), o sistema tenta utilizar o primeiro método da lista. Caso um método falhe após `n` tentativas (padrão: 3, com espera progressiva de `tentativa * 2s` entre elas), o sistema alterna automaticamente para o próximo método da lista. A cada **30 minutos**, caso esteja operando em modo de fallback, o sistema verifica se o método prioritário voltou a ficar acessível e retorna para ele automaticamente. Se nenhum método funcionar, um erro crítico é lançado.
+
+Por padrão, o serviço `hermes-sip-sign.service` vem configurado para utilizar o modo `API` e como fallback o `FILE_SYSTEM`. Para alterar a configuração ou dehabilitar fallback, edite o arquivo de serviço:
 
 ```bash
 vi /etc/systemd/system/hermes-sip-sign.service
@@ -198,7 +200,7 @@ ExecStart=/usr/bin/python3 /opt/hermes/hermes-asterisk-agent/sip_sign.py /var/sp
 # Apenas via Sistema de Arquivos
 ExecStart=/usr/bin/python3 /opt/hermes/hermes-asterisk-agent/sip_sign.py /var/spool/asterisk/monitor --communication-modes FILE_SYSTEM
 
-# Ambos os modos simultaneamente (API + Sistema de Arquivos)
+# Prioridade para API com fallback automático para Sistema de Arquivos
 ExecStart=/usr/bin/python3 /opt/hermes/hermes-asterisk-agent/sip_sign.py /var/spool/asterisk/monitor --communication-modes API,FILE_SYSTEM
 ```
 
@@ -213,7 +215,8 @@ systemctl restart hermes-sip-sign.service
 
 - `monitor_dir` (posicional): Diretório de gravações do Asterisk a ser monitorado (ex.: `/var/spool/asterisk/monitor`).
 - `--output-dir`, `-o`: Diretório base de saída dos segmentos, onde será criado o subdiretório `events/` (padrão: `<monitor_dir>/segments`).
-- `--communication-modes`, `-c`: Modos de comunicação separados por vírgula (`API`, `FILE_SYSTEM` ou `API,FILE_SYSTEM`).
+- `--communication-modes`, `-c`: Lista ordenada de prioridade dos modos de comunicação separados por vírgula (`API`, `FILE_SYSTEM`, `API,FILE_SYSTEM` ou `FILE_SYSTEM,API`).
+- `--max-attempts`: Número máximo de tentativas por método antes de acionar o fallback (padrão: `3`).
 - `--test`, `-t`: Executa o script em modo de teste, simulando o início e o encerramento de 3 chamadas em poucos segundos sem necessidade de conexão com o AMI.
 
 ## Logs

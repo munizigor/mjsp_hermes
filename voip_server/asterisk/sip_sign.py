@@ -1,12 +1,13 @@
-import socket
-import time
-import requests
-import os
 import argparse
 import json
+import os
+import socket
+import time
 import uuid
 from pathlib import Path
-from typing import Dict, Any
+from typing import Any, Callable, Dict, List, Optional
+
+import requests
 
 # =============================
 # Configurações AMI Asterisk
@@ -25,271 +26,494 @@ API_KEY = "inserir_senha_api_aqui"
 API_TIMEOUT = 5
 
 COMM_MODES = ["API", "FILE_SYSTEM"]
+DEFAULT_MAX_ATTEMPTS = 3
+RECOVERY_INTERVAL_SECONDS = 30 * 60  # 30 minutos
 
-class NetworkJSONSender:
-    def __init__(self, shared_dir: str):
-        self.shared_dir = Path(shared_dir)
-        self.tmp_dir = self.shared_dir / "tmp"
-        self.new_dir = self.shared_dir / "new"
-        
-        # Ensure directories exist once upon initialization
+REQUIRED_STATUS_KEYS = {
+    "open_calls",
+    "closed_calls",
+    "audios_received",
+    "transcriptions_done",
+    "inferences_done",
+}
+
+
+def now() -> int:
+    return int(time.time())
+
+
+# =============================
+# Comunicadores
+# =============================
+class APICommunicator:
+    name = "API"
+
+    def __init__(self, host: str, port: int, api_key: str, timeout: int = 5):
+        self.base_url = f"http://{host}:{port}"
+        self.headers = {
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+            "X-Hermes-API-Key": api_key,
+        }
+        self.timeout = timeout
+
+    def is_usable(self) -> bool:
+        url = f"{self.base_url}/status"
+        r = requests.get(
+            url,
+            params={"last_hours": 1},
+            headers=self.headers,
+            timeout=self.timeout,
+        )
+        r.raise_for_status()
+        data = r.json()
+        if not isinstance(data, dict) or not REQUIRED_STATUS_KEYS.issubset(data.keys()):
+            raise ValueError(f"Resposta de /status inválida: {data}")
+        return True
+
+    def send(self, endpoint: str, params: Optional[Dict[str, Any]] = None) -> None:
+        url = f"{self.base_url}{endpoint}"
+        r = requests.post(
+            url,
+            params=params,
+            headers={"X-Hermes-API-Key": self.headers["X-Hermes-API-Key"]},
+            timeout=self.timeout,
+        )
+        if r.status_code >= 300:
+            raise RuntimeError(f"HTTP {r.status_code}: {r.text}")
+        print(f"[OK] API {endpoint}")
+
+
+class FileSystemCommunicator:
+    name = "FILE_SYSTEM"
+
+    def __init__(self, shared_dir: Optional[str]):
+        self.shared_dir = Path(shared_dir) if shared_dir else None
+        self.tmp_dir = self.shared_dir / "tmp" if self.shared_dir else None
+        self.new_dir = self.shared_dir / "new" if self.shared_dir else None
+
+    def _ensure_dirs(self) -> None:
+        if not self.shared_dir:
+            raise RuntimeError("Diretório de eventos (events_dir) não definido.")
         self.tmp_dir.mkdir(parents=True, exist_ok=True)
         self.new_dir.mkdir(parents=True, exist_ok=True)
 
-    def send(self, payload: Dict[str, Any], prefix: str = None) -> str:
-        filename = f"{prefix if prefix else ''}-{int(time.time() * 1000)}_{uuid.uuid4().hex[:8]}.json"
-        if "unix_timestamp" not in payload:
-            payload["unix_timestamp"] = time.time()
+    def is_usable(self) -> bool:
+        self._ensure_dirs()
+        probe_file = self.tmp_dir / f".probe_{uuid.uuid4().hex[:8]}"
+        probe_token = uuid.uuid4().hex
+        try:
+            with open(probe_file, "w", encoding="utf-8") as f:
+                f.write(probe_token)
+                f.flush()
+                os.fsync(f.fileno())
+            with open(probe_file, "r", encoding="utf-8") as f:
+                if f.read() != probe_token:
+                    raise IOError("Falha de verificação de leitura no diretório de eventos.")
+            return True
+        finally:
+            if probe_file.exists():
+                try:
+                    probe_file.unlink()
+                except OSError:
+                    pass
+
+    def send(self, endpoint: str, params: Optional[Dict[str, Any]] = None) -> None:
+        self._ensure_dirs()
+        prefix = endpoint.strip("/")
+        filename = f"{prefix}-{int(time.time() * 1000)}_{uuid.uuid4().hex[:8]}.json"
         tmp_path = self.tmp_dir / filename
         new_path = self.new_dir / filename
+
+        payload = {
+            "endpoint": endpoint,
+            "params": params or {},
+            "unix_timestamp": time.time(),
+        }
 
         try:
             with open(tmp_path, "w", encoding="utf-8") as f:
                 json.dump(payload, f)
                 f.flush()
                 os.fsync(f.fileno())
-
             os.replace(tmp_path, new_path)
-            return filename
-
+            print(f"[OK] FILE_SYSTEM {endpoint} ({filename})")
         except Exception as e:
             if tmp_path.exists():
                 try:
                     tmp_path.unlink()
                 except OSError:
                     pass
-            raise RuntimeError(f"Failed to send message over network share: {e}") from e
+            raise RuntimeError(f"Falha ao gravar evento no sistema de arquivos: {e}") from e
+
 
 # =============================
-# Estado interno & Instância Global do Sender
+# Gerenciador de Prioridade e Fallback
 # =============================
-calls = {}
-fs_sender = None  # Instância única inicializada no main
+class FallbackCommunicationManager:
+    def __init__(
+        self,
+        communicators: List[Any],
+        max_attempts: int = DEFAULT_MAX_ATTEMPTS,
+        recovery_interval: int = RECOVERY_INTERVAL_SECONDS,
+    ):
+        if not communicators:
+            raise ValueError("Pelo menos um modo de comunicação deve ser configurado.")
+        self.communicators = communicators
+        self.max_attempts = max_attempts
+        self.recovery_interval = recovery_interval
+        self.current_index = 0
+        self.last_recovery_check = time.time()
 
-# =============================
-# Funções auxiliares
-# =============================
-def send(sock, msg):
-    sock.sendall((msg + "\r\n").encode())
+        self._select_available_communicator()
 
-def now():
-    return int(time.time())
+    def _retry(self, action: Callable[[], Any], label: str) -> bool:
+        for attempt in range(1, self.max_attempts + 1):
+            try:
+                action()
+                return True
+            except Exception as e:
+                wait_time = attempt * 2
+                print(
+                    f"[WARN] {label} falhou (tentativa {attempt}/{self.max_attempts}): {e}"
+                )
+                if attempt < self.max_attempts:
+                    print(f"[INFO] Aguardando {wait_time}s antes da próxima tentativa...")
+                    time.sleep(wait_time)
+        return False
 
-def send_api_request(endpoint, params=None):
-    url = f"http://{API_HOST}:{API_PORT}{endpoint}"
-    headers = {"X-Hermes-API-Key": API_KEY}
+    def _select_available_communicator(self, exclude_index: Optional[int] = None) -> None:
+        for idx, comm in enumerate(self.communicators):
+            if idx == exclude_index:
+                continue
+            print(f"[INFO] Verificando disponibilidade do método '{comm.name}'...")
+            if self._retry(comm.is_usable, f"Health check [{comm.name}]"):
+                self.current_index = idx
+                self.last_recovery_check = time.time()
+                print(f"[OK] Método de comunicação ativo: '{comm.name}' (prioridade #{idx + 1})")
+                return
 
-    try:
-        r = requests.post(url, params=params, headers=headers, timeout=API_TIMEOUT)
-        if r.status_code >= 300:
-            print(f"[WARN] API {endpoint} {r.status_code}: {r.text}")
+        self._raise_fatal_error("Nenhum método de comunicação da lista de prioridade está acessível!")
+
+    def maybe_recover_primary(self) -> None:
+        if self.current_index == 0:
+            return
+        if (time.time() - self.last_recovery_check) < self.recovery_interval:
+            return
+
+        self.last_recovery_check = time.time()
+        primary = self.communicators[0]
+        print(f"[INFO] Tentando retornar ao método prioritário '{primary.name}'...")
+        if self._retry(primary.is_usable, f"Recuperação [{primary.name}]"):
+            self.current_index = 0
+            print(f"[OK] Retornou ao método prioritário '{primary.name}'!")
         else:
-            print(f"[OK] API {endpoint}")
-    except Exception as e:
-        print(f"[ERROR] API {endpoint} falhou: {e}")
+            current = self.communicators[self.current_index]
+            print(f"[WARN] Método prioritário '{primary.name}' indisponível. Mantendo '{current.name}'.")
 
-def send_fs_request(endpoint, params=None):
-    global fs_sender
-    if fs_sender is None:
-        return
+    def send_event(self, endpoint: str, params: Optional[Dict[str, Any]] = None) -> None:
+        self.maybe_recover_primary()
 
-    try:
-        payload = {
-            "endpoint": endpoint,
-            "params": params or {},
-        }
-        filename = fs_sender.send(payload, prefix=endpoint.strip('/'))
-        print(f"[OK] FILE_SYSTEM {endpoint} ({filename})")
-    except Exception as e:
-        print(f"[ERROR] FILE_SYSTEM {endpoint} falhou: {e}")
+        # Ordem de tentativa: método atual primeiro, depois os demais em ordem de prioridade
+        order = [self.current_index] + [
+            i for i in range(len(self.communicators)) if i != self.current_index
+        ]
 
-def signal_start_call(origin, destination, timestamp, comm_modes=COMM_MODES):
-    params = {
-        "source_number": origin,
-        "destination_number": destination,
-        "call_timestamp": str(timestamp),
-    }
-    if "API" in comm_modes:
-        send_api_request("/start_call/", params=params)
-    if "FILE_SYSTEM" in comm_modes:
-        send_fs_request("/start_call/", params=params)
+        for idx in order:
+            comm = self.communicators[idx]
+            if idx != self.current_index:
+                print(f"[WARN] Alternando por fallback para '{comm.name}'...")
+                if not self._retry(comm.is_usable, f"Health check [{comm.name}]"):
+                    continue
 
-def signal_end_call(origin, destination, comm_modes=COMM_MODES):
-    params = {
-        "source_number": origin,
-        "destination_number": destination,
-    }
-    if "API" in comm_modes:
-        send_api_request("/end_call_by_number/", params=params)
-    if "FILE_SYSTEM" in comm_modes:
-        send_fs_request("/end_call_by_number/", params=params)
+            if self._retry(lambda: comm.send(endpoint, params), f"Envio {endpoint} [{comm.name}]"):
+                if idx != self.current_index:
+                    self.current_index = idx
+                    self.last_recovery_check = time.time()
+                    print(f"[OK] Novo método ativo após fallback: '{comm.name}'")
+                return
 
-def test_loop(comm_modes=COMM_MODES):
+        self._raise_fatal_error(f"Falha ao enviar evento '{endpoint}' em todos os métodos configurados!")
+
+    def signal_start_call(self, origin: str, destination: str, timestamp: int) -> None:
+        self.send_event(
+            "/start_call/",
+            params={
+                "source_number": origin,
+                "destination_number": destination,
+                "call_timestamp": str(timestamp),
+            },
+        )
+
+    def signal_end_call(self, origin: str, destination: str) -> None:
+        self.send_event(
+            "/end_call_by_number/",
+            params={
+                "source_number": origin,
+                "destination_number": destination,
+            },
+        )
+
+    @staticmethod
+    def _raise_fatal_error(msg: str) -> None:
+        banner = "=" * 70
+        error_msg = f"\n{banner}\n[ERRO CRÍTICO DE COMUNICAÇÃO]\n{msg}\n{banner}"
+        print(error_msg)
+        raise RuntimeError(error_msg)
+
+
+# =============================
+# Cliente / Listener AMI Asterisk
+# =============================
+class AsteriskAMIListener:
+    def __init__(
+        self,
+        comm_manager: FallbackCommunicationManager,
+        host: str = AMI_HOST,
+        port: int = AMI_PORT,
+        username: str = AMI_USER,
+        secret: str = AMI_PASS,
+    ):
+        self.comm = comm_manager
+        self.host = host
+        self.port = port
+        self.username = username
+        self.secret = secret
+        self.calls: Dict[str, Dict[str, Any]] = {}
+
+    @staticmethod
+    def _send_line(sock: socket.socket, msg: str) -> None:
+        sock.sendall((msg + "\r\n").encode())
+
+    def _connect_and_login(self) -> socket.socket:
+        print("Conectando ao AMI do Asterisk...")
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.settimeout(30)
+        sock.connect((self.host, self.port))
+        sock.settimeout(10)  # Timeout curto para permitir checagem periódica de recuperação
+
+        for line in (
+            "Action: Login",
+            f"Username: {self.username}",
+            f"Secret: {self.secret}",
+            "",
+            "Action: Events",
+            "EventMask: on",
+            "",
+        ):
+            self._send_line(sock, line)
+
+        print("Conectado ao AMI com sucesso, aguardando eventos...")
+        return sock
+
+    @staticmethod
+    def _parse_event(raw_event: str) -> Dict[str, str]:
+        event = {}
+        for line in raw_event.splitlines():
+            if ": " in line:
+                k, v = line.split(": ", 1)
+                event[k] = v
+        return event
+
+    @staticmethod
+    def _clean_number(value: Optional[str]) -> Optional[str]:
+        return None if value in (None, "", "<unknown>") else value
+
+    def _get_or_create_call(self, call_id: str) -> Dict[str, Any]:
+        return self.calls.setdefault(
+            call_id,
+            {
+                "channels": set(),
+                "answered": False,
+                "answered_at": None,
+                "origin": None,
+                "destination": None,
+            },
+        )
+
+    def _update_participants(self, call: Dict[str, Any], event: Dict[str, str]) -> None:
+        caller = self._clean_number(event.get("CallerIDNum"))
+        callee = self._clean_number(event.get("ConnectedLineNum")) or event.get("Exten")
+
+        if caller:
+            call["origin"] = caller
+        if callee:
+            call["destination"] = callee
+
+    def _handle_newstate(self, call_id: str, call: Dict[str, Any], channel: str) -> None:
+        call["channels"].add(channel)
+        if call["answered"]:
+            return
+
+        call["answered"] = True
+        call["answered_at"] = now()
+
+        if call["origin"] and call["destination"]:
+            print(f"[CALL_ANSWERED] {call['origin']} -> {call['destination']} | CallID={call_id}")
+            self.comm.signal_start_call(call["origin"], call["destination"], call["answered_at"])
+        else:
+            print(f"[SKIP START] Dados incompletos: {call}")
+
+    def _handle_hangup(self, call_id: str, call: Dict[str, Any], channel: str) -> None:
+        call["channels"].discard(channel)
+        if not call["answered"] or call["channels"]:
+            return
+
+        duration = now() - call["answered_at"]
+        if call["origin"] and call["destination"]:
+            print(f"[CALL_END] {call['origin']} -> {call['destination']} | {duration}s")
+            self.comm.signal_end_call(call["origin"], call["destination"])
+        else:
+            print(f"[SKIP END] Dados incompletos: {call}")
+
+        del self.calls[call_id]
+
+    def _process_raw_event(self, raw_event: str) -> None:
+        if "Event:" not in raw_event:
+            return
+
+        event = self._parse_event(raw_event)
+        uniqueid = event.get("Uniqueid")
+        channel = event.get("Channel")
+        if not uniqueid or not channel:
+            return
+
+        call_id = uniqueid.split(".")[0]
+        call = self._get_or_create_call(call_id)
+        self._update_participants(call, event)
+
+        event_name = event.get("Event")
+        if event_name == "Newstate" and event.get("ChannelStateDesc") == "Up":
+            self._handle_newstate(call_id, call, channel)
+        elif event_name == "Hangup":
+            self._handle_hangup(call_id, call, channel)
+
+    def _consume_stream(self, sock: socket.socket) -> None:
+        buffer = ""
+        while True:
+            self.comm.maybe_recover_primary()
+            try:
+                data = sock.recv(4096).decode(errors="ignore")
+            except socket.timeout:
+                continue
+
+            if not data:
+                print("[WARN] Conexão fechada pelo servidor AMI. Tentando reconectar...")
+                break
+
+            buffer += data
+            while "\r\n\r\n" in buffer:
+                raw_event, buffer = buffer.split("\r\n\r\n", 1)
+                self._process_raw_event(raw_event)
+
+    def run(self) -> None:
+        while True:
+            sock = None
+            try:
+                sock = self._connect_and_login()
+                self._consume_stream(sock)
+            except KeyboardInterrupt:
+                print("Encerrando listener AMI...")
+                break
+            except socket.error as e:
+                print(f"[ERROR] Erro no socket AMI: {e}. Reconectando em 5 segundos...")
+                time.sleep(5)
+            finally:
+                if sock:
+                    try:
+                        sock.close()
+                    except Exception:
+                        pass
+
+
+# =============================
+# Modo de Teste e Inicialização
+# =============================
+def run_test_mode(comm_manager: FallbackCommunicationManager) -> None:
     print("Iniciando modo de teste (3 chamadas)...")
-    call_durations = 3
-    test_calls = [
-        ("301", "401"),
-        ("302", "402"),
-        ("303", "403"),
-    ]
+    test_calls = [("301", "401"), ("302", "402"), ("303", "403")]
 
     for i, (origin, destination) in enumerate(test_calls, start=1):
         start_ts = now()
         print(f"[CALL_ANSWERED] (TEST {i}/3) {origin} -> {destination}")
-        signal_start_call(origin, destination, start_ts, comm_modes=comm_modes)
-        time.sleep(call_durations)
+        comm_manager.signal_start_call(origin, destination, start_ts)
+        time.sleep(2)
         duration = now() - start_ts
         print(f"[CALL_END] (TEST {i}/3) {origin} -> {destination} | {duration}s")
-        signal_end_call(origin, destination, comm_modes=comm_modes)
-        time.sleep(1.5)
+        comm_manager.signal_end_call(origin, destination)
+        if i < len(test_calls):
+            time.sleep(1)
 
     print("Modo de teste finalizado.")
 
-def socket_loop(comm_modes=COMM_MODES):
-    """Loop principal com reconexão automática e tratamento de falhas de socket."""
-    while True:
-        sock = None
-        try:
-            print(furnish_msg := "Conectando ao AMI do Asterisk...")
-            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            sock.settimeout(30)  # Timeout para detectar travamentos de rede
-            sock.connect((AMI_HOST, AMI_PORT))
-            sock.settimeout(None) # Remove timeout para o recv contínuo
 
-            send(sock, "Action: Login")
-            send(sock, f"Username: {AMI_USER}")
-            send(sock, f"Secret: {AMI_PASS}")
-            send(sock, "")
+def build_communicators(modes: List[str], events_dir: Optional[str]) -> List[Any]:
+    registry = {
+        "API": lambda: APICommunicator(API_HOST, API_PORT, API_KEY, API_TIMEOUT),
+        "FILE_SYSTEM": lambda: FileSystemCommunicator(events_dir),
+    }
+    communicators = []
+    for mode in modes:
+        if mode not in registry:
+            raise ValueError(f"Modo de comunicação inválido '{mode}'. Opções: {COMM_MODES}")
+        communicators.append(registry[mode]())
+    return communicators
 
-            send(sock, "Action: Events")
-            send(sock, "EventMask: on")
-            send(sock, "")
 
-            print("Conectado ao AMI com sucesso, aguardando eventos...")
-            buffer = ""
-
-            while True:
-                data = sock.recv(4096).decode(errors="ignore")
-                if not data:
-                    print("[WARN] Conexão fechada pelo servidor AMI. Tentando reconectar...")
-                    break
-
-                buffer += data
-
-                while "\r\n\r\n" in buffer:
-                    raw_event, buffer = buffer.split("\r\n\r\n", 1)
-
-                    if "Event:" not in raw_event:
-                        continue
-
-                    event = {}
-                    for line in raw_event.splitlines():
-                        if ": " in line:
-                            k, v = line.split(": ", 1)
-                            event[k] = v
-
-                    event_name = event.get("Event")
-                    uniqueid = event.get("Uniqueid")
-                    channel = event.get("Channel")
-
-                    if not uniqueid or not channel:
-                        continue
-
-                    call_id = uniqueid.split(".")[0]
-
-                    call = calls.setdefault(
-                        call_id,
-                        {
-                            "channels": set(),
-                            "answered": False,
-                            "answered_at": None,
-                            "origin": None,
-                            "destination": None,
-                        },
-                    )
-
-                    caller = event.get("CallerIDNum")
-                    callee = event.get("ConnectedLineNum")
-                    exten = event.get("Exten")
-
-                    if caller in (None, "", "<unknown>"):
-                        caller = None
-                    if callee in (None, "", "<unknown>"):
-                        callee = None
-                    if not callee and exten:
-                        callee = exten
-
-                    if caller:
-                        call["origin"] = caller
-                    if callee:
-                        call["destination"] = callee
-
-                    if event_name == "Newstate" and event.get("ChannelStateDesc") == "Up":
-                        call["channels"].add(channel)
-
-                        if not call["answered"]:
-                            call["answered"] = True
-                            call["answered_at"] = now()
-
-                            if call["origin"] and call["destination"]:
-                                print(f"[CALL_ANSWERED] {call['origin']} -> {call['destination']} | CallID={call_id}")
-                                signal_start_call(call["origin"], call["destination"], call["answered_at"], comm_modes=comm_modes)
-                            else:
-                                print(f"[SKIP START] Dados incompletos: {call}")
-
-                    elif event_name == "Hangup":
-                        call["channels"].discard(channel)
-
-                        if call["answered"] and not call["channels"]:
-                            ended_at = now()
-                            duration = ended_at - call["answered_at"]
-
-                            if call["origin"] and call["destination"]:
-                                print(f"[CALL_END] {call['origin']} -> {call['destination']} | {duration}s")
-                                signal_end_call(call["origin"], call["destination"], comm_modes=comm_modes)
-                            else:
-                                print(f"[SKIP END] Dados incompletos: {call}")
-
-                            del calls[call_id]
-
-        except (socket.error, socket.timeout) as e:
-            print(f"[ERROR] Erro na conexão com o socket AMI: {e}. Reconectando em 5 segundos...")
-            time.sleep(5)
-        except KeyboardInterrupt:
-            print("Encerrando listener AMI...")
-            if sock:
-                sock.close()
-            break
-        finally:
-            if sock:
-                try:
-                    sock.close()
-                except Exception:
-                    pass
-
-def main():
-    global fs_sender
-    parser = argparse.ArgumentParser(description='Sinaliza inicio e fim de ligações Asterisk para o Backend-Hermes')
-    parser.add_argument('monitor_dir', help='Diretório de gravações do Asterisk a ser monitorado')
-    parser.add_argument('--output-dir', '-o', help='Diretório para salvar os segmentos')
-    parser.add_argument('--communication-modes', '-c', type=str, default='FILE_SYSTEM',
-        help=f'Modos de comunicação com o Backend-Hermes "{",".join(COMM_MODES)}" (separados por ,)')
-    parser.add_argument('--test', '-t', action='store_true',
-        help='Executa o script em modo de teste, simulando o início e fim de 3 chamadas')
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="Sinaliza início e fim de ligações Asterisk para o Backend-Hermes"
+    )
+    parser.add_argument(
+        "monitor_dir",
+        nargs="?",
+        default=None,
+        help="Diretório de gravações do Asterisk a ser monitorado",
+    )
+    parser.add_argument(
+        "--output-dir", "-o", help="Diretório para salvar os segmentos"
+    )
+    parser.add_argument(
+        "--communication-modes",
+        "-c",
+        type=str,
+        default="API,FILE_SYSTEM",
+        help=f'Lista de prioridade de modos de comunicação "{",".join(COMM_MODES)}" (separados por vírgula)',
+    )
+    parser.add_argument(
+        "--max-attempts",
+        type=int,
+        default=DEFAULT_MAX_ATTEMPTS,
+        help=f"Número de tentativas antes de fallback (padrão: {DEFAULT_MAX_ATTEMPTS})",
+    )
+    parser.add_argument(
+        "--test",
+        "-t",
+        action="store_true",
+        help="Executa o script em modo de teste, simulando o início e fim de 3 chamadas",
+    )
 
     args = parser.parse_args()
-    
-    output_dir = args.output_dir or os.path.join(args.monitor_dir, 'segments')
-    events_dir = os.path.join(output_dir, 'events')
-    os.makedirs(events_dir, exist_ok=True)
-    comm_modes = [m.strip() for m in args.communication_modes.split(",") if m.strip()]
-    
-    fs_sender = NetworkJSONSender(events_dir)
+
+    events_dir = None
+    if args.monitor_dir or args.output_dir:
+        output_dir = args.output_dir or os.path.join(args.monitor_dir, "segments")
+        events_dir = os.path.join(output_dir, "events")
+        os.makedirs(events_dir, exist_ok=True)
+
+    modes = [m.strip().upper() for m in args.communication_modes.split(",") if m.strip()]
+    communicators = build_communicators(modes, events_dir)
+    comm_manager = FallbackCommunicationManager(
+        communicators=communicators,
+        max_attempts=args.max_attempts,
+    )
 
     if args.test:
-        test_loop(comm_modes=comm_modes)
+        run_test_mode(comm_manager)
     else:
-        socket_loop(comm_modes=comm_modes)
+        listener = AsteriskAMIListener(comm_manager)
+        listener.run()
+
 
 if __name__ == "__main__":
     main()
