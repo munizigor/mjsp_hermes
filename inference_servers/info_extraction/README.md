@@ -36,3 +36,5 @@ cd gliner_gliclass
 chmod +x up.sh
 ./up.sh
 ```
+
+See also: [Testing Bench (`testing_bench/README.md`)](testing_bench/README.md) | [ASR Inference Servers (`../asr/README.md`)](../asr/README.md)

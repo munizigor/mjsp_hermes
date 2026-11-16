@@ -17,7 +17,7 @@ python get_data.py
 
 ## Criar modelo de precificação
 
-É necessário uma pasta com resultados de testes de carga realizados pelo módulo [backend/src/testing_bench](backend/src/testing_bench/README.md). Os modelos serão salvos em analysis/estimativas_de_custo/costs_models/.
+É necessário uma pasta com resultados de testes de carga realizados pelo módulo [backend/src/system_tests](../../backend/src/system_tests/README.md). Os modelos serão salvos em analysis/estimativas_de_custo/costs_models/.
 
 ```bash
 python create_models.py <caminho_da_pasta_de_testes>

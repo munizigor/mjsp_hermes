@@ -356,8 +356,13 @@ docker compose logs -f hermes-api
 
 - [mariadb/init/001_schema.sql](./mariadb/init/001_schema.sql): scripts de inicialização do banco.
 - [datasets/](./datasets/): bases de apoio para testes e cenários de inferência.
+- [docs/swagger.html](./docs/swagger.html): documentação interativa da API (Swagger/Scalar).
 - [docs/openapi.html](./docs/openapi.html): documentação estática da API.
 - [docs/openapi.json](./docs/openapi.json): especificação OpenAPI.
+- [src/system_tests/README.md](./src/system_tests/README.md): módulo de testes de carga.
+- [logs/README.md](./logs/README.md): diretório de logs do servidor.
+- [../inference_servers/asr/README.md](../inference_servers/asr/README.md): servidores de inferência ASR.
+- [../inference_servers/info_extraction/README.md](../inference_servers/info_extraction/README.md): servidores de inferência de extração de informações.
 - [testing_notebooks/](./testing_notebooks/): notebooks de validação.
 
 ## Contribuição

@@ -78,7 +78,9 @@ Cada camada possui seu próprio guia de instalação e execução:
 
 1. [`frontend/README.md`](frontend/README.md) — instalação local ou via Docker, execução do mock de transcrição e testes de performance.
 2. [`voip_server/asterisk/README.md`](voip_server/asterisk/README.md) — configuração do Asterisk (AMI e dialplan) e instalação dos serviços de sinalização/processamento de áudio.
-3. [`backend/README.md`](backend/README.md) — instalação via Docker, com multiplos containers orquestrados através de docker-compose.
+3. [`backend/README.md`](backend/README.md) — instalação via Docker, com multiplos containers orquestrados através de docker-compose ([Swagger API Docs](backend/docs/swagger.html) | [OpenAPI Docs](backend/docs/openapi.html) | [Testes de Carga](backend/src/system_tests/README.md)).
+4. [`inference_servers/asr/README.md`](inference_servers/asr/README.md) e [`inference_servers/info_extraction/README.md`](inference_servers/info_extraction/README.md) — servidores de inferência para ASR e extração de informações ([Benchmarks](inference_servers/info_extraction/testing_bench/README.md)).
+5. [`artefatos/README.md`](artefatos/README.md) e [`analysis/estimativas_de_custo/README.md`](analysis/estimativas_de_custo/README.md) — artefatos documentais e estimativas de custo.
 
 ## Observações
 > **IMPORTANTE:** A Prova de Conceito (PoC) do Projeto Hermes foi desenvolvida e validada utilizando o **Asterisk** como plataforma de telefonia, motivo pelo qual este documento apresenta procedimentos e exemplos específicos desse ambiente. Entretanto, a arquitetura da solução foi concebida para ser **independente da plataforma de PBX**, permitindo sua integração com outras soluções de telefonia, sejam elas **abertas ou proprietárias**, desde que seja possível atender aos requisitos de integração definidos pelo Hermes.

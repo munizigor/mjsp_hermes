@@ -7,6 +7,9 @@ A estrutura de diretórios foi pensada para facilitar a navegação e o acesso a
 Cada diretório contém um arquivo com links para os artefatos correspondentes, armazenados no OneDrive, garantindo que todo o time tenha acesso rápido, atualizado e padronizado às informações.
 
 - [Repositórios](repositórios/repositorios_em_uso.md);
+- [Documento de Visão e Documentações Complementares](documentacao_visao_complementar/documentacao_visao_complementar_artefatos.md);
+- [Controle de Versões (Changelog)](changelog.md);
+- [Estimativas de Custo](../analysis/estimativas_de_custo/README.md);
 - Diagramas:
   - [Arquitetural](diagramas/diagrama_arquitetural);
   - [Sequencia](diagramas/diagrama_sequencia);
