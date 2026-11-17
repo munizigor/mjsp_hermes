@@ -131,54 +131,6 @@ def get_emergency(id_emergencia: int) -> dict:
         print("Emergency not found:", id_emergencia)
         return {"emergency": None}
 
-
-@router.get("/start_call_interpretation/", response_class=JSONResponse)
-def start_call_interpretation(operator_unique_code: str) -> dict:
-    """
-    Start a new call interpretation session.
-
-    Args:
-        operator_unique_code (str): Unique code for the operator handling the call.
-
-    Returns:
-        int: The ID of the newly created emergency session.
-    """
-    sqlite_conn = None
-    cursor = None
-    try:
-        sqlite_conn = sqlite.connect(os.environ["SQLITE_DB_PATH"])
-        cursor = sqlite_conn.cursor()
-        cursor.execute(
-            """
-            INSERT INTO emergencies (operator_unique_code) VALUES (?)
-        """,
-            (operator_unique_code,),
-        )
-        new_emergency_id = cursor.lastrowid
-        sqlite_conn.commit()
-
-        cursor.execute(
-            """
-            INSERT INTO call_logs (id_emergencia, event_type, destination_phone_number) VALUES (?,?,?)
-        """,
-            (
-                new_emergency_id,
-                "START",
-                operator_unique_code,
-            ),
-        )
-        sqlite_conn.commit()
-        return {"new_emergency_id": new_emergency_id}
-    except Exception as e:
-        print("Error starting call interpretation:", e)
-        return {"new_emergency_id": None, "error": str(e)}
-    finally:
-        if cursor is not None:
-            cursor.close()
-        if sqlite_conn is not None:
-            sqlite_conn.close()
-
-
 @router.get("/processing_finished/", response_class=JSONResponse)
 def processing_finished(id_emergencia: int) -> dict:
     """

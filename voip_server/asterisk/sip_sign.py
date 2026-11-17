@@ -235,22 +235,39 @@ class FallbackCommunicationManager:
 
         self._raise_fatal_error(f"Falha ao enviar evento '{endpoint}' em todos os métodos configurados!")
 
-    def signal_start_call(self, origin: str, destination: str, timestamp: int) -> None:
+    def signal_start_call(self, origin: str, destination: str, asterisk_id: str) -> None:
         self.send_event(
-            "/start_call/",
+            "/start_call_asterisk/",
             params={
                 "source_number": origin,
                 "destination_number": destination,
-                "call_timestamp": str(timestamp),
+                "asterisk_id": str(asterisk_id),
             },
         )
 
-    def signal_end_call(self, origin: str, destination: str) -> None:
+    def signal_transfer(self, asterisk_id: str, new_destination: str) -> None:
+        self.send_event(
+            "/change_destination_number/",
+            params={
+                "asterisk_id": asterisk_id,
+                "new_destination_number": new_destination,
+            },
+        )
+
+    def signal_end_call_by_number(self, origin: str, destination: str) -> None:
         self.send_event(
             "/end_call_by_number/",
             params={
                 "source_number": origin,
                 "destination_number": destination,
+            },
+        )
+
+    def signal_end_call_asterisk(self, asterisk_id: str) -> None:
+        self.send_event(
+            "/end_call_asterisk/",
+            params={
+                "asterisk_id": asterisk_id,
             },
         )
 
@@ -350,7 +367,7 @@ class AsteriskAMIListener:
 
         if call["origin"] and call["destination"]:
             print(f"[CALL_ANSWERED] {call['origin']} -> {call['destination']} | CallID={call_id}")
-            self.comm.signal_start_call(call["origin"], call["destination"], call["answered_at"])
+            self.comm.signal_start_call(call["origin"], call["destination"], call_id)
         else:
             print(f"[SKIP START] Dados incompletos: {call}")
 
@@ -362,7 +379,7 @@ class AsteriskAMIListener:
         duration = now() - call["answered_at"]
         if call["origin"] and call["destination"]:
             print(f"[CALL_END] {call['origin']} -> {call['destination']} | {duration}s")
-            self.comm.signal_end_call(call["origin"], call["destination"])
+            self.comm.signal_end_call_by_number(call["origin"], call["destination"])
         else:
             print(f"[SKIP END] Dados incompletos: {call}")
 
@@ -373,12 +390,12 @@ class AsteriskAMIListener:
             return
 
         event = self._parse_event(raw_event)
-        uniqueid = event.get("Uniqueid")
+        call_id = event.get("Uniqueid")
+        if "Linkedid" in event:
+            call_id = event.get("Linkedid")
         channel = event.get("Channel")
-        if not uniqueid or not channel:
+        if not call_id or not channel:
             return
-
-        call_id = uniqueid.split(".")[0]
         call = self._get_or_create_call(call_id)
         self._update_participants(call, event)
 
@@ -431,16 +448,33 @@ class AsteriskAMIListener:
 # =============================
 def run_test_mode(comm_manager: FallbackCommunicationManager) -> None:
     print("Iniciando modo de teste (3 chamadas)...")
-    test_calls = [("301", "401"), ("302", "402"), ("303", "403")]
+    test_calls = [("301", "401", "17200.22"), ("302", "402", "17201.25"), ("303", "403", "17203.26")]
 
-    for i, (origin, destination) in enumerate(test_calls, start=1):
+    for i, (origin, destination, call_id) in enumerate(test_calls, start=1):
         start_ts = now()
         print(f"[CALL_ANSWERED] (TEST {i}/3) {origin} -> {destination}")
-        comm_manager.signal_start_call(origin, destination, start_ts)
+        comm_manager.signal_start_call(origin, destination, call_id)
         time.sleep(2)
         duration = now() - start_ts
         print(f"[CALL_END] (TEST {i}/3) {origin} -> {destination} | {duration}s")
-        comm_manager.signal_end_call(origin, destination)
+        comm_manager.signal_end_call_by_number(origin, destination)
+        if i < len(test_calls):
+            time.sleep(1)
+
+    print("Testando chamada com fila...")
+    test_calls_2 = [("301", "881", "88145", "17200.22")]
+
+    for i, (origin, destination1, destination2, call_id) in enumerate(test_calls_2, start=1):
+        start_ts = now()
+        print(f"[CALL_ANSWERED] (TEST {i}/3) {origin} -> {destination1}")
+        comm_manager.signal_start_call(origin, destination1, call_id)
+        time.sleep(2)
+        print(f"[CALL_TRANSFER] (TEST {i}/3) {origin} -> {destination2}")
+        comm_manager.signal_transfer(call_id, destination2)
+        time.sleep(2)
+        duration = now() - start_ts
+        print(f"[CALL_END] (TEST {i}/3) {origin} -> {destination2} | {duration}s")
+        comm_manager.signal_end_call_by_number(origin, destination2)
         if i < len(test_calls):
             time.sleep(1)
 

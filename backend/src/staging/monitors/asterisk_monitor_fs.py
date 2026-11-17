@@ -6,7 +6,7 @@ import sys
 import multiprocessing as mp
 
 # Reuse the dependent monitor's classes and constants
-from monitors.asterisk_monitor_dependent import AsteriskMonitor, CallMonitor, ALLOW_MONO_CHANNEL
+from monitors.asterisk_monitor_dependent_by_id import AsteriskMonitor, CallMonitor, ALLOW_MONO_CHANNEL
 
 class NetworkJSONReader:
     """Reads file-based JSON messages atomically using the tmp/ -> new/ -> cur/ pattern."""
@@ -62,6 +62,142 @@ class FilesystemEventDrivenAsteriskMonitor(AsteriskMonitor):
         self.json_reader = NetworkJSONReader(self.events_dir)
         print("Filesystem Event-Driven Asterisk Monitor created!", file=sys.stderr)
 
+    def start_call_event(self, params, sqlite_conn):
+        source_number = params.get("source_number")
+        destination_number = params.get("destination_number")
+        asterisk_id = params.get("asterisk_id")
+        
+        if source_number and destination_number and str(source_number).isdigit() and str(destination_number).isdigit() and asterisk_id:
+            cursor = sqlite_conn.cursor()
+            cursor.execute("""
+                INSERT INTO emergencies (source_phone_number, destination_phone_number, asterisk_id) 
+                VALUES (?, ?, ?)
+            """, (str(source_number), str(destination_number), str(asterisk_id)))
+            new_emergency_id = cursor.lastrowid
+            sqlite_conn.commit()
+
+            cursor.execute("""
+                INSERT INTO call_logs (id_emergencia, event_type, source_phone_number, destination_phone_number) 
+                VALUES (?, ?, ?, ?)
+            """, (new_emergency_id, "START", str(source_number), str(destination_number)))
+            sqlite_conn.commit()
+            print(f"[FILE_EVENT] Nova emergencia entre numeros {source_number} {destination_number} (ID: {new_emergency_id})", file=sys.stderr)
+        else:
+            print(f"[FILE_EVENT ERROR] /start_call_asterisk/ com números inválidos: {params}", file=sys.stderr)
+
+    def end_call_event(self, params, sqlite_conn):
+        source_number = params.get("source_number")
+        destination_number = params.get("destination_number")
+        if source_number and destination_number:
+            cursor = sqlite_conn.cursor()
+            cursor.execute("""
+                UPDATE emergencies
+                SET end_time = CURRENT_TIMESTAMP, current_status = 2
+                WHERE end_time IS NULL 
+                    AND source_phone_number = ? 
+                    AND destination_phone_number = ?
+            """, (str(source_number), str(destination_number)))
+            sqlite_conn.commit()
+
+            cursor.execute("""
+                INSERT INTO call_logs (event_type, source_phone_number, destination_phone_number) 
+                VALUES (?, ?, ?)
+            """, ("END", str(source_number), str(destination_number)))
+            sqlite_conn.commit()
+            print(f"[FILE_EVENT] Emergency ended {source_number} {destination_number}", file=sys.stderr)
+    
+    def change_destination_number_event(self, params, sqlite_conn):
+        asterisk_id = params.get("asterisk_id")
+        new_destination_number = params.get("new_destination_number")
+        if asterisk_id and new_destination_number:
+            cursor = sqlite_conn.cursor()
+
+            # Get source_phone_number and destination_phone_number from open call for log latter
+            query_results = cursor.execute(
+                """
+                SELECT id, source_phone_number, destination_phone_number
+                FROM emergencies
+                WHERE asterisk_id = ? AND end_time IS NULL
+            """,
+                (asterisk_id,),
+            ).fetchall()
+            if query_results:
+                emergencies = [
+                    {"id": row[0], "source_phone_number": row[1], "destination_phone_number": row[2] } for row in query_results
+                ]
+
+                emergencia = emergencies[0]
+                source_number = emergencia["source_phone_number"]
+                old_destination_number = emergencia["destination_phone_number"]
+                
+                cursor.execute("""
+                    UPDATE emergencies
+                    SET destination_phone_number = ?
+                    WHERE end_time IS NULL 
+                        AND asterisk_id = ? 
+                """, (new_destination_number, asterisk_id))
+                sqlite_conn.commit()
+
+                data = json.dumps({"from": old_destination_number, "to": new_destination_number})
+
+                cursor.execute("""
+                    INSERT INTO call_logs (id_emergencia, event_type, source_phone_number, destination_phone_number, event_data) 
+                    VALUES (?, ?, ?, ?, ?)
+                """, (emergencia["id"], "TRANSFER", source_number, new_destination_number, data))
+                sqlite_conn.commit()
+                print(f"[FILE_EVENT] Emergency destination number changed: {old_destination_number} -> {new_destination_number}", 
+                    file=sys.stderr)
+            else:
+                print(f"[FILE_EVENT] Emergency not found: {params}", file=sys.stderr)
+        else:
+            print(f"[FILE_EVENT ERROR] /change_destination_number/ com números inválidos: {params}", file=sys.stderr)
+
+    def end_call_asterisk_event(self, params, sqlite_conn):
+        asterisk_id = params.get("asterisk_id")
+        if asterisk_id:
+            cursor = sqlite_conn.cursor()
+
+            # Get source_phone_number and destination_phone_number from open call for log latter
+            cols = ["source_phone_number", "destination_phone_number", "id"]
+            query_results = cursor.execute(
+                '''
+                SELECT {', '.join(cols)}
+                FROM emergencies
+                WHERE asterisk_id = ? AND end_time IS NULL
+            ''',
+                (asterisk_id,),
+            ).fetchall()
+            if query_results:
+                emergencies = [
+                    {cols[n]: row[n] for n in range(len(cols))} for row in query_results
+                ]
+
+                emergencia = emergencies[0]
+                source_number = emergencia["source_phone_number"]
+                destination_number = emergencia["destination_phone_number"]
+                id_emergencia = emergencia["id"]
+                
+                cursor.execute("""
+                    UPDATE emergencies
+                    SET end_time = CURRENT_TIMESTAMP, current_status = 2
+                    WHERE end_time IS NULL 
+                        AND asterisk_id = ? 
+                """, (str(asterisk_id)))
+                sqlite_conn.commit()
+
+                cursor.execute("""
+                    INSERT INTO call_logs (id_emergencia, event_type, source_phone_number, destination_phone_number, event_data) 
+                    VALUES (?, ?, ?, ?, ?)
+                """, (id_emergencia, "END", str(source_number), str(destination_number), 
+                        f"Chamada encerrada pelo sistema."))
+                sqlite_conn.commit()
+                print(f"[FILE_EVENT] Emergency ended: {source_number} -> {destination_number}", 
+                    file=sys.stderr)
+            else:
+                print(f"[FILE_EVENT] Emergency not found: {params}", file=sys.stderr)
+        else:
+            print(f"[FILE_EVENT ERROR] /end_call_asterisk/ com parâmetros inválidos: {params}", file=sys.stderr)    
+
     def process_incoming_events(self, sqlite_conn):
         """Processes file-based start/end call control events matching endpoint behaviors."""
         messages = self.json_reader.fetch_pending()
@@ -70,50 +206,14 @@ class FilesystemEventDrivenAsteriskMonitor(AsteriskMonitor):
             params = payload.get("params", {})
             
             try:
-                if endpoint == "/start_call/":
-                    source_number = params.get("source_number")
-                    destination_number = params.get("destination_number")
-                    call_timestamp = params.get("call_timestamp")
-                    
-                    if source_number and destination_number and str(source_number).isdigit() and str(destination_number).isdigit():
-                        cursor = sqlite_conn.cursor()
-                        cursor.execute("""
-                            INSERT INTO emergencies (source_phone_number, destination_phone_number, asterisk_id) 
-                            VALUES (?, ?, ?)
-                        """, (str(source_number), str(destination_number), str(call_timestamp)))
-                        new_emergency_id = cursor.lastrowid
-                        sqlite_conn.commit()
-
-                        cursor.execute("""
-                            INSERT INTO call_logs (id_emergencia, event_type, source_phone_number, destination_phone_number) 
-                            VALUES (?, ?, ?, ?)
-                        """, (new_emergency_id, "START", str(source_number), str(destination_number)))
-                        sqlite_conn.commit()
-                        print(f"[FILE_EVENT] Nova emergencia entre numeros {source_number} {destination_number} (ID: {new_emergency_id})", file=sys.stderr)
-                    else:
-                        print(f"[FILE_EVENT ERROR] /start_call/ com números inválidos: {params}", file=sys.stderr)
-
+                if endpoint == "/start_call_asterisk/":
+                    self.start_call_event(params, sqlite_conn)
                 elif endpoint == "/end_call_by_number/":
-                    source_number = params.get("source_number")
-                    destination_number = params.get("destination_number")
-                    
-                    if source_number and destination_number:
-                        cursor = sqlite_conn.cursor()
-                        cursor.execute("""
-                            UPDATE emergencies
-                            SET end_time = CURRENT_TIMESTAMP, current_status = 2
-                            WHERE end_time IS NULL 
-                                AND source_phone_number = ? 
-                                AND destination_phone_number = ?
-                        """, (str(source_number), str(destination_number)))
-                        sqlite_conn.commit()
-
-                        cursor.execute("""
-                            INSERT INTO call_logs (event_type, source_phone_number, destination_phone_number) 
-                            VALUES (?, ?, ?)
-                        """, ("END", str(source_number), str(destination_number)))
-                        sqlite_conn.commit()
-                        print(f"[FILE_EVENT] Emergency ended {source_number} {destination_number}", file=sys.stderr)
+                    self.end_call_event(params, sqlite_conn)
+                elif endpoint == "/end_call_asterisk/":
+                    self.end_call_asterisk_event(params, sqlite_conn)
+                elif endpoint == "/change_destination_number/":
+                    self.change_destination_number_event(params, sqlite_conn)
                 
                 # Acknowledge/delete the successfully processed event file
                 self.json_reader.acknowledge(msg_id)

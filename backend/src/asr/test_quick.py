@@ -24,6 +24,7 @@ asr_model = asr_config.get('model', 'large')
 language = asr_config.get('language', 'pt')
 n_asr_workers = asr_config.get('n_asr_workers', 1)
 n_cpus = asr_config.get('n_cpus', 6)
+MAX_AUDIOS = 2
 
 if asr_model in asr_models:
     full_mname = asr_models[asr_model]
@@ -68,6 +69,9 @@ worker_thread = threading.Thread(
 worker_thread.start()
 
 audios = glob('test_audios/*.wav')
+
+if len(audios) > MAX_AUDIOS:
+    audios = audios[:MAX_AUDIOS]
 
 durations = []
 errors = []

@@ -17,7 +17,6 @@ Para reconstruir a página estática (`docs/index.html`), execute:
 
 - [Hermes Backend (`backend/README.md`)](../backend/README.md)
 - [Documentação Interativa da API - Swagger / Scalar (`backend/docs/swagger.html`)](../backend/docs/swagger.html)
-- [Documentação da API - ReDoc (`backend/docs/openapi.html`)](../backend/docs/openapi.html)
 - [Especificação OpenAPI JSON (`backend/docs/openapi.json`)](../backend/docs/openapi.json)
 - [Módulo de Testes de Carga (`backend/src/system_tests/README.md`)](../backend/src/system_tests/README.md)
 - [Logs do Servidor (`backend/logs/README.md`)](../backend/logs/README.md)

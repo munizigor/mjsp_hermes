@@ -56,7 +56,7 @@ python docs/build_docs.py
 Ao executar `docs/build_docs.py`, o script realiza as seguintes etapas:
 
 1. **Leitura do Índice (`docs/markdowns_index.md`)**: Lê a lista oficial de arquivos `.md` e páginas da API definidos em [`docs/markdowns_index.md`](markdowns_index.md). Caso novos arquivos `.md` sejam adicionados ao repositório, o script também os detecta e inclui automaticamente na árvore.
-2. **Sincronização da API Interativa (`docs/api/`)**: Copia automaticamente `swagger.html`, `openapi.html` e `openapi.json` de `backend/docs/` para `docs/api/`, garantindo que funcionem no GitHub Pages.
+2. **Sincronização da API Interativa (`docs/api/`)**: Copia automaticamente `swagger.html` e `openapi.json` de `backend/docs/` para `docs/api/`, garantindo que funcionem no GitHub Pages.
 3. **Sincronização de Diagramas (`docs/assets/artefatos/`)**: Varre `artefatos/` em busca de diagramas (`.png`, `.svg`, `.jpg`), copia-os para `docs/assets/` e cria galerias visuais navegáveis.
 4. **Resolução de Links Internos**: Converte links relativos entre os diferentes arquivos `.md` do repositório para navegação direta dentro da página única (`#page=...`).
 5. **Montagem dos Templates (`docs/templates/`)**: Une os templates HTML, folhas de estilo CSS e scripts JavaScript para gerar o arquivo final `docs/index.html`.

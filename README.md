@@ -78,7 +78,7 @@ Cada camada possui seu próprio guia de instalação e execução:
 
 1. [`frontend/README.md`](frontend/README.md) — instalação local ou via Docker, execução do mock de transcrição e testes de performance.
 2. [`voip_server/asterisk/README.md`](voip_server/asterisk/README.md) — configuração do Asterisk (AMI e dialplan) e instalação dos serviços de sinalização/processamento de áudio.
-3. [`backend/README.md`](backend/README.md) — instalação via Docker, com multiplos containers orquestrados através de docker-compose ([Swagger API Docs](backend/docs/swagger.html) | [OpenAPI Docs](backend/docs/openapi.html) | [Testes de Carga](backend/src/system_tests/README.md)).
+3. [`backend/README.md`](backend/README.md) — instalação via Docker, com multiplos containers orquestrados através de docker-compose ([Swagger API Docs](backend/docs/swagger.html) | [Testes de Carga](backend/src/system_tests/README.md)).
 4. [`inference_servers/asr/README.md`](inference_servers/asr/README.md) e [`inference_servers/info_extraction/README.md`](inference_servers/info_extraction/README.md) — servidores de inferência para ASR e extração de informações ([Benchmarks](inference_servers/info_extraction/testing_bench/README.md)).
 5. [`artefatos/README.md`](artefatos/README.md) e [`analysis/estimativas_de_custo/README.md`](analysis/estimativas_de_custo/README.md) — artefatos documentais e estimativas de custo.
 6. [`docs/README.md`](docs/README.md) — instruções para reconstrução e personalização da página estática de documentação (`docs/index.html`).

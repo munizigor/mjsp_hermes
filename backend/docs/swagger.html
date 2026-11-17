@@ -270,8 +270,64 @@
     "/start_call/": {
       "post": {
         "summary": "Start Call",
-        "description": "Start a new call.\n\nArgs:\n    source_number (str): The source phone number.\n    destination_number (str): The destination phone number.\n    call_timestamp (str): The timestamp of the call.\n\nReturns:\n    int: The ID of the newly created emergency session.\n\nEXAMPLE: curl -i -X POST \"http://127.0.0.1:8001/start_call/?source_number=107&destination_number=108&call_timestamp=1768416225.58\"",
+        "description": "Start a new call, not associated with an ID from a VOIP provider.\n\nArgs:\n    source_number (str): The source phone number.\n    destination_number (str): The destination phone number.\n\nReturns:\n    int: The ID of the newly created emergency session.\n\nEXAMPLE: curl -i -X POST \"http://127.0.0.1:8001/start_call/?source_number=107&destination_number=108\"",
         "operationId": "start_call_start_call__post",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "source_number",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Source Number"
+            }
+          },
+          {
+            "name": "destination_number",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Destination Number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Start Call Start Call  Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/start_call_asterisk/": {
+      "post": {
+        "summary": "Start Call Asterisk",
+        "description": "Start a new call, associated with an ID from a VOIP provider.\n\nArgs:\n    source_number (str): The source phone number.\n    destination_number (str): The destination phone number.\n    asterisk_id (str): The LinkedID of the asterisk call.\n\nReturns:\n    int: The ID of the newly created emergency session.\n\nEXAMPLE: curl -i -X POST \"http://127.0.0.1:8001/start_call_asterisk/?source_number=107&destination_number=108&asterisk_id=1768416225.58\"",
+        "operationId": "start_call_asterisk_start_call_asterisk__post",
         "security": [
           {
             "APIKeyHeader": []
@@ -297,12 +353,12 @@
             }
           },
           {
-            "name": "call_timestamp",
+            "name": "asterisk_id",
             "in": "query",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Call Timestamp"
+              "title": "Asterisk Id"
             }
           }
         ],
@@ -314,7 +370,155 @@
                 "schema": {
                   "type": "object",
                   "additionalProperties": true,
-                  "title": "Response Start Call Start Call  Post"
+                  "title": "Response Start Call Asterisk Start Call Asterisk  Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/start_call_for_operator/": {
+      "post": {
+        "summary": "Start Call For Operator",
+        "description": "Start a new call session for an operator, without a specific source number. Used for front-ends\n    that send operator audio only, without access to source number.\n\nArgs:\n    operator_unique_code (str): Unique code for the operator handling the call.\n\nReturns:\n    int: The ID of the newly created emergency session.",
+        "operationId": "start_call_for_operator_start_call_for_operator__post",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "operator_unique_code",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Operator Unique Code"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Start Call For Operator Start Call For Operator  Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/set_as_answered/": {
+      "post": {
+        "summary": "Set As Answered By Number",
+        "description": "Set call as answered, based on id_emergencia. This is for the front-end\nto signal that someone has opened the interface for this emergency.\n\nArgs:\n    source_number (str): The source phone number.\n    destination_number (str): The destination phone number.\n\nReturns:\n    str: A message indicating the session has been answered.",
+        "operationId": "set_as_answered_by_number_set_as_answered__post",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id_emergencia",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Id Emergencia"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "title": "Response Set As Answered By Number Set As Answered  Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/change_destination_number/": {
+      "post": {
+        "summary": "Change Destination Number",
+        "description": "Change the destination phone number of a asterisk ID, to reflect new routing.\nLaunchs a event \"TRANSFER\" for this session.\n\nArgs:\n    asterisk_id (str): The LinkedID of the asterisk call.\n    new_destination_number (str): The new destination phone number.\n\nReturns:\n    str: A message indicating the session has been updated.",
+        "operationId": "change_destination_number_change_destination_number__post",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "asterisk_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Asterisk Id"
+            }
+          },
+          {
+            "name": "new_destination_number",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "New Destination Number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "title": "Response Change Destination Number Change Destination Number  Post"
                 }
               }
             }
@@ -378,61 +582,6 @@
         }
       }
     },
-    "/set_as_answered_by_number/": {
-      "post": {
-        "summary": "Set As Answered By Number",
-        "description": "Set call as answered, based on phone numbers.\n\nArgs:\n    source_number (str): The source phone number.\n    destination_number (str): The destination phone number.\n\nReturns:\n    str: A message indicating the session has been answered.",
-        "operationId": "set_as_answered_by_number_set_as_answered_by_number__post",
-        "security": [
-          {
-            "APIKeyHeader": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "source_number",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Source Number"
-            }
-          },
-          {
-            "name": "destination_number",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Destination Number"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "string",
-                  "title": "Response Set As Answered By Number Set As Answered By Number  Post"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/end_call_by_number/": {
       "post": {
         "summary": "End Call By Number",
@@ -471,6 +620,52 @@
                 "schema": {
                   "type": "string",
                   "title": "Response End Call By Number End Call By Number  Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/end_call_asterisk/": {
+      "post": {
+        "summary": "End Call Asterisk",
+        "description": "End the last open call interpretation session, based on asterisk ID.\n\nArgs:\n    asterisk_id (str): The LinkedID of the asterisk call.\n\nReturns:\n    str: A message indicating the session has ended.",
+        "operationId": "end_call_asterisk_end_call_asterisk__post",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "asterisk_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Asterisk Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "title": "Response End Call Asterisk End Call Asterisk  Post"
                 }
               }
             }
@@ -565,53 +760,6 @@
                   "type": "object",
                   "additionalProperties": true,
                   "title": "Response Get Emergency Get Emergency  Get"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/start_call_interpretation/": {
-      "get": {
-        "summary": "Start Call Interpretation",
-        "description": "Start a new call interpretation session.\n\nArgs:\n    operator_unique_code (str): Unique code for the operator handling the call.\n\nReturns:\n    int: The ID of the newly created emergency session.",
-        "operationId": "start_call_interpretation_start_call_interpretation__get",
-        "security": [
-          {
-            "APIKeyHeader": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "operator_unique_code",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Operator Unique Code"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "additionalProperties": true,
-                  "title": "Response Start Call Interpretation Start Call Interpretation  Get"
                 }
               }
             }

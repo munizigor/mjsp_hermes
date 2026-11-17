@@ -134,7 +134,7 @@ def parse_markdowns_index(index_path: Path) -> list[dict[str, str]]:
 
 
 def sync_api_docs() -> None:
-    """Copia os arquivos interativos de `backend/docs/` para `docs/api/`."""
+    """Copia os arquivos interativos de `backend/docs/` (exceto openapi.html) para `docs/api/`."""
     backend_docs = REPO_ROOT / "backend" / "docs"
     if not backend_docs.exists():
         return
@@ -142,6 +142,8 @@ def sync_api_docs() -> None:
         shutil.rmtree(API_OUT_DIR)
     API_OUT_DIR.mkdir(parents=True, exist_ok=True)
     for item in sorted(backend_docs.iterdir()):
+        if item.name.lower() == "openapi.html":
+            continue
         if item.is_file() and item.suffix.lower() in {".html", ".json", ".yaml", ".yml"}:
             shutil.copy2(item, API_OUT_DIR / item.name)
 
@@ -427,7 +429,7 @@ def render_file_item_html(page: dict[str, Any], file_tpl: str) -> str:
     """Renderiza um item de arquivo na árvore lateral usando `tree_file.html`."""
     kind = page["kind"]
     if kind == "api_iframe":
-        icon = "⚡" if "swagger" in page["name"].lower() else "📘"
+        icon = "⚡"
         badge_class = "interactive-badge"
         badge_text = "Interativo"
     elif kind == "openapi_json":
@@ -493,6 +495,8 @@ def generate_html() -> None:
             )
         elif suffix == ".html" and rel_path.startswith("backend/docs/"):
             api_file_name = full_path.name
+            if api_file_name.lower() == "openapi.html":
+                continue
             pages.append(
                 {
                     "id": rel_path,
@@ -503,7 +507,7 @@ def generate_html() -> None:
                     "iframe_src": f"api/{api_file_name}",
                     "html": "",
                     "toc": [],
-                    "search_text": f"{title} {rel_path} API REST FastAPI Swagger ReDoc OpenAPI endpoints",
+                    "search_text": f"{title} {rel_path} API REST FastAPI Swagger OpenAPI endpoints",
                 }
             )
         elif suffix == ".json" and rel_path.startswith("backend/docs/"):

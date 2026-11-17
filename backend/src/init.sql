@@ -8,11 +8,11 @@ emergencies.current_status:
 CREATE TABLE IF NOT EXISTS emergencies (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     start_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    end_time TIMESTAMP,
+    end_time TIMESTAMP DEFAULT NULL,
     current_status INTEGER DEFAULT 0,
-    asterisk_id TEXT,
-    source_phone_number TEXT DEFAULT NULL, /**Novo Campo**/
-    destination_phone_number TEXT DEFAULT NULL, /**Novo Campo**/
+    asterisk_id TEXT DEFAULT NULL,
+    source_phone_number TEXT DEFAULT NULL,
+    destination_phone_number TEXT DEFAULT NULL,
     operator_unique_code TEXT DEFAULT NULL
 );
 
@@ -20,8 +20,8 @@ CREATE TABLE IF NOT EXISTS call_logs (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     start_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     id_emergencia INTEGER,
-    source_phone_number TEXT DEFAULT NULL, /**Novo Campo**/
-    destination_phone_number TEXT DEFAULT NULL, /**Novo Campo**/
+    source_phone_number TEXT DEFAULT NULL,
+    destination_phone_number TEXT DEFAULT NULL,
     event_type TEXT NOT NULL,
     event_data TEXT DEFAULT NULL
 );
@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS emergency_transcripts (
     is_analyzed BOOLEAN DEFAULT FALSE,
     transcription_seconds REAL DEFAULT 0.0,
     transcription_model TEXT DEFAULT NULL,
-    actor TEXT DEFAULT NULL, /**Novo Campo**/
+    actor TEXT DEFAULT NULL,
     FOREIGN KEY (id_emergencia) REFERENCES emergencies (id)
 );
 
@@ -48,7 +48,7 @@ CREATE TABLE IF NOT EXISTS emergency_audios (
     sampling_rate INTEGER NOT NULL,
     audio_length_seconds REAL NOT NULL,
     audio_path TEXT,
-    channel TEXT DEFAULT NULL, /**Novo Campo**/
+    channel TEXT DEFAULT NULL,
     FOREIGN KEY (id_emergencia) REFERENCES emergencies (id)
 );
 

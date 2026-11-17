@@ -15,7 +15,7 @@ if os.path.exists(env_file_path):
         os.environ[k] = v
 ASTERISK_DIR = "/asterisk_recordings"
 
-from monitors.asterisk_monitor_dependent import start_asterisk_monitor as start_asterisk_monitor_no_fs
+from monitors.asterisk_monitor_dependent_by_id import start_asterisk_monitor as start_asterisk_monitor_no_fs
 from monitors.asterisk_monitor_fs import start_asterisk_monitor as start_asterisk_monitor_fs
 
 
