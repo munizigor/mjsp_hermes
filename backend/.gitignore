@@ -3,6 +3,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 .fuse_hidden*
+*TODO_safety.md
 sqlite.db
 *.parquet
 results/sentence_encoding_cache.duckdb

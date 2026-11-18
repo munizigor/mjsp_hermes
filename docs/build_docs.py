@@ -45,6 +45,8 @@ EXCLUDED_DIRS = {
 
 EXCLUDED_FILES = {
     "docs/markdowns_index.md",
+    "backend/TODO.md",
+    "backend/TODO_safety.md",
 }
 
 
