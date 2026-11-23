@@ -4,3 +4,4 @@ analysis/estimativas_de_custo/train_data/*
 diff.txt
 .fuse_hidden*
 *TODO_safety.md
+backend/database.sqlite

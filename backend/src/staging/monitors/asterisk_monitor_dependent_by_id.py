@@ -62,6 +62,8 @@ class CallMonitor:
         self.mix_dir = "/tmp/None-mix"
         self.atendente_dir = "/tmp/None-atendente"
         self.solicitante_dir = "/tmp/None-solicitante"
+        self.atendente_dir2 = "/tmp/None-agente"
+        self.solicitante_dir2 = "/tmp/None-cliente"
         self.inserted_audios = set()
 
     def find_call_dir(self):
@@ -104,12 +106,16 @@ class CallMonitor:
                 .replace("-mix", "")
                 .replace("-atendente", "")
                 .replace("-solicitante", "")
+                .replace("-cliente", "")
+                .replace("-agente", "")
             )
             self.mix_dir = self.base_call_dir + "-mix"
             if "q-" in self.base_call_dir:
                 self.mix_dir = self.base_call_dir
             self.atendente_dir = self.base_call_dir + "-atendente"
+            self.atendente_dir2 = self.base_call_dir + "-agente"
             self.solicitante_dir = self.base_call_dir + "-solicitante"
+            self.solicitante_dir2 = self.base_call_dir + "-cliente"
 
     @property
     def all_channels_dir(self):
@@ -123,15 +129,22 @@ class CallMonitor:
             )
 
     def is_dual_channel(self):
-        if os.path.exists(self.atendente_dir) and os.path.exists(self.solicitante_dir):
-            return True
+        if os.path.exists(self.atendente_dir) or os.path.exists(self.atendente_dir2):
+            if os.path.exists(self.solicitante_dir) or os.path.exists(self.solicitante_dir2):
+                return True
         return False
 
     def get_channels(self):
         if self.is_dual_channel():
+            atd = self.atendente_dir
+            if not os.path.exists(self.atendente_dir):
+                atd = self.atendente_dir2
+            sol = self.solicitante_dir
+            if not os.path.exists(self.solicitante_dir):
+                sol = self.solicitante_dir2
             return [
-                ["Atendente", self.atendente_dir],
-                ["Solicitante", self.solicitante_dir],
+                ["Atendente", atd],
+                ["Solicitante", sol],
             ]
         else:
             return [[None, self.all_channels_dir]]
@@ -178,7 +191,7 @@ class CallMonitor:
                         self.inserted_audios.add(filename)
                     else:
                         # verificar se o arquivo parece estar finalizado (não sendo escrito)
-                        if not self._is_file_ready(w):
+                        if not is_file_ready(w, self.file_stable_seconds):
                             # pular; ficará para a próxima varredura
                             # não marcar como inserido para tentar novamente depois
                             print(

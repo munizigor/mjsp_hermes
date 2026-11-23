@@ -39,6 +39,7 @@ naturezas.csv.bm25_indexing
 substr*.out
 substr*.err
 containers.err
+logs/containers.out
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
