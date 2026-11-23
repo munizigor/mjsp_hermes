@@ -29,6 +29,37 @@ COMM_MODES = ["API", "FILE_SYSTEM"]
 DEFAULT_MAX_ATTEMPTS = 3
 RECOVERY_INTERVAL_SECONDS = 30 * 60  # 30 minutos
 
+# =============================
+# Filtros de ramais
+# =============================
+# Ramais cujas chamadas devem ser sinalizadas ao Hermes.
+# Set vazio = permite todos os ramais, mas continua ignorando canais de fila.
+# Esta lista pode ser substituída pela opção --allowed-extensions.
+ALLOWED_EXTENSIONS = {"501", "502", "503"}
+
+# Canais internos/de fila não devem disparar sinalização.
+QUEUE_CHANNEL_PREFIXES = (
+    "Local/",
+    "PJSIP/queue",
+    "SIP/queue",
+)
+
+
+def is_queue_channel(channel: str) -> bool:
+    """Ignora canais internos ou de filas, como no v5."""
+    return channel.startswith(QUEUE_CHANNEL_PREFIXES)
+
+
+def parse_allowed_extensions(value: str) -> set:
+    """Interpreta ramais separados por vírgula; ALL ou * remove a restrição."""
+    if value.strip().upper() in ("", "ALL", "*"):
+        return set()
+    extensions = {number.strip() for number in value.split(",") if number.strip()}
+    if not extensions:
+        raise ValueError("Informe ramais ou ALL para permitir todos.")
+    return extensions
+
+
 REQUIRED_STATUS_KEYS = {
     "open_calls",
     "closed_calls",
@@ -290,13 +321,30 @@ class AsteriskAMIListener:
         port: int = AMI_PORT,
         username: str = AMI_USER,
         secret: str = AMI_PASS,
+        allowed_extensions: Optional[set] = None,
     ):
         self.comm = comm_manager
         self.host = host
         self.port = port
         self.username = username
         self.secret = secret
+        # None = configuração do arquivo; set() = todos os ramais.
+        self.allowed_extensions = set(
+            ALLOWED_EXTENSIONS if allowed_extensions is None else allowed_extensions
+        )
         self.calls: Dict[str, Dict[str, Any]] = {}
+
+    def _is_allowed_extension(self, number: Optional[str]) -> bool:
+        """Um número válido passa se estiver na whitelist ou se ela estiver vazia."""
+        return bool(number) and (
+            not self.allowed_extensions or number in self.allowed_extensions
+        )
+
+    def _call_is_allowed(self, call: Dict[str, Any]) -> bool:
+        """Mesmo critério do v5: origem OU destino deve estar na whitelist."""
+        return self._is_allowed_extension(call.get("origin")) or self._is_allowed_extension(
+            call.get("destination")
+        )
 
     @staticmethod
     def _send_line(sock: socket.socket, msg: str) -> None:
@@ -345,6 +393,10 @@ class AsteriskAMIListener:
                 "answered_at": None,
                 "origin": None,
                 "destination": None,
+                # Guarda o par efetivamente sinalizado, mesmo se eventos
+                # subsequentes atualizarem CallerIDNum/ConnectedLineNum.
+                "signaled_origin": None,
+                "signaled_destination": None,
             },
         )
 
@@ -358,28 +410,39 @@ class AsteriskAMIListener:
             call["destination"] = callee
 
     def _handle_newstate(self, call_id: str, call: Dict[str, Any], channel: str) -> None:
-        call["channels"].add(channel)
         if call["answered"]:
+            call["channels"].add(channel)
             return
 
-        call["answered"] = True
-        call["answered_at"] = now()
-
-        if call["origin"] and call["destination"]:
-            print(f"[CALL_ANSWERED] {call['origin']} -> {call['destination']} | CallID={call_id}")
-            self.comm.signal_start_call(call["origin"], call["destination"], call_id)
-        else:
+        # Não inicia o registro até que ambos os números estejam disponíveis.
+        if not call["origin"] or not call["destination"]:
             print(f"[SKIP START] Dados incompletos: {call}")
+            return
+
+        call["channels"].add(channel)
+        call["answered_at"] = now()
+        print(f"[CALL_ANSWERED] {call['origin']} -> {call['destination']} | CallID={call_id}")
+        self.comm.signal_start_call(call["origin"], call["destination"], call_id)
+        call["answered"] = True
+        call["signaled_origin"] = call["origin"]
+        call["signaled_destination"] = call["destination"]
 
     def _handle_hangup(self, call_id: str, call: Dict[str, Any], channel: str) -> None:
         call["channels"].discard(channel)
-        if not call["answered"] or call["channels"]:
+        if not call["answered"]:
+            # Evita reter estado de chamadas que nunca foram sinalizadas.
+            if not call["channels"]:
+                self.calls.pop(call_id, None)
+            return
+        if call["channels"]:
             return
 
         duration = now() - call["answered_at"]
-        if call["origin"] and call["destination"]:
-            print(f"[CALL_END] {call['origin']} -> {call['destination']} | {duration}s")
-            self.comm.signal_end_call_by_number(call["origin"], call["destination"])
+        origin = call["signaled_origin"]
+        destination = call["signaled_destination"]
+        if origin and destination:
+            print(f"[CALL_END] {origin} -> {destination} | {duration}s")
+            self.comm.signal_end_call_by_number(origin, destination)
         else:
             print(f"[SKIP END] Dados incompletos: {call}")
 
@@ -390,19 +453,28 @@ class AsteriskAMIListener:
             return
 
         event = self._parse_event(raw_event)
-        call_id = event.get("Uniqueid")
-        if "Linkedid" in event:
-            call_id = event.get("Linkedid")
+        # Linkedid identifica a chamada ao longo das pernas/ramais.
+        call_id = event.get("Linkedid") or event.get("Uniqueid")
         channel = event.get("Channel")
         if not call_id or not channel:
             return
+
+        # Filtro 1 do v5: desconsidera canais de fila/internos.
+        if is_queue_channel(channel):
+            return
+
         call = self._get_or_create_call(call_id)
         self._update_participants(call, event)
-
         event_name = event.get("Event")
+
         if event_name == "Newstate" and event.get("ChannelStateDesc") == "Up":
+            # Filtro 2 do v5: exige ao menos um ramal permitido.
+            if not self._call_is_allowed(call):
+                return
             self._handle_newstate(call_id, call, channel)
         elif event_name == "Hangup":
+            # Uma chamada já sinalizada deve sempre receber o encerramento,
+            # mesmo que o último evento traga outros números (transferências).
             self._handle_hangup(call_id, call, channel)
 
     def _consume_stream(self, sock: socket.socket) -> None:
@@ -521,6 +593,16 @@ def main() -> None:
         help=f"Número de tentativas antes de fallback (padrão: {DEFAULT_MAX_ATTEMPTS})",
     )
     parser.add_argument(
+        "--allowed-extensions",
+        metavar="RAMAIS",
+        default=None,
+        help=(
+            "Ramais autorizados, separados por vírgula (ex.: 501,502,503). "
+            "Padrão: ALLOWED_EXTENSIONS no arquivo. "
+            "Use ALL para permitir todos os ramais, exceto canais de fila."
+        ),
+    )
+    parser.add_argument(
         "--test",
         "-t",
         action="store_true",
@@ -543,9 +625,20 @@ def main() -> None:
     )
 
     if args.test:
+        # O modo --test testa o transporte com chamadas sintéticas,
+        # não o filtro AMI de ramais.
         run_test_mode(comm_manager)
     else:
-        listener = AsteriskAMIListener(comm_manager)
+        allowed = (
+            parse_allowed_extensions(args.allowed_extensions)
+            if args.allowed_extensions is not None
+            else None
+        )
+        listener = AsteriskAMIListener(comm_manager, allowed_extensions=allowed)
+        if listener.allowed_extensions:
+            print(f"[INFO] Ramais sinalizados: {', '.join(sorted(listener.allowed_extensions))}")
+        else:
+            print("[INFO] Todos os ramais permitidos (exceto canais de fila/internos)")
         listener.run()
 
 
