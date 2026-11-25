@@ -84,7 +84,15 @@ def whisper_cpp_caller_process(
 
     while True:
         # Pega item da fila
-        queue_item = audio_queue.get()
+        try:
+            queue_item = audio_queue.get()
+        except ValueError as err:
+            msg = str(err)
+            if "closed" in msg or "Closed" in msg:
+                queue_item = "STOP"
+                print(f"Error getting item from queue, because of closed queue: {msg}")
+            else:
+                raise err
 
         # Prevenção caso o sinal de STOP venha direto
         if queue_item == "STOP":
