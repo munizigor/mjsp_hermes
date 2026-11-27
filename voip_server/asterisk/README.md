@@ -217,7 +217,17 @@ systemctl restart hermes-sip-sign.service
 - `--output-dir`, `-o`: Diretório base de saída dos segmentos, onde será criado o subdiretório `events/` (padrão: `<monitor_dir>/segments`).
 - `--communication-modes`, `-c`: Lista ordenada de prioridade dos modos de comunicação separados por vírgula (`API`, `FILE_SYSTEM`, `API,FILE_SYSTEM` ou `FILE_SYSTEM,API`).
 - `--max-attempts`: Número máximo de tentativas por método antes de acionar o fallback (padrão: `3`).
-- `--test`, `-t`: Executa o script em modo de teste, simulando o início e o encerramento de 3 chamadas em poucos segundos sem necessidade de conexão com o AMI.
+- `--test`, `-t`: Executa o script em modo de teste, simulando o início e o encerramento de chamadas em poucos segundos sem necessidade de conexão com o AMI.
+- `--test-speed`, `-ts`: Multiplicador para duração dos áudios de teste (padrão: `1.0`).
+- `--seg-dir`: Diretório com áudios para testar (padrão: {PROJ_DIR}/backend/test_audios/segmentado)
+
+### Testando a Sinalização SIP
+
+Para testar a sinalização SIP, você pode utilizar o modo de teste, que simula o início e o encerramento de chamadas em poucos segundos sem necessidade de conexão com o AMI.
+
+```bash
+/usr/bin/python3 /opt/hermes/hermes-asterisk-agent/sip_sign.py /var/spool/asterisk/monitor --test --test-speed 0.8
+```
 
 ## Logs
 

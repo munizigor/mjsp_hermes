@@ -25,10 +25,10 @@ asr_model = asr_config.get('model', 'large')
 language = asr_config.get('language', 'pt')
 n_asr_workers = asr_config.get('n_asr_workers', 1)
 n_cpus = asr_config.get('n_cpus', 6)
-MAX_AUDIO_FILES = 25
-MIN_SPEEDUP = 1.25
-MIN_SUCCESS_RATE = 0.8
-TIMEOUT_COEF = 0.9
+MAX_AUDIO_FILES = 8
+MIN_SPEEDUP = 0.9
+MIN_SUCCESS_RATE = 0.7
+TIMEOUT_COEF = 1.25
 
 if asr_model in asr_models:
     full_mname = asr_models[asr_model]

@@ -1,11 +1,18 @@
+from pooch.downloaders import tqdm
+from ntpath import basename
+from scipy.io import wavfile
 import argparse
 import json
 import os
+import sys
+import shutil
 import socket
 import time
 import uuid
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
+from glob import glob
+from datetime import datetime
 
 import requests
 
@@ -28,7 +35,7 @@ API_TIMEOUT = 5
 COMM_MODES = ["API", "FILE_SYSTEM"]
 DEFAULT_MAX_ATTEMPTS = 3
 RECOVERY_INTERVAL_SECONDS = 30 * 60  # 30 minutos
-
+SPEED_MULTI = 1.0
 # =============================
 # Filtros de ramais
 # =============================
@@ -43,6 +50,8 @@ QUEUE_CHANNEL_PREFIXES = (
     "PJSIP/queue",
     "SIP/queue",
 )
+PROJ_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+SEGMENTED_AUDIOS_DIR = f"{PROJ_DIR}/backend/test_audios/segmentado"
 
 
 def is_queue_channel(channel: str) -> bool:
@@ -518,38 +527,93 @@ class AsteriskAMIListener:
 # =============================
 # Modo de Teste e Inicialização
 # =============================
-def run_test_mode(comm_manager: FallbackCommunicationManager) -> None:
-    print("Iniciando modo de teste (3 chamadas)...")
-    test_calls = [("301", "401", "17200.22"), ("302", "402", "17201.25"), ("303", "403", "17203.26")]
 
-    for i, (origin, destination, call_id) in enumerate(test_calls, start=1):
-        start_ts = now()
-        print(f"[CALL_ANSWERED] (TEST {i}/3) {origin} -> {destination}")
+def call_test_cycle(comm_manager: FallbackCommunicationManager, call_info: dict, 
+        seg_dir: str, speed, has_transfer=False) -> None:
+    from pydub import AudioSegment
+
+    destination = call_info["destination"]
+    origin = call_info["origin"]
+    call_id = call_info["call_id"]
+    start_ts = now() #float
+    wavs = call_info["wav_paths"]
+    test_original_dir = wavs[0].rsplit("/")[:-1]
+    print(f"[TEST CALL] Origem: {origin}, Destino: {destination}, Call ID: {call_id}, Call length: {len(wavs)} audios, located on {'/'.join(test_original_dir)}")
+
+    start_ts_date = datetime.fromtimestamp(start_ts)
+    yyyymmdd = start_ts_date.strftime("%Y%m%d")
+    hhmm = start_ts_date.strftime("%H%M")
+    #{asterisk_id}-{caller}-{call_date}-{call_hour}-{call_timestamp}-{mix|solicitante|atendente}/segment_*.wav
+    segments_dir = f"{seg_dir}/{call_id}-{origin}-{yyyymmdd}-{hhmm}-{start_ts}-mix"
+    os.makedirs(segments_dir, exist_ok=True)
+    try:
         comm_manager.signal_start_call(origin, destination, call_id)
-        time.sleep(2)
+
+        print(f"[CALL_ANSWERED]{origin} -> {destination}")
+        if has_transfer:
+            destination, old_dest = (str(int(destination) + 300), destination)
+            print(f"[CALL_TRANSFER] {origin} -> {old_dest} -> {destination}")
+            time.sleep(2)
+            comm_manager.signal_transfer(call_id, destination)
+            time.sleep(1)
+        for wav_file in call_info["wav_paths"]:
+            basename = os.path.basename(wav_file)
+            segment = AudioSegment.from_file(wav_file)
+            duration = segment.duration_seconds
+            shutil.copy(wav_file, f"{segments_dir}/{basename}")
+            time.sleep(duration*speed)
         duration = now() - start_ts
-        print(f"[CALL_END] (TEST {i}/3) {origin} -> {destination} | {duration}s")
+        print(f"[CALL_END]{origin} -> {destination} | {duration}s")
         comm_manager.signal_end_call_by_number(origin, destination)
-        if i < len(test_calls):
-            time.sleep(1)
+    except Exception as err:
+        shutil.rmtree(segments_dir)
+        raise err
+    shutil.rmtree(segments_dir)
 
+def run_test_mode(comm_manager: FallbackCommunicationManager, 
+        test_audios_seg_dir: str, seg_dir: str, speed=SPEED_MULTI) -> None:
+    print("Iniciando modo de teste...")
+    #we only have 5 audios, so this is safe:
+    call_meta_infos = [("301", "401", "17200.22"), 
+                ("302", "402", "17301.25"), 
+                ("303", "403", "17503.26"),
+                ("304", "404", "17700.22"),
+                ("305", "405", "17801.25"),
+                ("306", "406", "17903.26")]
+    
+    test_calls = []
+    for i, call_dir in enumerate(glob(test_audios_seg_dir+"/*")):
+        wav_files = glob(os.path.join(call_dir, "*.wav"))
+        if len(wav_files) > 1 and i < len(call_meta_infos):
+            metainfo = call_meta_infos[i]
+            call_info = {
+                "wav_paths": wav_files,
+                "call_id": metainfo[2],
+                "origin": metainfo[0],
+                "destination": metainfo[1]
+            }
+            test_calls.append(call_info)
+
+    n_transfer = int(len(test_calls) / 2)
+    if n_transfer >= 1:
+        simple_calls = test_calls[:n_transfer]
+        queue_transfer_calls = test_calls[n_transfer:]
+    else:
+        simple_calls = test_calls
+        queue_transfer_calls = []
+
+    bar = tqdm(total=len(test_calls), desc="Testando chamadas")
+    print("Testando chamada simples...")
+    for i, call_info in enumerate(simple_calls, start=1):
+        call_test_cycle(comm_manager, call_info, seg_dir, speed, has_transfer=False)
+        bar.update(1)
+    
     print("Testando chamada com fila...")
-    test_calls_2 = [("301", "881", "88145", "17200.22")]
-
-    for i, (origin, destination1, destination2, call_id) in enumerate(test_calls_2, start=1):
-        start_ts = now()
-        print(f"[CALL_ANSWERED] (TEST {i}/3) {origin} -> {destination1}")
-        comm_manager.signal_start_call(origin, destination1, call_id)
-        time.sleep(2)
-        print(f"[CALL_TRANSFER] (TEST {i}/3) {origin} -> {destination2}")
-        comm_manager.signal_transfer(call_id, destination2)
-        time.sleep(2)
-        duration = now() - start_ts
-        print(f"[CALL_END] (TEST {i}/3) {origin} -> {destination2} | {duration}s")
-        comm_manager.signal_end_call_by_number(origin, destination2)
-        if i < len(test_calls):
-            time.sleep(1)
-
+    for i, call_info in enumerate(queue_transfer_calls, start=1):
+        call_test_cycle(comm_manager, call_info, seg_dir, speed, has_transfer=True)
+        bar.update(1)
+    bar.close()
+        
     print("Modo de teste finalizado.")
 
 
@@ -609,6 +673,13 @@ def main() -> None:
         help="Executa o script em modo de teste, simulando o início e fim de 3 chamadas",
     )
 
+    parser.add_argument(
+        "--seg-dir",
+        default=SEGMENTED_AUDIOS_DIR,
+        help="Diretório onde estão os segmentos de áudio para teste",
+    )
+    parser.add_argument("--test-speed", "-ts", type=float, default=SPEED_MULTI)
+
     args = parser.parse_args()
 
     events_dir = None
@@ -627,7 +698,7 @@ def main() -> None:
     if args.test:
         # O modo --test testa o transporte com chamadas sintéticas,
         # não o filtro AMI de ramais.
-        run_test_mode(comm_manager)
+        run_test_mode(comm_manager, args.seg_dir, output_dir, speed=args.test_speed)
     else:
         allowed = (
             parse_allowed_extensions(args.allowed_extensions)
