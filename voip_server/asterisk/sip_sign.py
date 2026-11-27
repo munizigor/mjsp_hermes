@@ -1,3 +1,4 @@
+from PIL.Image import enum
 import argparse
 import json
 import os
@@ -10,6 +11,7 @@ from typing import Any, Callable, Dict, List, Optional
 from glob import glob
 from datetime import datetime
 from os.path import basename
+import random as randlib
 
 from tqdm import tqdm
 import requests
@@ -34,6 +36,7 @@ COMM_MODES = ["API", "FILE_SYSTEM"]
 DEFAULT_MAX_ATTEMPTS = 3
 RECOVERY_INTERVAL_SECONDS = 30 * 60  # 30 minutos
 SPEED_MULTI = 1.0
+BASE_CALL_ID = randlib.randint(100, 200)
 # =============================
 # Filtros de ramais
 # =============================
@@ -578,6 +581,8 @@ def run_test_mode(comm_manager: FallbackCommunicationManager,
                 ("304", "404", "17700.22"),
                 ("305", "405", "17801.25"),
                 ("306", "406", "17903.26")]
+    for i, call_meta_info in enumerate(call_meta_infos):
+        call_meta_infos[2] = str(int(call_meta_info[2]) + BASE_CALL_ID)
     
     test_calls = []
     for i, call_dir in enumerate(glob(test_audios_seg_dir+"/*")):
