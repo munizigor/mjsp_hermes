@@ -1,10 +1,6 @@
-from pooch.downloaders import tqdm
-from ntpath import basename
-from scipy.io import wavfile
 import argparse
 import json
 import os
-import sys
 import shutil
 import socket
 import time
@@ -13,7 +9,9 @@ from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
 from glob import glob
 from datetime import datetime
+from os.path import basename
 
+from tqdm import tqdm
 import requests
 
 # =============================
